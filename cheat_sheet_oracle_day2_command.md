@@ -1,6 +1,5 @@
 # Cheat Sheet Pelatihan Basis Data - 7 Juli 2026
 
-> Disusun ulang dari catatan pelatihan Oracle Database 19c tanggal 7 Juli 2026.  
 > Fokus materi: environment Oracle, SQL\*Plus, PDB, listener, password file, alias koneksi, perubahan port listener, redo log, archive log, dan penambahan redo log group.
 
 ---
@@ -41,7 +40,6 @@ Contoh informasi lab dari materi:
 ```text
 User Linux Oracle : oracle/oracle
 User Linux root   : root/oracle
-IP server         : 192.168.56.22
 Oracle SID        : oradb
 PDB               : PDB1
 Oracle version    : Oracle Database 19c
