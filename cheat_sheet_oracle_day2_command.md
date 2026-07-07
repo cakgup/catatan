@@ -775,7 +775,7 @@ Jika berhasil, berarti password file kembali terbaca.
 Contoh dari materi:
 
 ```bash
-orapwd file=orapworadb password=Cakgup2026*
+orapwd file=orapworadb password=Password2026*
 ```
 
 Fungsi:
@@ -786,7 +786,7 @@ Fungsi:
 Versi yang lebih aman jika file sudah ada:
 
 ```bash
-orapwd file=orapworadb password='Cakgup2026*' force=y
+orapwd file=orapworadb password='Password2026*' force=y
 ```
 
 Fungsi tambahan:
@@ -803,7 +803,7 @@ sqlplus sys/oracle@localhost:1521/oradb.localdomain as sysdba
 Login dengan password baru:
 
 ```bash
-sqlplus sys/'Cakgup2026*'@localhost:1521/oradb.localdomain as sysdba
+sqlplus sys/'Password2026*'@localhost:1521/oradb.localdomain as sysdba
 ```
 
 Catatan:
