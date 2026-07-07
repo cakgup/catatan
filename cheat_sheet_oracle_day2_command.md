@@ -1,6 +1,5 @@
 # Cheat Sheet Pelatihan Basis Data - 7 Juli 2026
 
-> Disusun ulang dari catatan pelatihan Oracle Database 19c tanggal 7 Juli 2026.  
 > Fokus materi: environment Oracle, SQL\*Plus, PDB, listener, password file, alias koneksi, perubahan port listener, redo log, archive log, dan penambahan redo log group.
 
 ---
@@ -41,7 +40,6 @@ Contoh informasi lab dari materi:
 ```text
 User Linux Oracle : oracle/oracle
 User Linux root   : root/oracle
-IP server         : 192.168.56.22
 Oracle SID        : oradb
 PDB               : PDB1
 Oracle version    : Oracle Database 19c
@@ -777,7 +775,7 @@ Jika berhasil, berarti password file kembali terbaca.
 Contoh dari materi:
 
 ```bash
-orapwd file=orapworadb password=Cakgup2026*
+orapwd file=orapworadb password=Password2026*
 ```
 
 Fungsi:
@@ -788,7 +786,7 @@ Fungsi:
 Versi yang lebih aman jika file sudah ada:
 
 ```bash
-orapwd file=orapworadb password='Cakgup2026*' force=y
+orapwd file=orapworadb password='Password2026*' force=y
 ```
 
 Fungsi tambahan:
@@ -805,7 +803,7 @@ sqlplus sys/oracle@localhost:1521/oradb.localdomain as sysdba
 Login dengan password baru:
 
 ```bash
-sqlplus sys/'Cakgup2026*'@localhost:1521/oradb.localdomain as sysdba
+sqlplus sys/'Password2026*'@localhost:1521/oradb.localdomain as sysdba
 ```
 
 Catatan:
