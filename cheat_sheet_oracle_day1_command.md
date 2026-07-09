@@ -1,749 +1,1010 @@
-# Cheat Sheet Command Oracle Day 1
+# Cheat Sheet Oracle Day 1 - Sesuai Silabus
 
-Ringkasan command Oracle Day 1 ini disusun secara berurutan untuk memudahkan latihan. Fokus materi meliputi arsitektur Oracle, startup/shutdown database, parameter file, SQL vs SQL\*Plus, listener, dan file penting Oracle.
+**Topik Silabus:** *Introduction to Enterprise Database Management and Oracle Architecture*  
+**Fokus:** konsep database enterprise, ekosistem Oracle, arsitektur instance/database, CDB/PDB, dan eksplorasi komponen Oracle.  
+**Tujuan belajar:** setelah menyelesaikan Day 1, Anda mampu membaca peta besar Oracle Database, membedakan instance dan database, mengenali struktur memory/process/file, serta memahami cara masuk ke CDB dan PDB untuk eksplorasi awal.
+
+> Catatan penyelarasan: beberapa command administrasi seperti startup/shutdown, parameter file, user/privilege, listener, dan konektivitas dibahas lebih lengkap pada Day 2 sesuai silabus. Di Day 1, command tersebut hanya dipakai secukupnya untuk eksplorasi arsitektur.
 
 ---
 
-## 1. Masuk ke SQL\*Plus sebagai SYSDBA
+## 0. Peta Silabus Day 1
 
-| Command | Fungsi |
+| Modul Silabus | Materi Inti | Fokus Cheat Sheet |
+|---|---|---|
+| Module 1 - Enterprise Database Fundamentals | Peran database, core/non-core system, tanggung jawab DBA, lifecycle operasional | Memahami konteks kerja DBA enterprise |
+| Module 2 - Introduction to Oracle Database | Produk Oracle, edition, deployment model, ekosistem Oracle | Memahami posisi Oracle Database dalam sistem enterprise |
+| Module 3 - Oracle Database Architecture | Instance, SGA/PGA, background process, struktur fisik/logis | Query eksplorasi `v$instance`, `v$database`, memory, process, file |
+| Module 4 - Oracle Multitenant Architecture | CDB, PDB, manfaat multitenant, pengelolaan CDB/PDB | Query CDB/PDB, pindah container, membuka PDB |
+| Hands-on Lab | Exploring architecture, identifying components, tools, connecting to CDB/PDB | Latihan command berurutan dengan contoh output |
+
+---
+
+## 1. Gambaran Besar Oracle Database Server
+
+Oracle Database Server terdiri dari dua kelompok besar:
+
+```text
+Oracle Database Server
+|
++-- Instance
+|   +-- Memory Structure
+|   |   +-- SGA
+|   |   +-- PGA
+|   |
+|   +-- Background Process
+|       +-- DBWn
+|       +-- LGWR
+|       +-- CKPT
+|       +-- SMON
+|       +-- PMON
+|       +-- ARCn
+|
++-- Database
+    +-- Datafile
+    +-- Controlfile
+    +-- Online Redo Log
+    +-- Tempfile
+    +-- Parameter File
+    +-- Password File
+    +-- Archive Log
+    +-- Diagnostic Files
+```
+
+Pemahaman kunci:
+
+| Istilah | Lokasi | Isi/Fungsi | Analogi |
+|---|---|---|---|
+| Instance | RAM + process OS | Memory dan background process untuk mengakses database | Mesin yang sedang hidup |
+| Database | Disk/storage | File fisik database | Data dan komponen permanen di storage |
+| SGA | Shared memory | Memory bersama untuk semua session | Ruang kerja bersama |
+| PGA | Private memory | Memory private tiap server process | Meja kerja personal tiap session |
+| Background process | OS process | Menulis data, redo, recovery, cleanup | Petugas operasional Oracle |
+| Physical files | Disk | Datafile, controlfile, redo log, tempfile, archive log | Berkas database yang tersimpan |
+
+---
+
+## 2. Informasi Lab dan Environment
+
+Contoh environment lab yang digunakan pada catatan:
+
+```text
+User Linux Oracle : oracle/oracle
+User Linux root   : root/oracle
+IP server         : 192.168.56.22
+Oracle SID        : oradb
+PDB               : PDB1
+Oracle Home       : /u01/app/oracle/product/19.0.0/db_1
+Oracle Base       : /u01/app/oracle
+```
+
+Nilai di atas dapat berbeda pada server lain. Prinsipnya, sebelum praktik DBA, selalu pastikan environment aktif.
+
+### 2.1 Cek environment Oracle
+
+```bash
+env | grep ORACLE
+```
+
+**Fungsi:** menampilkan variabel environment Oracle yang aktif.
+
+**Contoh output:**
+
+```text
+ORACLE_SID=oradb
+ORACLE_BASE=/u01/app/oracle
+ORACLE_HOME=/u01/app/oracle/product/19.0.0/db_1
+```
+
+**Cara membaca:**
+
+| Output | Arti |
 |---|---|
-| `sqlplus / as sysdba` | Masuk ke SQL\*Plus sebagai administrator database tanpa memasukkan password, biasanya dari server Oracle langsung. |
-| `CONNECT / AS SYSDBA` | Menghubungkan ulang session SQL\*Plus sebagai SYSDBA. |
+| `ORACLE_SID=oradb` | Instance lokal yang akan diakses adalah `oradb`. |
+| `ORACLE_BASE=/u01/app/oracle` | Direktori dasar instalasi dan diagnostic Oracle. |
+| `ORACLE_HOME=/u01/app/oracle/product/19.0.0/db_1` | Direktori software Oracle Database. |
 
-```sql
+### 2.2 Cek daftar database pada server
+
+```bash
+cat /etc/oratab
+```
+
+**Fungsi:** melihat SID yang terdaftar, Oracle Home, dan setting auto-start.
+
+**Contoh output:**
+
+```text
+oradb:/u01/app/oracle/product/19.0.0/db_1:Y
+```
+
+**Cara membaca:**
+
+```text
+SID:ORACLE_HOME:AUTO_START
+```
+
+| Bagian | Arti |
+|---|---|
+| `oradb` | Nama SID/instance. |
+| `/u01/app/oracle/product/19.0.0/db_1` | Lokasi Oracle Home. |
+| `Y` | Database dapat diikutkan dalam mekanisme auto-start Oracle. |
+
+---
+
+## 3. Masuk ke SQL\*Plus untuk Eksplorasi Arsitektur
+
+### 3.1 Login lokal sebagai SYSDBA
+
+```bash
 sqlplus / as sysdba
 ```
 
-```sql
-CONNECT / AS SYSDBA
-```
+**Fungsi:** login ke database sebagai administrator melalui OS authentication.
 
----
-
-## 2. Melihat Status Instance dan Database
-
-| Command | Fungsi |
-|---|---|
-| `SELECT status FROM v$instance;` | Melihat status instance Oracle, misalnya `STARTED`, `MOUNTED`, atau `OPEN`. |
-| `SELECT name, open_mode FROM v$database;` | Melihat nama database dan mode database, misalnya `READ WRITE`, `MOUNTED`, atau `READ ONLY`. |
-
-```sql
-SELECT status FROM v$instance;
-```
-
-```sql
-SELECT name, open_mode FROM v$database;
-```
-
----
-
-## 3. Startup Database
-
-Urutan startup Oracle:
+**Contoh output:**
 
 ```text
-NOMOUNT → MOUNT → OPEN
+SQL*Plus: Release 19.0.0.0.0 - Production on Tue Jul 7 08:10:00 2026
+
+Connected to:
+Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production
+
+SQL>
 ```
 
-| Command | Fungsi |
-|---|---|
-| `STARTUP NOMOUNT;` | Menyalakan instance saja. Oracle membaca parameter file, membuat SGA, dan menjalankan background process. Controlfile belum dibuka. |
-| `ALTER DATABASE MOUNT;` | Membuka controlfile. Database sudah mengetahui lokasi datafile dan redo log, tetapi belum bisa digunakan user umum. |
-| `ALTER DATABASE OPEN;` | Membuka datafile dan redo log sehingga database siap digunakan. |
-| `STARTUP;` | Menjalankan startup langsung sampai tahap `OPEN`. |
+**Cara membaca:** jika muncul `Connected to`, session sudah masuk ke database. Prompt berubah menjadi `SQL>`.
+
+### 3.2 Cek user aktif
 
 ```sql
-STARTUP NOMOUNT;
+SHOW USER;
 ```
 
-```sql
-ALTER DATABASE MOUNT;
+**Fungsi:** memastikan user/schema aktif.
+
+**Contoh output:**
+
+```text
+USER is "SYS"
 ```
 
-```sql
-ALTER DATABASE OPEN;
-```
-
-Atau langsung:
-
-```sql
-STARTUP;
-```
+**Makna:** Anda sedang login sebagai `SYS`. Karena login dilakukan `as sysdba`, posisi ini sangat kuat dan harus hati-hati.
 
 ---
 
-## 4. Shutdown Database
+## 4. Eksplorasi Instance dan Database
 
-| Command | Fungsi |
+### 4.1 Cek status instance
+
+```sql
+SELECT instance_name, status, database_status
+FROM v$instance;
+```
+
+**Fungsi:** melihat nama instance dan statusnya.
+
+**Contoh output:**
+
+```text
+INSTANCE_NAME    STATUS       DATABASE_STATUS
+---------------  -----------  -----------------
+oradb            OPEN         ACTIVE
+```
+
+**Cara membaca:**
+
+| Kolom | Arti |
 |---|---|
-| `SHUTDOWN NORMAL;` | Mematikan database secara normal. Oracle menunggu semua user logout terlebih dahulu. |
-| `SHUTDOWN TRANSACTIONAL;` | Mematikan database setelah transaksi aktif selesai. Tidak menerima transaksi baru. |
-| `SHUTDOWN IMMEDIATE;` | Mematikan database segera. Session aktif dihentikan, transaksi yang belum commit akan di-rollback otomatis. Ini paling sering dipakai. |
-| `SHUTDOWN ABORT;` | Mematikan database secara paksa. Tidak melakukan checkpoint normal. Saat startup berikutnya Oracle melakukan instance recovery. |
+| `INSTANCE_NAME` | Nama instance yang aktif. |
+| `STATUS` | Status instance: `STARTED`, `MOUNTED`, atau `OPEN`. |
+| `DATABASE_STATUS` | Kondisi database dari sisi instance. |
+
+### 4.2 Cek nama database dan mode open
 
 ```sql
-SHUTDOWN NORMAL;
+SELECT name, cdb, open_mode, log_mode
+FROM v$database;
 ```
+
+**Fungsi:** melihat nama database, apakah CDB, mode open, dan mode redo/archive.
+
+**Contoh output:**
+
+```text
+NAME   CDB  OPEN_MODE   LOG_MODE
+-----  ---  ----------  ------------
+ORADB  YES  READ WRITE  ARCHIVELOG
+```
+
+**Cara membaca:**
+
+| Kolom | Arti |
+|---|---|
+| `NAME` | Nama database. |
+| `CDB` | `YES` berarti database memakai multitenant CDB/PDB. |
+| `OPEN_MODE` | `READ WRITE` berarti database dapat dibaca dan ditulis. |
+| `LOG_MODE` | `ARCHIVELOG` atau `NOARCHIVELOG`. Detail recovery dibahas Day 3/5. |
+
+### 4.3 Cek startup time instance
 
 ```sql
-SHUTDOWN TRANSACTIONAL;
+SELECT instance_name, startup_time
+FROM v$instance;
 ```
 
-```sql
-SHUTDOWN IMMEDIATE;
+**Fungsi:** mengetahui kapan instance terakhir dinyalakan.
+
+**Contoh output:**
+
+```text
+INSTANCE_NAME    STARTUP_TIME
+---------------  -------------------
+oradb            07-JUL-26 07.58.32
 ```
 
-```sql
-SHUTDOWN ABORT;
-```
-
-Command yang paling umum dipakai DBA:
-
-```sql
-SHUTDOWN IMMEDIATE;
-```
+**Makna:** berguna untuk health check dan investigasi restart tak terencana.
 
 ---
 
-## 5. Melakukan Checkpoint Manual
+## 5. Memory Architecture: SGA dan PGA
 
-| Command | Fungsi |
-|---|---|
-| `ALTER SYSTEM CHECKPOINT;` | Meminta Oracle melakukan checkpoint, yaitu memastikan perubahan di buffer cache ditulis ke datafile oleh DBWn. |
+### 5.1 Cek ringkasan SGA
 
 ```sql
-ALTER SYSTEM CHECKPOINT;
+SHOW SGA;
 ```
 
-Catatan penting:
+**Fungsi:** melihat ukuran komponen utama SGA.
 
-- Yang menulis ke datafile adalah **DBWn**, bukan CKPT.
-- CKPT memberi sinyal ke DBWn dan memperbarui informasi checkpoint pada controlfile dan datafile header.
+**Contoh output:**
 
----
+```text
+Total System Global Area 1610612736 bytes
+Fixed Size                  8896704 bytes
+Variable Size             956301312 bytes
+Database Buffers          637534208 bytes
+Redo Buffers                7880704 bytes
+```
 
-## 6. Melihat Parameter Database
+**Cara membaca:**
 
-| Command | Fungsi |
+| Komponen | Fungsi |
 |---|---|
-| `SHOW PARAMETER` | Menampilkan seluruh parameter database. |
-| `SHOW PARAMETER sga;` | Melihat parameter terkait SGA, yaitu shared memory Oracle. |
-| `SHOW PARAMETER pga;` | Melihat parameter terkait PGA, yaitu memory private server process. |
-| `SHOW PARAMETER processes;` | Melihat batas maksimum jumlah process Oracle. |
-| `SHOW PARAMETER spfile;` | Melihat apakah database sedang menggunakan SPFILE dan lokasi file-nya. |
+| `Total System Global Area` | Total memory shared SGA. |
+| `Variable Size` | Termasuk shared pool, large pool, java pool, dan komponen dinamis lain. |
+| `Database Buffers` | Database buffer cache untuk block data. |
+| `Redo Buffers` | Redo log buffer untuk catatan perubahan sebelum ditulis LGWR. |
 
-```sql
-SHOW PARAMETER
-```
+### 5.2 Cek parameter SGA dan PGA
 
 ```sql
 SHOW PARAMETER sga;
-```
-
-```sql
 SHOW PARAMETER pga;
 ```
 
-```sql
-SHOW PARAMETER processes;
-```
+**Fungsi:** melihat parameter memory terkait SGA dan PGA.
 
-```sql
-SHOW PARAMETER spfile;
-```
-
----
-
-## 7. Membuat PFILE dari SPFILE
-
-| Command | Fungsi |
-|---|---|
-| `CREATE PFILE FROM SPFILE;` | Membuat file parameter berbentuk teks dari SPFILE. PFILE bisa dibaca dan diedit manual. |
-
-```sql
-CREATE PFILE FROM SPFILE;
-```
-
-Biasanya digunakan jika ingin melihat atau mengedit parameter database secara manual.
-
----
-
-## 8. Membuat SPFILE dari PFILE
-
-| Command | Fungsi |
-|---|---|
-| `CREATE SPFILE FROM PFILE;` | Membuat SPFILE baru dari PFILE. SPFILE adalah parameter file dalam format binary yang biasa digunakan Oracle saat startup. |
-
-```sql
-CREATE SPFILE FROM PFILE;
-```
-
-Catatan:
-
-Command ini dijalankan di SQL\*Plus sebagai SYSDBA.
-
----
-
-## 9. Mengubah Parameter Database
-
-| Command | Fungsi |
-|---|---|
-| `ALTER SYSTEM SET nama_parameter = nilai SCOPE=MEMORY;` | Mengubah parameter hanya di memory. Efeknya langsung berlaku, tetapi hilang setelah database restart. |
-| `ALTER SYSTEM SET nama_parameter = nilai SCOPE=SPFILE;` | Mengubah parameter di SPFILE. Efeknya berlaku setelah database restart. |
-| `ALTER SYSTEM SET nama_parameter = nilai SCOPE=BOTH;` | Mengubah parameter di memory dan SPFILE sekaligus, jika parameter tersebut mendukung perubahan dinamis. |
-
-```sql
-ALTER SYSTEM SET nama_parameter = nilai SCOPE=MEMORY;
-```
-
-```sql
-ALTER SYSTEM SET nama_parameter = nilai SCOPE=SPFILE;
-```
-
-```sql
-ALTER SYSTEM SET nama_parameter = nilai SCOPE=BOTH;
-```
-
-Contoh:
-
-```sql
-ALTER SYSTEM SET processes=400 SCOPE=SPFILE;
-```
-
-Fungsi command di atas:
-
-Mengubah jumlah maksimum process Oracle menjadi 400, tetapi baru berlaku setelah database restart.
-
-Restart database:
-
-```sql
-SHUTDOWN IMMEDIATE;
-STARTUP;
-```
-
-| Command | Fungsi |
-|---|---|
-| `SHUTDOWN IMMEDIATE;` | Mematikan database dengan aman dan cepat. |
-| `STARTUP;` | Menyalakan database kembali sampai mode `OPEN`. |
-
----
-
-## 10. Command SQL Dasar
-
-### SELECT
-
-| Command | Fungsi |
-|---|---|
-| `SELECT * FROM nama_tabel;` | Menampilkan seluruh data dari tabel. |
-
-```sql
-SELECT * FROM nama_tabel;
-```
-
-Contoh:
-
-```sql
-SELECT * FROM regions;
-```
-
-Fungsi:
-
-Menampilkan semua data dari tabel `regions`.
-
-### INSERT
-
-| Command | Fungsi |
-|---|---|
-| `INSERT INTO ... VALUES ...;` | Menambahkan data baru ke dalam tabel. |
-
-```sql
-INSERT INTO nama_tabel (kolom1, kolom2)
-VALUES (nilai1, nilai2);
-```
-
-### UPDATE
-
-| Command | Fungsi |
-|---|---|
-| `UPDATE ... SET ... WHERE ...;` | Mengubah data yang sudah ada di tabel berdasarkan kondisi tertentu. |
-
-```sql
-UPDATE nama_tabel
-SET kolom = nilai
-WHERE kondisi;
-```
-
-### DELETE
-
-| Command | Fungsi |
-|---|---|
-| `DELETE FROM ... WHERE ...;` | Menghapus data dari tabel berdasarkan kondisi tertentu. |
-
-```sql
-DELETE FROM nama_tabel
-WHERE kondisi;
-```
-
-Catatan:
-
-Hati-hati jika tidak memakai `WHERE`, karena semua data di tabel bisa terhapus.
-
-### CREATE TABLE
-
-| Command | Fungsi |
-|---|---|
-| `CREATE TABLE ...` | Membuat tabel baru. |
-
-```sql
-CREATE TABLE nama_tabel (
-  id NUMBER,
-  nama VARCHAR2(100)
-);
-```
-
-### ALTER TABLE
-
-| Command | Fungsi |
-|---|---|
-| `ALTER TABLE ... ADD ...` | Mengubah struktur tabel, misalnya menambah kolom baru. |
-
-```sql
-ALTER TABLE nama_tabel ADD kolom_baru VARCHAR2(50);
-```
-
-### DROP TABLE
-
-| Command | Fungsi |
-|---|---|
-| `DROP TABLE ...` | Menghapus tabel dari database. |
-
-```sql
-DROP TABLE nama_tabel;
-```
-
-Catatan:
-
-Command ini menghapus struktur tabel dan datanya.
-
----
-
-## 11. Command SQL\*Plus Dasar
-
-| Command | Fungsi |
-|---|---|
-| `SHOW USER;` | Melihat user/schema yang sedang aktif. |
-| `CONNECT username/password;` | Login ke user database tertentu. |
-| `CONNECT hr/hr;` | Login ke user HR dengan password HR. |
-| `CONNECT hr/hr@orclpdb;` | Login ke user HR pada service/PDB tertentu. |
-| `EXIT;` | Keluar dari SQL\*Plus. |
-| `SET LINESIZE 200;` | Mengatur lebar tampilan output agar tidak mudah terpotong. |
-| `SET PAGESIZE 100;` | Mengatur jumlah baris per halaman output. |
-| `SPOOL hasil.txt;` | Menyimpan output SQL\*Plus ke file. |
-| `SPOOL OFF;` | Menghentikan penyimpanan output ke file. |
-| `HOST ls` | Menjalankan command Linux dari dalam SQL\*Plus. |
-| `HOST dir` | Menjalankan command Windows dari dalam SQL\*Plus. |
-
-Contoh:
-
-```sql
-SHOW USER;
-```
-
-```sql
-CONNECT hr/hr;
-```
-
-```sql
-CONNECT hr/hr@orclpdb;
-```
-
-```sql
-EXIT;
-```
-
-```sql
-SET LINESIZE 200;
-```
-
-```sql
-SET PAGESIZE 100;
-```
-
-```sql
-SPOOL hasil.txt;
-SELECT * FROM regions;
-SPOOL OFF;
-```
-
-```sql
-HOST ls
-```
-
-Untuk Windows:
-
-```sql
-HOST dir
-```
-
----
-
-## 12. Bind Variable untuk Mengurangi Hard Parse
-
-Kurang baik:
-
-```sql
-SELECT *
-FROM emp
-WHERE empno = 100;
-```
-
-```sql
-SELECT *
-FROM emp
-WHERE empno = 101;
-```
-
-Fungsi:
-
-SQL di atas dianggap berbeda oleh Oracle karena nilainya berubah, sehingga berpotensi menyebabkan hard parse berulang.
-
-Lebih baik:
-
-```sql
-SELECT *
-FROM emp
-WHERE empno = :empno;
-```
-
-Fungsi:
-
-Menggunakan bind variable agar bentuk SQL tetap sama. Ini membantu Oracle menggunakan ulang parsed SQL dan execution plan di Shared Pool.
-
----
-
-## 13. Listener Command
-
-Command ini dijalankan dari terminal Linux/Windows, bukan dari SQL biasa.
-
-| Command | Fungsi |
-|---|---|
-| `lsnrctl status` | Melihat status listener, port, service yang terdaftar, dan lokasi listener log. |
-| `lsnrctl start` | Menjalankan listener. |
-| `lsnrctl stop` | Menghentikan listener. |
-| `lsnrctl reload` | Membaca ulang konfigurasi listener tanpa mematikan listener. |
-
-```bash
-lsnrctl status
-```
-
-```bash
-lsnrctl start
-```
-
-```bash
-lsnrctl stop
-```
-
-```bash
-lsnrctl reload
-```
-
-Catatan:
-
-Listener menerima request koneksi dari client, biasanya melalui port default:
+**Contoh output `SHOW PARAMETER sga`:**
 
 ```text
-1521
+NAME                      TYPE        VALUE
+------------------------- ----------- ----------
+allow_group_access_to_sga boolean     FALSE
+lock_sga                  boolean     FALSE
+pre_page_sga              boolean     TRUE
+sga_max_size              big integer 1536M
+sga_target                big integer 1536M
 ```
 
----
-
-## 14. Mengecek File Network Oracle
-
-File network utama:
+**Contoh output `SHOW PARAMETER pga`:**
 
 ```text
-listener.ora
-tnsnames.ora
-sqlnet.ora
+NAME                         TYPE        VALUE
+---------------------------- ----------- ----------
+pga_aggregate_limit          big integer 2G
+pga_aggregate_target         big integer 512M
 ```
 
-| File | Fungsi |
-|---|---|
-| `listener.ora` | Konfigurasi listener Oracle. |
-| `tnsnames.ora` | Daftar alias koneksi database dari sisi client/server. |
-| `sqlnet.ora` | Konfigurasi tambahan network Oracle, misalnya autentikasi dan naming method. |
-
-Lokasi umum:
-
-```bash
-$ORACLE_HOME/network/admin
-```
-
-| Command | Fungsi |
-|---|---|
-| `echo $ORACLE_HOME` | Melihat lokasi Oracle Home yang sedang aktif. |
-| `cd $ORACLE_HOME/network/admin` | Masuk ke folder konfigurasi network Oracle. |
-
-```bash
-echo $ORACLE_HOME
-```
-
-```bash
-cd $ORACLE_HOME/network/admin
-```
-
----
-
-## 15. Mengecek Lokasi Oracle Base dan Oracle Home
-
-| Command | Fungsi |
-|---|---|
-| `echo $ORACLE_BASE` | Melihat lokasi dasar instalasi Oracle. |
-| `echo $ORACLE_HOME` | Melihat lokasi software Oracle Database. |
-
-```bash
-echo $ORACLE_BASE
-```
-
-```bash
-echo $ORACLE_HOME
-```
-
-Contoh struktur umum:
-
-```bash
-/u01/app/oracle
-```
-
-```bash
-/u01/app/oracle/product/19c/dbhome_1
-```
-
-| Lokasi | Fungsi |
-|---|---|
-| `/u01/app/oracle` | Biasanya menjadi `ORACLE_BASE`. |
-| `/u01/app/oracle/product/19c/dbhome_1` | Biasanya menjadi `ORACLE_HOME`. |
-
----
-
-## 16. Melihat Alert Log dan Diagnostic File
-
-| Command | Fungsi |
-|---|---|
-| `cd $ORACLE_BASE/diag` | Masuk ke direktori diagnostic Oracle. |
-| `tail -f alert.log` | Membaca alert log secara real-time. |
-
-```bash
-cd $ORACLE_BASE/diag
-```
-
-```bash
-tail -f alert.log
-```
-
-Catatan:
-
-`alert.log` berisi informasi penting seperti startup, shutdown, error ORA, checkpoint, archivelog, dan masalah database lainnya.
-
----
-
-# Urutan Latihan Command yang Disarankan
-
-Bagian ini dapat digunakan sebagai alur praktik belajar Oracle Day 1.
-
-## A. Login sebagai SYSDBA
+### 5.3 Cek komponen SGA dinamis
 
 ```sql
-sqlplus / as sysdba
+SELECT component, current_size/1024/1024 AS current_mb
+FROM v$sga_dynamic_components
+WHERE current_size > 0
+ORDER BY component;
 ```
 
-Fungsi:
+**Fungsi:** melihat alokasi komponen SGA yang aktif.
 
-Masuk ke database sebagai administrator.
+**Contoh output:**
 
-## B. Cek Status Instance
+```text
+COMPONENT                  CURRENT_MB
+-------------------------  ----------
+DEFAULT buffer cache       608
+large pool                 16
+shared pool                512
+java pool                  16
+streams pool               0
+```
+
+**Cara membaca:** shared pool menyimpan parsed SQL/metadata; buffer cache menyimpan block data; large pool dipakai antara lain RMAN/shared server; java pool untuk JVM Oracle.
+
+### 5.4 Cek statistik PGA
 
 ```sql
-SELECT status FROM v$instance;
+SELECT name, value
+FROM v$pgastat
+WHERE name IN ('aggregate PGA target parameter','total PGA allocated','maximum PGA allocated');
 ```
 
-Fungsi:
+**Fungsi:** melihat kondisi pemakaian PGA.
 
-Mengetahui apakah instance masih `STARTED`, `MOUNTED`, atau sudah `OPEN`.
+**Contoh output:**
 
-## C. Cek Status Database
+```text
+NAME                            VALUE
+------------------------------- ----------
+aggregate PGA target parameter  536870912
+total PGA allocated             184549376
+maximum PGA allocated           402653184
+```
+
+**Makna:** nilai masih dalam bytes; bisa dibagi 1024/1024 untuk MB.
+
+---
+
+## 6. Shared Pool, Parsing, dan Bind Variable
+
+Shared Pool berisi antara lain parsed SQL, PL/SQL, execution plan, dan data dictionary cache. Tujuan utamanya adalah mengurangi **hard parse** dan meningkatkan **soft parse**.
+
+### 6.1 Contoh SQL yang kurang baik
+
+```sql
+SELECT * FROM emp WHERE empno = 100;
+SELECT * FROM emp WHERE empno = 101;
+```
+
+**Masalah:** bentuk SQL berubah karena nilai literal berbeda. Oracle dapat menganggapnya sebagai SQL berbeda sehingga shared pool lebih cepat penuh.
+
+### 6.2 Contoh SQL yang lebih baik dengan bind variable
+
+```sql
+VARIABLE v_empno NUMBER
+EXEC :v_empno := 100;
+SELECT * FROM emp WHERE empno = :v_empno;
+```
+
+**Fungsi:** mempertahankan bentuk SQL agar parsed SQL dan execution plan dapat digunakan ulang.
+
+**Contoh output:**
+
+```text
+EMPNO ENAME   JOB       MGR HIREDATE   SAL   COMM DEPTNO
+----- ------- -------- ---- --------- ----- ----- ------
+100   ADAMS   CLERK    7902 12-JAN-21 1000        20
+```
+
+**Catatan:** tabel `EMP` mungkin tidak ada di semua lab. Jika tidak ada, gunakan tabel sample lain seperti `HR.EMPLOYEES`.
+
+---
+
+## 7. Background Process Oracle
+
+### 7.1 Cek background process
+
+```sql
+SELECT pname, description
+FROM v$bgprocess
+WHERE pname IN ('DBW0','LGWR','CKPT','SMON','PMON','ARC0')
+ORDER BY pname;
+```
+
+**Fungsi:** melihat background process utama.
+
+**Contoh output:**
+
+```text
+PNAME  DESCRIPTION
+-----  ---------------------------------------------------
+ARC0   Archival Process 0
+CKPT   checkpoint
+DBW0   db writer process 0
+LGWR   Redo etc.
+PMON   process cleanup
+SMON   System Monitor Process
+```
+
+**Cara mengingat:**
+
+| Process | Fungsi singkat |
+|---|---|
+| `DBWn` | Menulis dirty block dari buffer cache ke datafile. |
+| `LGWR` | Menulis redo entries dari redo log buffer ke online redo log. |
+| `CKPT` | Memberi sinyal checkpoint dan update header/controlfile. |
+| `SMON` | Instance recovery dan cleanup sistem. |
+| `PMON` | Cleanup process/session yang gagal. |
+| `ARCn` | Mengarsipkan redo log saat ARCHIVELOG mode. |
+
+---
+
+## 8. Physical Database Structures
+
+### 8.1 Cek datafile
+
+```sql
+SELECT file#, name
+FROM v$datafile
+ORDER BY file#;
+```
+
+**Fungsi:** melihat file fisik yang menyimpan data permanen.
+
+**Contoh output:**
+
+```text
+FILE#  NAME
+-----  --------------------------------------------------
+1      /u01/app/oracle/oradata/ORADB/system01.dbf
+3      /u01/app/oracle/oradata/ORADB/sysaux01.dbf
+4      /u01/app/oracle/oradata/ORADB/undotbs01.dbf
+7      /u01/app/oracle/oradata/ORADB/users01.dbf
+```
+
+### 8.2 Cek tempfile
+
+```sql
+SELECT file#, name
+FROM v$tempfile
+ORDER BY file#;
+```
+
+**Fungsi:** melihat file fisik temporary tablespace.
+
+**Contoh output:**
+
+```text
+FILE#  NAME
+-----  --------------------------------------------------
+1      /u01/app/oracle/oradata/ORADB/temp01.dbf
+```
+
+### 8.3 Cek controlfile
+
+```sql
+SELECT name
+FROM v$controlfile;
+```
+
+**Fungsi:** melihat lokasi controlfile.
+
+**Contoh output:**
+
+```text
+NAME
+----------------------------------------------------------
+/u01/app/oracle/oradata/ORADB/control01.ctl
+/u01/app/oracle/fra/ORADB/control02.ctl
+```
+
+**Makna:** controlfile menyimpan metadata database seperti DBID, lokasi datafile, lokasi redo log, checkpoint SCN, dan informasi recovery.
+
+### 8.4 Cek online redo log file
+
+```sql
+SELECT group#, member
+FROM v$logfile
+ORDER BY group#;
+```
+
+**Fungsi:** melihat lokasi file redo log.
+
+**Contoh output:**
+
+```text
+GROUP#  MEMBER
+------  --------------------------------------------------
+1       /u01/app/oracle/oradata/ORADB/redo01.log
+2       /u01/app/oracle/oradata/ORADB/redo02.log
+3       /u01/app/oracle/oradata/ORADB/redo03.log
+```
+
+---
+
+## 9. Logical Database Structures
+
+Struktur logis adalah cara Oracle mengelompokkan data di dalam database.
+
+```text
+Database
++-- Tablespace
+    +-- Segment
+        +-- Extent
+            +-- Oracle Block
+```
+
+### 9.1 Cek tablespace
+
+```sql
+SELECT tablespace_name, contents, status
+FROM dba_tablespaces
+ORDER BY tablespace_name;
+```
+
+**Fungsi:** melihat daftar tablespace dan jenisnya.
+
+**Contoh output:**
+
+```text
+TABLESPACE_NAME  CONTENTS    STATUS
+---------------  ----------  -------
+SYSAUX           PERMANENT   ONLINE
+SYSTEM           PERMANENT   ONLINE
+TEMP             TEMPORARY   ONLINE
+UNDOTBS1         UNDO        ONLINE
+USERS            PERMANENT   ONLINE
+```
+
+### 9.2 Cek datafile per tablespace
+
+```sql
+SELECT tablespace_name, file_name, bytes/1024/1024 AS mb
+FROM dba_data_files
+ORDER BY tablespace_name, file_name;
+```
+
+**Fungsi:** melihat file fisik yang menjadi bagian dari tablespace.
+
+**Contoh output:**
+
+```text
+TABLESPACE_NAME  FILE_NAME                                      MB
+---------------  ---------------------------------------------  ----
+SYSTEM           /u01/app/oracle/oradata/ORADB/system01.dbf      900
+SYSAUX           /u01/app/oracle/oradata/ORADB/sysaux01.dbf      700
+USERS            /u01/app/oracle/oradata/ORADB/users01.dbf       100
+```
+
+### 9.3 Cek ukuran database block
+
+```sql
+SHOW PARAMETER db_block_size;
+```
+
+**Fungsi:** melihat ukuran Oracle block default.
+
+**Contoh output:**
+
+```text
+NAME           TYPE        VALUE
+-------------- ----------- -----
+db_block_size  integer     8192
+```
+
+**Makna:** `8192` bytes = 8 KB, default umum Oracle 19c.
+
+---
+
+## 10. Oracle Multitenant: CDB dan PDB
+
+### 10.1 Cek apakah database adalah CDB
+
+```sql
+SELECT name, cdb
+FROM v$database;
+```
+
+**Fungsi:** memastikan apakah database memakai arsitektur multitenant.
+
+**Contoh output:**
+
+```text
+NAME   CDB
+-----  ---
+ORADB  YES
+```
+
+### 10.2 Cek container aktif
+
+```sql
+SHOW CON_NAME;
+```
+
+**Fungsi:** melihat posisi session saat ini.
+
+**Contoh output:**
+
+```text
+CON_NAME
+------------------------------
+CDB$ROOT
+```
+
+**Makna:** session sedang berada di root container.
+
+### 10.3 Cek daftar PDB
+
+```sql
+SHOW PDBS;
+```
+
+**Fungsi:** menampilkan PDB yang ada dan status open-nya.
+
+**Contoh output:**
+
+```text
+    CON_ID CON_NAME                       OPEN MODE  RESTRICTED
+---------- ------------------------------ ---------- ----------
+         2 PDB$SEED                       READ ONLY  NO
+         3 PDB1                           READ WRITE NO
+```
+
+### 10.4 Cek PDB dengan query
+
+```sql
+SELECT con_id, name, open_mode
+FROM v$pdbs
+ORDER BY con_id;
+```
+
+**Fungsi:** alternatif query untuk melihat daftar PDB.
+
+**Contoh output:**
+
+```text
+CON_ID  NAME       OPEN_MODE
+------  ---------  ----------
+2       PDB$SEED   READ ONLY
+3       PDB1       READ WRITE
+```
+
+### 10.5 Pindah ke PDB1
+
+```sql
+ALTER SESSION SET CONTAINER = PDB1;
+```
+
+**Fungsi:** memindahkan konteks session dari `CDB$ROOT` ke `PDB1`.
+
+**Contoh output:**
+
+```text
+Session altered.
+```
+
+Verifikasi:
+
+```sql
+SHOW CON_NAME;
+```
+
+**Contoh output:**
+
+```text
+CON_NAME
+------------------------------
+PDB1
+```
+
+### 10.6 Kembali ke root container
+
+```sql
+ALTER SESSION SET CONTAINER = CDB$ROOT;
+```
+
+**Fungsi:** kembali ke root container.
+
+**Contoh output:**
+
+```text
+Session altered.
+```
+
+---
+
+## 11. SQL vs SQL\*Plus Command
+
+| Jenis | Contoh | Fungsi |
+|---|---|---|
+| SQL | `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `CREATE`, `ALTER`, `DROP` | Perintah ke database engine. |
+| SQL\*Plus | `SHOW`, `SET`, `SPOOL`, `HOST`, `CONNECT`, `EXIT` | Perintah client/tool SQL\*Plus. |
+
+### 11.1 Contoh SQL
 
 ```sql
 SELECT name, open_mode FROM v$database;
 ```
 
-Fungsi:
+**Fungsi:** query ke database.
 
-Melihat nama database dan apakah database sudah bisa digunakan.
-
-## D. Shutdown Database
-
-```sql
-SHUTDOWN IMMEDIATE;
-```
-
-Fungsi:
-
-Mematikan database dengan aman dan cepat.
-
-## E. Startup Bertahap
-
-```sql
-STARTUP NOMOUNT;
-```
-
-Fungsi:
-
-Menyalakan instance saja.
-
-```sql
-ALTER DATABASE MOUNT;
-```
-
-Fungsi:
-
-Membuka controlfile.
-
-```sql
-ALTER DATABASE OPEN;
-```
-
-Fungsi:
-
-Membuka database agar bisa digunakan.
-
-## F. Cek Parameter File
-
-```sql
-SHOW PARAMETER spfile;
-```
-
-Fungsi:
-
-Melihat apakah database menggunakan SPFILE.
-
-## G. Buat PFILE dari SPFILE
-
-```sql
-CREATE PFILE FROM SPFILE;
-```
-
-Fungsi:
-
-Membuat parameter file berbentuk teks dari SPFILE.
-
-## H. Buat SPFILE dari PFILE
-
-```sql
-CREATE SPFILE FROM PFILE;
-```
-
-Fungsi:
-
-Membuat ulang SPFILE dari PFILE.
-
-## I. Cek User Aktif
+### 11.2 Contoh SQL\*Plus
 
 ```sql
 SHOW USER;
+SET LINESIZE 200;
+SPOOL hasil_day1.txt;
+SELECT name, open_mode FROM v$database;
+SPOOL OFF;
 ```
 
-Fungsi:
+**Fungsi:** mengatur tampilan, menjalankan query, dan menyimpan output ke file.
 
-Melihat sedang login sebagai user apa.
+**Contoh output saat `SPOOL`:**
 
-## J. Login ke User HR
+```text
+SQL> SPOOL hasil_day1.txt
+SQL> SELECT name, open_mode FROM v$database;
 
-```sql
-CONNECT hr/hr@orclpdb;
+NAME   OPEN_MODE
+-----  ----------
+ORADB  READ WRITE
+
+SQL> SPOOL OFF
 ```
 
-Fungsi:
+---
 
-Login ke schema HR pada PDB/service tertentu.
+## 12. Oracle Administration Tools yang Perlu Dikenal
 
-## K. Query Tabel
+| Tool | Command | Fungsi |
+|---|---|---|
+| SQL\*Plus | `sqlplus` | Tool command-line utama untuk query dan administrasi. |
+| Listener Control | `lsnrctl` | Mengelola listener Oracle Net. Detail Day 2. |
+| Net Configuration Assistant | `netca` | Wizard konfigurasi alias/listener. Detail Day 2. |
+| Net Manager | `netmgr` | GUI konfigurasi network Oracle. Detail Day 2. |
+| RMAN | `rman` | Backup dan recovery. Detail Day 5. |
+| ADRCI | `adrci` | Diagnostic repository/log. Dipakai untuk troubleshooting. |
 
-```sql
-SELECT * FROM regions;
+### 12.1 Cek versi SQL\*Plus
+
+```bash
+sqlplus -v
 ```
 
-Fungsi:
+**Fungsi:** melihat versi SQL\*Plus client.
 
-Menampilkan isi tabel `regions`.
+**Contoh output:**
 
-## L. Keluar dari SQL\*Plus
-
-```sql
-EXIT;
+```text
+SQL*Plus: Release 19.0.0.0.0 - Production
+Version 19.3.0.0.0
 ```
 
-Fungsi:
-
-Menutup session SQL\*Plus.
-
-## M. Cek Listener dari Terminal
+### 12.2 Cek listener secara ringkas
 
 ```bash
 lsnrctl status
 ```
 
-Fungsi:
+**Fungsi:** melihat listener, endpoint, dan service. Detail konfigurasi masuk Day 2.
 
-Melihat apakah listener aktif dan service database sudah terdaftar.
+**Contoh output ringkas:**
 
-```bash
-lsnrctl start
+```text
+Connecting to (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=srv1.localdomain)(PORT=1521)))
+STATUS of the LISTENER
+Alias                     LISTENER
+Version                   TNSLSNR for Linux: Version 19.0.0.0.0
+Start Date                07-JUL-2026 08:00:10
+Services Summary...
+Service "oradb.localdomain" has 1 instance(s).
+  Instance "oradb", status READY, has 1 handler(s) for this service...
 ```
-
-Fungsi:
-
-Menjalankan listener.
-
-```bash
-lsnrctl stop
-```
-
-Fungsi:
-
-Menghentikan listener.
-
-```bash
-lsnrctl reload
-```
-
-Fungsi:
-
-Membaca ulang konfigurasi listener.
 
 ---
 
-# Versi Super Ringkas untuk Dihafal
+## 13. Lab Day 1 - Alur Praktik Sistematis
 
-| Urutan | Command | Fungsi Singkat |
-|---:|---|---|
-| 1 | `sqlplus / as sysdba` | Login sebagai DBA. |
-| 2 | `SELECT status FROM v$instance;` | Cek status instance. |
-| 3 | `SELECT name, open_mode FROM v$database;` | Cek status database. |
-| 4 | `SHUTDOWN IMMEDIATE;` | Matikan database dengan aman. |
-| 5 | `STARTUP NOMOUNT;` | Nyalakan instance. |
-| 6 | `ALTER DATABASE MOUNT;` | Baca controlfile. |
-| 7 | `ALTER DATABASE OPEN;` | Buka database. |
-| 8 | `SHOW PARAMETER spfile;` | Cek SPFILE. |
-| 9 | `CREATE PFILE FROM SPFILE;` | Buat PFILE dari SPFILE. |
-| 10 | `CREATE SPFILE FROM PFILE;` | Buat SPFILE dari PFILE. |
-| 11 | `SHOW USER;` | Cek user aktif. |
-| 12 | `CONNECT hr/hr@orclpdb;` | Login ke HR. |
-| 13 | `SELECT * FROM regions;` | Query tabel. |
-| 14 | `EXIT;` | Keluar SQL\*Plus. |
-| 15 | `lsnrctl status` | Cek listener. |
-| 16 | `lsnrctl start` | Jalankan listener. |
-| 17 | `lsnrctl stop` | Hentikan listener. |
-| 18 | `lsnrctl reload` | Reload konfigurasi listener. |
+Gunakan alur ini saat mengulang materi Day 1.
+
+### A. Cek environment
+
+```bash
+env | grep ORACLE
+cat /etc/oratab
+```
+
+**Hasil yang diharapkan:** `ORACLE_SID`, `ORACLE_BASE`, `ORACLE_HOME`, dan SID di `/etc/oratab` sesuai lab.
+
+### B. Login sebagai SYSDBA
+
+```bash
+sqlplus / as sysdba
+```
+
+**Hasil yang diharapkan:** muncul prompt `SQL>`.
+
+### C. Identifikasi instance dan database
+
+```sql
+SELECT instance_name, status FROM v$instance;
+SELECT name, cdb, open_mode FROM v$database;
+```
+
+**Hasil yang diharapkan:** status `OPEN`, `CDB=YES`, dan database `READ WRITE`.
+
+### D. Eksplorasi memory
+
+```sql
+SHOW SGA;
+SHOW PARAMETER sga;
+SHOW PARAMETER pga;
+```
+
+**Hasil yang diharapkan:** terlihat ukuran SGA dan PGA.
+
+### E. Eksplorasi file fisik
+
+```sql
+SELECT name FROM v$controlfile;
+SELECT file#, name FROM v$datafile ORDER BY file#;
+SELECT group#, member FROM v$logfile ORDER BY group#;
+```
+
+**Hasil yang diharapkan:** terlihat controlfile, datafile, dan redo log file.
+
+### F. Eksplorasi struktur logis
+
+```sql
+SELECT tablespace_name, contents, status FROM dba_tablespaces ORDER BY tablespace_name;
+```
+
+**Hasil yang diharapkan:** terdapat `SYSTEM`, `SYSAUX`, `TEMP`, `UNDOTBS1`, dan `USERS`.
+
+### G. Eksplorasi CDB/PDB
+
+```sql
+SHOW CON_NAME;
+SHOW PDBS;
+ALTER SESSION SET CONTAINER = PDB1;
+SHOW CON_NAME;
+ALTER SESSION SET CONTAINER = CDB$ROOT;
+```
+
+**Hasil yang diharapkan:** bisa berpindah dari `CDB$ROOT` ke `PDB1` dan kembali lagi.
+
+---
+
+## 14. Troubleshooting Ringkas Day 1
+
+### 14.1 `sqlplus: command not found`
+
+**Kemungkinan penyebab:** `ORACLE_HOME/bin` belum ada di `PATH`.
+
+Cek:
+
+```bash
+echo $ORACLE_HOME
+echo $PATH
+```
+
+Solusi sementara:
+
+```bash
+export PATH=$ORACLE_HOME/bin:$PATH
+```
+
+### 14.2 `ORA-01034: ORACLE not available`
+
+**Kemungkinan penyebab:** instance belum hidup atau `ORACLE_SID` salah.
+
+Cek:
+
+```bash
+echo $ORACLE_SID
+ps -ef | grep pmon
+```
+
+Jika memang database belum hidup, materi startup ada pada Day 2.
+
+### 14.3 `ORA-65011: Pluggable database PDB1 does not exist`
+
+**Kemungkinan penyebab:** nama PDB berbeda.
+
+Cek:
+
+```sql
+SHOW PDBS;
+SELECT name FROM v$pdbs;
+```
+
+Gunakan nama PDB yang muncul pada output.
+
+### 14.4 `ORA-00942: table or view does not exist`
+
+**Kemungkinan penyebab:** object tidak ada di schema aktif atau privilege kurang.
+
+Cek posisi:
+
+```sql
+SHOW USER;
+SHOW CON_NAME;
+```
+
+---
+
+## 15. Checklist Kompetensi Day 1
+
+```text
+[ ] Saya bisa menjelaskan peran database dalam enterprise system.
+[ ] Saya bisa membedakan core system dan non-core system dari sisi kebutuhan database.
+[ ] Saya bisa menjelaskan tanggung jawab DBA dalam availability, integrity, security, dan sustainability.
+[ ] Saya bisa membedakan instance dan database.
+[ ] Saya bisa menjelaskan SGA dan PGA.
+[ ] Saya bisa menyebutkan fungsi DBWn, LGWR, CKPT, SMON, PMON, dan ARCn.
+[ ] Saya bisa mengidentifikasi datafile, controlfile, redo log, dan tempfile.
+[ ] Saya bisa menjelaskan struktur logis tablespace, segment, extent, dan block.
+[ ] Saya bisa mengecek apakah database adalah CDB.
+[ ] Saya bisa melihat daftar PDB dan berpindah container.
+[ ] Saya bisa membedakan SQL dan SQL*Plus command.
+```
+
+---
+
+## 16. Mini Latihan Ujian Lisan Day 1
+
+1. Apa perbedaan instance dan database?
+2. Mengapa SGA disebut shared memory?
+3. Apa perbedaan SGA dan PGA?
+4. Apa fungsi LGWR dan DBWn?
+5. Mengapa controlfile sangat penting?
+6. Apa fungsi online redo log?
+7. Apa perbedaan physical structure dan logical structure?
+8. Apa bedanya CDB dan PDB?
+9. Mengapa PDB memudahkan konsolidasi database?
+10. Mengapa bind variable dapat mengurangi hard parse?
+
+---
+
+## 17. Jawaban Singkat Mini Latihan
+
+1. Instance adalah memory dan process yang hidup di RAM/OS; database adalah file fisik di storage.
+2. Karena SGA dipakai bersama oleh banyak session Oracle.
+3. SGA shared untuk instance, sedangkan PGA private untuk server process/session tertentu.
+4. LGWR menulis redo entries ke redo log; DBWn menulis dirty block ke datafile.
+5. Controlfile menyimpan metadata penting seperti lokasi datafile, redo log, checkpoint, DBID, dan informasi recovery.
+6. Online redo log menyimpan catatan perubahan untuk recovery.
+7. Physical structure adalah file di disk; logical structure adalah organisasi data seperti tablespace, segment, extent, dan block.
+8. CDB adalah container database; PDB adalah pluggable database di dalam CDB.
+9. Karena beberapa PDB dapat berbagi instance dan CDB yang sama, sehingga administrasi lebih efisien.
+10. Karena bentuk SQL tetap sama sehingga parsed SQL dan execution plan dapat digunakan ulang.
+
+---
+
+## 18. Command Paling Penting Day 1
+
+```bash
+env | grep ORACLE
+cat /etc/oratab
+sqlplus / as sysdba
+sqlplus -v
+```
+
+```sql
+SHOW USER;
+SHOW CON_NAME;
+SHOW PDBS;
+SELECT instance_name, status, database_status FROM v$instance;
+SELECT name, cdb, open_mode, log_mode FROM v$database;
+SHOW SGA;
+SHOW PARAMETER sga;
+SHOW PARAMETER pga;
+SELECT component, current_size/1024/1024 AS current_mb FROM v$sga_dynamic_components WHERE current_size > 0 ORDER BY component;
+SELECT pname, description FROM v$bgprocess WHERE pname IN ('DBW0','LGWR','CKPT','SMON','PMON','ARC0') ORDER BY pname;
+SELECT file#, name FROM v$datafile ORDER BY file#;
+SELECT name FROM v$controlfile;
+SELECT group#, member FROM v$logfile ORDER BY group#;
+SELECT tablespace_name, contents, status FROM dba_tablespaces ORDER BY tablespace_name;
+ALTER SESSION SET CONTAINER = PDB1;
+ALTER SESSION SET CONTAINER = CDB$ROOT;
+```
+
+---
+
+## 19. Catatan Keamanan Day 1
+
+- Hindari menjalankan command perubahan struktur pada database production saat masih belajar.
+- Gunakan `SELECT` dan `SHOW` untuk eksplorasi awal.
+- Jangan menghapus file fisik database, mengubah parameter, atau shutdown database production tanpa prosedur resmi.
+- Untuk latihan, gunakan VM/lab seperti environment pelatihan.
