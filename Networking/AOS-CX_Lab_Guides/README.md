@@ -1,6 +1,7 @@
 # AOS-CX Lab Guides
 
 Download PNETLab https://pnetlab.com/pages/download
+
 Paket ini berisi tujuh panduan praktik Aruba AOS-CX yang sudah ditulis ulang sebagai **modul belajar berbahasa Indonesia**. Judul asli setiap panduan tetap dipertahankan agar mudah dicocokkan dengan PDF sumber.
 
 > **Catatan penting:** sintaks CLI tetap menggunakan bahasa asli perangkat. Yang diterjemahkan adalah tujuan, konsep, langkah kerja, cara membaca output, dan troubleshooting.
