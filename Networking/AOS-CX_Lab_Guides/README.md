@@ -1,4 +1,4 @@
-# AOS-CX Lab Guides — Versi Bahasa Indonesia
+# AOS-CX Lab Guides
 
 Paket ini berisi tujuh panduan praktik Aruba AOS-CX yang sudah ditulis ulang sebagai **modul belajar berbahasa Indonesia**. Judul asli setiap panduan tetap dipertahankan agar mudah dicocokkan dengan PDF sumber.
 
