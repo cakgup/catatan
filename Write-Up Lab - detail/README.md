@@ -1,14 +1,6 @@
-# Pembahasan Detail 4 Lab Pentest — Versi Lesson in Depth v2
+# Pembahasan Detail 4 Lab Pentest
 
 > Untuk pembelajaran pada lab/CTF/sistem yang telah memberikan izin pengujian.
-
-Versi v2 ini memperbaiki alur agar **tidak ada tahapan yang melompat**. Setiap lab dijelaskan dari:
-- cara menemukan celah awal;
-- cara memperoleh evidence;
-- command yang digunakan;
-- contoh output;
-- makna output;
-- lanjutan sampai root dan pencarian flag.
 
 ## File
 
