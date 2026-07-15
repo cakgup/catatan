@@ -6,17 +6,16 @@
 
 ## Daftar Isi
 
-1. [Cara Menggunakan Panduan Ini](#cara-menggunakan-panduan-ini)
-2. [Peta Besar Materi Lima Hari](#peta-besar-materi-lima-hari)
-3. [Day 1 - Aruba ESP, Campus Architecture, Aruba Central, VSX, dan OSPF](#day-1---aruba-esp-campus-architecture-aruba-central-vsx-dan-ospf)
-4. [Day 2 - AOS 10 Gateway, Gateway Cluster, dan Tunnel WLAN](#day-2---aos-10-gateway-gateway-cluster-dan-tunnel-wlan)
-5. [Day 3 - Secure Enterprise WLAN, RADIUS, Role, dan Guest Access](#day-3---secure-enterprise-wlan-radius-role-dan-guest-access)
-6. [Day 4 - MPSK IoT, Mixed Mode, Wired Authentication, dan Dynamic Segmentation](#day-4---mpsk-iot-mixed-mode-wired-authentication-dan-dynamic-segmentation)
-7. [Day 5 - VXLAN, GBP, Security, QoS, dan Monitoring](#day-5---vxlan-gbp-security-qos-dan-monitoring)
-8. [Cheat Sheet Perintah Penting](#cheat-sheet-perintah-penting)
-9. [Troubleshooting Berdasarkan Gejala](#troubleshooting-berdasarkan-gejala)
-10. [Glosarium](#glosarium)
-11. [Rencana Belajar dan Latihan](#rencana-belajar-dan-latihan)
+1. [Peta Besar Materi Lima Hari](#peta-besar-materi-lima-hari)
+2. [Day 1 - Aruba ESP, Campus Architecture, Aruba Central, VSX, dan OSPF](#day-1---aruba-esp-campus-architecture-aruba-central-vsx-dan-ospf)
+3. [Day 2 - AOS 10 Gateway, Gateway Cluster, dan Tunnel WLAN](#day-2---aos-10-gateway-gateway-cluster-dan-tunnel-wlan)
+4. [Day 3 - Secure Enterprise WLAN, RADIUS, Role, dan Guest Access](#day-3---secure-enterprise-wlan-radius-role-dan-guest-access)
+5. [Day 4 - MPSK IoT, Mixed Mode, Wired Authentication, dan Dynamic Segmentation](#day-4---mpsk-iot-mixed-mode-wired-authentication-dan-dynamic-segmentation)
+6. [Day 5 - VXLAN, GBP, Security, QoS, dan Monitoring](#day-5---vxlan-gbp-security-qos-dan-monitoring)
+7. [Cheat Sheet Perintah Penting](#cheat-sheet-perintah-penting)
+8. [Troubleshooting Berdasarkan Gejala](#troubleshooting-berdasarkan-gejala)
+9. [Glosarium](#glosarium)
+10. [Rencana Belajar dan Latihan](#rencana-belajar-dan-latihan)
 
 ---
 
