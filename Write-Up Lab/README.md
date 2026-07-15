@@ -1,95 +1,64 @@
-# Write-Up Lab — Panduan Belajar Ujian Close Book
+# Write-Up Lab — Versi Ujian Close Book
 
-Folder ini berisi catatan privilege escalation untuk **laboratorium yang telah memberikan izin pengujian**.
+> Folder ini berisi catatan lab privilege escalation untuk **laboratorium/sistem yang telah memberikan izin pengujian**.
 
-Semua write-up menggunakan pola yang sama agar peserta tidak perlu menghafal bentuk dokumen yang berbeda-beda.
+Fokus versi ini adalah **cepat sampai root/flag saat ujian close book**. Bagian backup, cleanup, dan enumerasi panjang tidak dijadikan alur utama. Untuk latihan biasa, cleanup tetap baik dilakukan.
 
 ## Daftar Lab
 
-| Lab | Jalur Serangan | Mnemonic |
-|---|---|---|
-| Catalina | Tomcat Manager → WAR → RCE → writable root cron → root | `R-C-W-C-R` |
-| Gazette | SQLi → credential → SSH → Dirty Pipe → root | `S-D-S-K-P-R` |
-| Portrait | SQLi → admin → upload PHP → capability Python → root | `R-S-U-C-R` |
-| Statute | Path Traversal → `.env` → SSH → `sudo vim` → root | `R-D-T-S-V-R` |
+| Lab | Target | Jalur Cepat | Catatan Flag |
+|---|---:|---|---|
+| Catalina | `192.168.56.122:8081` | Tomcat Manager → WAR → `tomcat` → writable root cron → SUID bash | Sudah terbukti ada `/root/FLAG.txt` |
+| Gazette | `192.168.56.121:8000` | SQLi → credential → SSH `editor` → Dirty Pipe → UID 0 | Cari dulu dengan `find / -type f -iname "*flag*" 2>/dev/null` |
+| Portrait | `192.168.56.118:8080` | SQLi → admin → upload PHP → Python capability → root | Cari dulu dengan `find / -type f -iname "*flag*" 2>/dev/null` |
+| Statute | `192.168.56.120:8080` | Path Traversal → `.env` → SSH `operator` → `sudo vim` → root | Cari dulu dengan `find / -type f -iname "*flag*" 2>/dev/null` |
 
-## Pola Baku Setiap Write-Up
-
-1. **Cara menggunakan catatan**
-2. **Peta serangan**
-3. **Mnemonic**
-4. **Checkpoint ujian**
-5. **Fase serangan secara berurutan**
-6. **Troubleshooting inti**
-7. **Cleanup**
-8. **Cheat sheet 60 detik**
-9. **Checklist ujian**
-10. **Kalimat hafalan**
-11. **Lampiran kode**, apabila ada kode panjang
-
-Di setiap fase, fokus pada empat pertanyaan:
+## Prinsip Ujian
 
 ```text
-Apa tujuannya?
-Command apa yang dijalankan?
-Output apa yang dicari?
-Mengapa output itu penting?
+1. Hafalkan alur, bukan semua output.
+2. Validasi user awal dengan id/whoami.
+3. Langsung jalankan jalur privilege escalation yang sudah diketahui.
+4. Setelah root, cari flag dengan find apabila path belum diketahui.
+5. Cleanup tidak dimasukkan ke alur utama ujian.
 ```
 
-## Metode Belajar Tiga Putaran
+## Command Cari Flag
 
-### Putaran 1 — Hafalkan Alur
+```bash
+find / -type f -iname "*flag*" 2>/dev/null
+```
 
-Baca hanya:
+Kalau sudah ketemu path-nya:
 
-- peta serangan;
-- mnemonic;
-- kalimat hafalan.
+```bash
+cat /path/flag
+```
 
-Targetnya adalah mampu menceritakan jalur serangan tanpa melihat catatan.
-
-### Putaran 2 — Hafalkan Checkpoint
-
-Untuk setiap fase, ingat satu indikator utama.
-
-Contoh:
+## Mnemonic
 
 ```text
-401 Tomcat Manager
-→ credential valid
-→ uid tomcat
-→ cron root
-→ script group-writable
-→ euid 0
+Catalina = T-W-C-R-F
+Tomcat → WAR → Cron → Root → Find FLAG
+
+Gazette = S-S-D-R-F
+SQLi → SSH → DirtyPipe → Root → Find FLAG
+
+Portrait = S-U-C-R-F
+SQLi → Upload → Capability → Root → Find FLAG
+
+Statute = T-E-S-V-F
+Traversal → Env → SSH → Vim → Find FLAG
 ```
 
-### Putaran 3 — Latihan Command
-
-Ketik ulang command dari bagian **Cheat Sheet 60 Detik** tanpa menyalin.
-
-Jangan menghafal seluruh output. Hafalkan hanya bagian yang membuktikan bahwa fase tersebut berhasil.
-
-## Aturan Saat Ujian
-
-```text
-1. Recon terlebih dahulu.
-2. Jangan menebak jalur exploit tanpa bukti.
-3. Catat user saat ini dengan id dan whoami.
-4. Cari jalur privilege escalation yang paling sederhana.
-5. Verifikasi root dengan id dan whoami.
-6. Pulihkan perubahan dan hapus artefak pengujian.
-```
-
-## Format Ringkasan Jawaban
-
-Gunakan pola berikut ketika diminta menjelaskan hasil pengujian:
+## Format Jawaban Singkat
 
 ```text
 Celah awal:
 Foothold:
 User awal:
-Temuan privilege escalation:
-Cara memperoleh root:
+Privilege escalation:
 Bukti root:
-Cleanup:
+Lokasi flag:
+Isi flag:
 ```
