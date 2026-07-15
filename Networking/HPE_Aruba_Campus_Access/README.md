@@ -6,43 +6,16 @@
 
 ## Daftar Isi
 
-1. [Cara Menggunakan Panduan Ini](#cara-menggunakan-panduan-ini)
-2. [Peta Besar Materi Lima Hari](#peta-besar-materi-lima-hari)
-3. [Day 1 - Aruba ESP, Campus Architecture, Aruba Central, VSX, dan OSPF](#day-1---aruba-esp-campus-architecture-aruba-central-vsx-dan-ospf)
-4. [Day 2 - AOS 10 Gateway, Gateway Cluster, dan Tunnel WLAN](#day-2---aos-10-gateway-gateway-cluster-dan-tunnel-wlan)
-5. [Day 3 - Secure Enterprise WLAN, RADIUS, Role, dan Guest Access](#day-3---secure-enterprise-wlan-radius-role-dan-guest-access)
-6. [Day 4 - MPSK IoT, Mixed Mode, Wired Authentication, dan Dynamic Segmentation](#day-4---mpsk-iot-mixed-mode-wired-authentication-dan-dynamic-segmentation)
-7. [Day 5 - VXLAN, GBP, Security, QoS, dan Monitoring](#day-5---vxlan-gbp-security-qos-dan-monitoring)
-8. [Cheat Sheet Perintah Penting](#cheat-sheet-perintah-penting)
-9. [Troubleshooting Berdasarkan Gejala](#troubleshooting-berdasarkan-gejala)
-10. [Glosarium](#glosarium)
-11. [Rencana Belajar dan Latihan](#rencana-belajar-dan-latihan)
-
----
-
-# Cara Menggunakan Panduan Ini
-
-Gunakan pola belajar berikut pada setiap topik:
-
-1. **Pahami tujuan desainnya.** Jangan langsung menghafal menu atau perintah.
-2. **Gambar alur paket.** Tentukan siapa mengirim paket, siapa mengambil keputusan, dan di mana kebijakan diterapkan.
-3. **Konfigurasikan dari bawah ke atas:** konektivitas dasar, layanan, autentikasi, lalu kebijakan.
-4. **Verifikasi setiap lapisan.** Jangan menunggu seluruh konfigurasi selesai untuk melakukan pengujian.
-5. **Latih skenario gagal.** Cabut link, matikan RADIUS, ubah role, dan periksa apakah sistem berperilaku sesuai desain.
-
-> **Prinsip utama:** jaringan kampus modern bukan hanya soal VLAN dan routing. Aruba menggabungkan **underlay**, **overlay**, **identitas pengguna/perangkat**, **role-based policy**, dan **cloud management**.
-
-## Cara Membaca Visualisasi
-
-Setiap gambar penting disertai penjelasan **cara membaca**. Gunakan pola berikut:
-
-1. Temukan **endpoint** dan perangkat pertama yang menerima traffic: AP atau access switch.
-2. Tentukan apakah traffic berjalan secara **bridge**, **GRE tunnel**, atau **VXLAN overlay**.
-3. Cari perangkat yang membuat keputusan: Aruba Central, gateway, switch, atau ClearPass/RADIUS.
-4. Identifikasi hasil keputusan berupa **role, VLAN, policy, route, atau queue QoS**.
-5. Ikuti arah panah untuk memahami jalur normal, lalu bayangkan apa yang terjadi bila salah satu link, gateway, atau server gagal.
-
-> **Catatan:** nomor halaman pada caption merujuk pada halaman PDF sumber, bukan nomor halaman di dokumen Markdown ini.
+1. [Peta Besar Materi Lima Hari](#peta-besar-materi-lima-hari)
+2. [Day 1 - Aruba ESP, Campus Architecture, Aruba Central, VSX, dan OSPF](#day-1---aruba-esp-campus-architecture-aruba-central-vsx-dan-ospf)
+3. [Day 2 - AOS 10 Gateway, Gateway Cluster, dan Tunnel WLAN](#day-2---aos-10-gateway-gateway-cluster-dan-tunnel-wlan)
+4. [Day 3 - Secure Enterprise WLAN, RADIUS, Role, dan Guest Access](#day-3---secure-enterprise-wlan-radius-role-dan-guest-access)
+5. [Day 4 - MPSK IoT, Mixed Mode, Wired Authentication, dan Dynamic Segmentation](#day-4---mpsk-iot-mixed-mode-wired-authentication-dan-dynamic-segmentation)
+6. [Day 5 - VXLAN, GBP, Security, QoS, dan Monitoring](#day-5---vxlan-gbp-security-qos-dan-monitoring)
+7. [Cheat Sheet Perintah Penting](#cheat-sheet-perintah-penting)
+8. [Troubleshooting Berdasarkan Gejala](#troubleshooting-berdasarkan-gejala)
+9. [Glosarium](#glosarium)
+10. [Rencana Belajar dan Latihan](#rencana-belajar-dan-latihan)
 
 ---
 
@@ -68,19 +41,6 @@ flowchart LR
     G --- D
     G --- F
 ```
-
----
-
-
-## Indeks Visualisasi Inti
-
-| Hari | Visual yang Wajib Dipahami |
-|---|---|
-| Day 1 | Aruba ESP, three-tier campus, centralized vs distributed overlay, VSX, Active Gateway, multi-area OSPF, BFD |
-| Day 2 | Tanggung jawab AOS 10, gateway cluster, tunnel forwarding, alur tunneled client, DDG |
-| Day 3 | Opsi keamanan WLAN, aktor 802.1X, urutan koneksi, role derivation, guest/captive portal |
-| Day 4 | MPSK, ClearPass, mixed forwarding, wired 802.1X, dynamic segmentation |
-| Day 5 | Distributed overlay, struktur VXLAN, EVPN, micro-segmentation, AirMatch, QoS, Device Insights |
 
 # Day 1 - Aruba ESP, Campus Architecture, Aruba Central, VSX, dan OSPF
 
