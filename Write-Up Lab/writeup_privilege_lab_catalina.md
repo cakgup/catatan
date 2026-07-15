@@ -17,7 +17,8 @@ Cron root     = /etc/cron.d/backup
 Script vuln   = /opt/backup/backup.sh
 Root shell    = /tmp/rootbash -p
 Cari flag     = find / -type f -iname "*flag*" 2>/dev/null
-Flag terbukti = /root/FLAG.txt
+Flag terbukti = /root/FLAG.txt (FLAG{cr0n_wr173_2_5u1d_r007b45h}), /home/tomcat/FLAG.txt (FLAG{w4r_d3pl0y_7h3n_c474l1n4_5h3ll})
+
 ```
 
 Inti celah:
