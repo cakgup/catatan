@@ -28,10 +28,13 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.indexes
+    - navigation.instant
+    - navigation.path
     - navigation.top
     - toc.follow
     - search.highlight
     - search.suggest
+    - header.autohide
     - content.code.copy
 
 plugins:
@@ -58,50 +61,55 @@ markdown_extensions:
 nav:
   - Beranda: index.md
   - Networking:
-      - AOS-CX Lab Guides:
-          - Ringkasan: Networking/AOS-CX_Lab_Guides/README.md
-          - Verifikasi Asset: Networking/AOS-CX_Lab_Guides/ASSETS_VERIFICATION.md
-          - Spanning Tree Basics: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Spanning Tree Basics Lab Guide.md
-          - Local MAC Authentication: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Local Mac Authentication Lab Guide.md
-          - VSX Part 1: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - VSX Part 1 Lab Guide.md
-          - Campus 2-Tier L2 Access VSX: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 2-Tier IPv4 L2 Access VSX Lab Guide.md
-          - Deploying OSPF: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Deploying OSPF Lab Guide.md
-          - Campus 2-Tier L3 Access OSPF: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 2-Tier L3 Access with OSPF Lab Guide.md
-          - OSPFv2 Areas Basics: Networking/AOS-CX_Lab_Guides/AOS-CX Switch Simulator - OSPFv2 Areas Basics Lab Guide.md
-          - Campus 3-Tier L2 Access VSX OSPF: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 3-Tier IPv4 L2 Access with VSX and OSPF Lab Guide.md
-          - Static VXLAN: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Static VXLAN Lab Guide.md
-          - Basic BGP: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Basic BGP Lab Guide.md
-          - VXLAN EVPN: Networking/AOS-CX_Lab_Guides/AOS-CX Switch Simulator - VXLAN EVPN Lab Guide.md
-      - Implementing Campus Access Fundamentals: Networking/HPE_Aruba_Campus_Access/README.md
-  - Basis Data Enterprise:
-      - Cheat Sheet Day 1: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day1_command.md
-      - Cheat Sheet Day 2: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day2_command.md
-      - Cheat Sheet Day 3: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day3_command.md
-      - Cheat Sheet Day 4: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day4_command.md
-      - Cheat Sheet Day 5: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day5_command.md
-      - Materi DBA 19c:
-          - Management Instance: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_instance.md
-          - Management Memory: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_memory.md
-          - Management Monitoring: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_db_monitoring.md
-          - Management Backup Recovery: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_backup_recovery.md
-          - Management Controlfile: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_controlfile.md
-          - Management Network: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_network.md
-          - Management PDB: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_pdb.md
-          - Management Performance: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_performance.md
-          - Management Redologfile: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_redologfile.md
-          - Management Resources: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_resources.md
-          - Management Temp TS: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_temp_ts.md
-          - Management TS: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_ts.md
-          - Management Undo TS: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_undo_ts.md
-          - Management User: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_user.md
-  - Write-Up Lab:
+      - Overview: Networking/HPE_Aruba_Campus_Access/README.md
+      - AOS-CX Labs:
+          - Mulai di Sini: Networking/AOS-CX_Lab_Guides/README.md
+          - Fondasi Layer 2:
+              - Spanning Tree Basics: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Spanning Tree Basics Lab Guide.md
+              - Local MAC Authentication: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Local Mac Authentication Lab Guide.md
+              - VSX Part 1: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - VSX Part 1 Lab Guide.md
+              - Campus 2-Tier L2 Access VSX: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 2-Tier IPv4 L2 Access VSX Lab Guide.md
+          - Routing & Campus:
+              - Deploying OSPF: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Deploying OSPF Lab Guide.md
+              - Campus 2-Tier L3 Access OSPF: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 2-Tier L3 Access with OSPF Lab Guide.md
+              - OSPFv2 Areas Basics: Networking/AOS-CX_Lab_Guides/AOS-CX Switch Simulator - OSPFv2 Areas Basics Lab Guide.md
+              - Campus 3-Tier L2 Access VSX OSPF: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 3-Tier IPv4 L2 Access with VSX and OSPF Lab Guide.md
+          - Overlay & Data Center:
+              - Static VXLAN: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Static VXLAN Lab Guide.md
+              - Basic BGP: Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Basic BGP Lab Guide.md
+              - VXLAN EVPN: Networking/AOS-CX_Lab_Guides/AOS-CX Switch Simulator - VXLAN EVPN Lab Guide.md
+          - Referensi: Networking/AOS-CX_Lab_Guides/ASSETS_VERIFICATION.md
+  - Database:
+      - Cheat Sheet Harian:
+          - Day 1: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day1_command.md
+          - Day 2: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day2_command.md
+          - Day 3: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day3_command.md
+          - Day 4: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day4_command.md
+          - Day 5: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day5_command.md
+      - DBA 19c:
+          - Instance: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_instance.md
+          - Memory: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_memory.md
+          - Monitoring: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_db_monitoring.md
+          - Backup & Recovery: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_backup_recovery.md
+          - Controlfile: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_controlfile.md
+          - Network: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_network.md
+          - PDB: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_pdb.md
+          - Performance: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_performance.md
+          - Redologfile: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_redologfile.md
+          - Resources: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_resources.md
+          - Temporary Tablespace: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_temp_ts.md
+          - Tablespace: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_ts.md
+          - Undo Tablespace: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_undo_ts.md
+          - User Management: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_user.md
+  - Write-Up:
       - Ringkasan: Write-Up Lab/README.md
-      - Catalina: Write-Up Lab/01_catalina.md
-      - Catalina Detail: Write-Up Lab/01_catalina_pembahasan_detail.md
-      - Portrait: Write-Up Lab/02_portrait.md
-      - Portrait Detail: Write-Up Lab/02_portrait_pembahasan_detail.md
-      - Gazette: Write-Up Lab/03_gazette.md
-      - Gazette Detail: Write-Up Lab/03_gazette_pembahasan_detail.md
-      - Statute: Write-Up Lab/04_statute.md
-      - Statute Detail: Write-Up Lab/04_statute_pembahasan_detail.md
+      - Lab:
+          - Catalina: Write-Up Lab/01_catalina.md
+          - Catalina Detail: Write-Up Lab/01_catalina_pembahasan_detail.md
+          - Portrait: Write-Up Lab/02_portrait.md
+          - Portrait Detail: Write-Up Lab/02_portrait_pembahasan_detail.md
+          - Gazette: Write-Up Lab/03_gazette.md
+          - Gazette Detail: Write-Up Lab/03_gazette_pembahasan_detail.md
+          - Statute: Write-Up Lab/04_statute.md
+          - Statute Detail: Write-Up Lab/04_statute_pembahasan_detail.md
       - Cheatsheet: Write-Up Lab/cheatsheet.md
