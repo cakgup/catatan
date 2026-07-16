@@ -1,0 +1,36 @@
+.hero {
+  margin: 0 0 2.5rem;
+  padding: 1.2rem 0 0.8rem;
+}
+
+.hero__content {
+  max-width: 42rem;
+}
+
+.hero__content h2 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hero__content p {
+  margin-bottom: 1rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.hero .md-button {
+  margin-right: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li {
+  border-radius: 0.8rem;
+}
+
+.md-typeset .grid.cards > ul > li > hr,
+.md-typeset .grid.cards > ol > li > hr {
+  margin-top: 0.8rem;
+  margin-bottom: 0.8rem;
+}

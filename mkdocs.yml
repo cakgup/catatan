@@ -10,18 +10,21 @@ use_directory_urls: true
 theme:
   name: material
   language: id
+  icon:
+    logo: material/library
+    repo: fontawesome/brands/github
   palette:
     - scheme: default
-      primary: blue
+      primary: indigo
       accent: indigo
       toggle:
-        icon: material/weather-night
+        icon: material/brightness-7
         name: Ganti ke mode gelap
     - scheme: slate
-      primary: blue
+      primary: indigo
       accent: indigo
       toggle:
-        icon: material/weather-sunny
+        icon: material/brightness-4
         name: Ganti ke mode terang
   features:
     - navigation.tabs
@@ -29,6 +32,7 @@ theme:
     - navigation.expand
     - navigation.indexes
     - navigation.instant
+    - navigation.instant.progress
     - navigation.path
     - navigation.top
     - toc.follow
@@ -36,9 +40,22 @@ theme:
     - search.suggest
     - header.autohide
     - content.code.copy
+    - content.tabs.link
 
 plugins:
   - search
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/cakgup/catatan
+      name: GitHub Repository
+  generator: false
+
+copyright: Copyright © 2026 cakgup
 
 markdown_extensions:
   - admonition

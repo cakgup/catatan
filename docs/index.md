@@ -1,10 +1,26 @@
+---
+hide:
+  - toc
+---
+
 # Basis Data & Networking Docs
 
 Portal dokumentasi ini merangkum materi **networking**, **database enterprise**, dan **write-up lab** dalam satu situs yang mudah dijelajahi.
 
+<div class="hero" markdown>
+
+<div class="hero__content" markdown>
+
+## Dokumentasi teknis dalam satu portal
+
+Tema dan komponen situs ini diselaraskan dengan gaya resmi **Material for MkDocs**, sehingga tampilan, spasi, tombol, kartu, dan navigasi terasa konsisten.
+
 [Buka Networking](Networking/HPE_Aruba_Campus_Access/README.md){ .md-button .md-button--primary }
 [Buka Database](<Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day1_command.md>){ .md-button }
 [Buka Write-Up](<Write-Up Lab/README.md>){ .md-button }
+
+</div>
+</div>
 
 ## Mulai dari sini
 
