@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 3b - 3 Tier L2 Access with VSX and OSPF" id="ea122f00-e014-4c00-821a-d40e781987ab" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="Campus 3-tier dengan access L2, aggregation VSX, dan dua core switch OSPF." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="SwitchX" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="dc4440f2-75ff-44a4-b524-60cc6f5923a4" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="220" top="80">
+        <interface id="2" name="1/1/3" type="ethernet" network_id="1"/>
+        <interface id="3" name="1/1/4" type="ethernet" network_id="2"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="6"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="8"/>
+      </node>
+      <node id="2" name="SwitchY" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="0cc35f1f-0c4f-4e66-a6d5-21c684ce574a" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="620" top="80">
+        <interface id="2" name="1/1/3" type="ethernet" network_id="1"/>
+        <interface id="3" name="1/1/4" type="ethernet" network_id="2"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="7"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="9"/>
+      </node>
+      <node id="3" name="SwitchA" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="6d8043c3-37ab-46d9-9d44-f5d28458d3cc" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="220" top="350">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="3"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="4"/>
+        <interface id="2" name="1/1/3" type="ethernet" network_id="5"/>
+        <interface id="5" name="1/1/6" type="ethernet" network_id="6"/>
+        <interface id="6" name="1/1/7" type="ethernet" network_id="7"/>
+        <interface id="3" name="1/1/4" type="ethernet" network_id="10"/>
+      </node>
+      <node id="4" name="SwitchB" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="229f793a-648e-4f13-af52-c8315506bfff" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="620" top="350">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="3"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="4"/>
+        <interface id="2" name="1/1/3" type="ethernet" network_id="5"/>
+        <interface id="5" name="1/1/6" type="ethernet" network_id="8"/>
+        <interface id="6" name="1/1/7" type="ethernet" network_id="9"/>
+        <interface id="4" name="1/1/5" type="ethernet" network_id="11"/>
+      </node>
+      <node id="5" name="SwitchC" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="a59f5152-b409-49bd-aee5-f60584dad2aa" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="420" top="610">
+        <interface id="3" name="1/1/4" type="ethernet" network_id="10"/>
+        <interface id="4" name="1/1/5" type="ethernet" network_id="11"/>
+        <interface id="7" name="1/1/8" type="ethernet" network_id="12"/>
+        <interface id="8" name="1/1/9" type="ethernet" network_id="13"/>
+      </node>
+      <node id="6" name="VPC1" type="vpcs" template="vpcs" image="" ethernet="1" uuid="8a208091-dfa5-45e9-becf-8299a2b807f4" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="310" top="810">
+        <interface id="0" name="eth0" type="ethernet" network_id="12"/>
+      </node>
+      <node id="7" name="VPC2" type="vpcs" template="vpcs" image="" ethernet="1" uuid="3745f88d-1aae-44ac-87bf-a2cef85dc4f5" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="530" top="810">
+        <interface id="0" name="eth0" type="ethernet" network_id="13"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="420" top="80" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="420" top="80" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="420" top="350" visibility="0" icon="lan.png"/>
+      <network id="4" type="bridge" name="Net4" left="420" top="350" visibility="0" icon="lan.png"/>
+      <network id="5" type="bridge" name="Net5" left="420" top="350" visibility="0" icon="lan.png"/>
+      <network id="6" type="bridge" name="Net6" left="220" top="215" visibility="0" icon="lan.png"/>
+      <network id="7" type="bridge" name="Net7" left="420" top="215" visibility="0" icon="lan.png"/>
+      <network id="8" type="bridge" name="Net8" left="420" top="215" visibility="0" icon="lan.png"/>
+      <network id="9" type="bridge" name="Net9" left="620" top="215" visibility="0" icon="lan.png"/>
+      <network id="10" type="bridge" name="Net10" left="320" top="480" visibility="0" icon="lan.png"/>
+      <network id="11" type="bridge" name="Net11" left="520" top="480" visibility="0" icon="lan.png"/>
+      <network id="12" type="bridge" name="Net12" left="365" top="710" visibility="0" icon="lan.png"/>
+      <network id="13" type="bridge" name="Net13" left="475" top="710" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>

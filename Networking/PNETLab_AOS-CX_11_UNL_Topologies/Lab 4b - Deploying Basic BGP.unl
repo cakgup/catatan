@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 4b - Deploying Basic BGP" id="19953a16-6790-4de1-b3ce-7ea5ebf1bed2" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="Basic BGP dengan AS 65001 dan 65000, eBGP A-B, iBGP B-C, dan OSPF sebagai IGP." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="HostA" type="vpcs" template="vpcs" image="" ethernet="1" uuid="49c4c70f-422a-49c8-b1cf-f43730c2164a" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="100" top="100">
+        <interface id="0" name="eth0" type="ethernet" network_id="1"/>
+      </node>
+      <node id="2" name="SwitchA" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="5bbd0e1c-7a8d-4275-82e3-c931a16d2122" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="100" top="390">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="1"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="2"/>
+      </node>
+      <node id="3" name="SwitchB" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="845a4a41-197a-4011-b5e6-4f9eb78e01ec" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="420" top="390">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="2"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+      </node>
+      <node id="4" name="SwitchC" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="72624a18-c436-4d2a-a19a-c9759675b7e6" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="740" top="390">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="4"/>
+      </node>
+      <node id="5" name="HostB" type="vpcs" template="vpcs" image="" ethernet="1" uuid="e392735e-2ee5-48c9-b79b-093113f9702f" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="740" top="100">
+        <interface id="0" name="eth0" type="ethernet" network_id="4"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="100" top="245" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="260" top="390" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="580" top="390" visibility="0" icon="lan.png"/>
+      <network id="4" type="bridge" name="Net4" left="740" top="245" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>

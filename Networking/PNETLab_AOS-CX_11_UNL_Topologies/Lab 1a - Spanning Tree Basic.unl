@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 1a - Spanning Tree Basic" id="2ecc3d18-aed1-487f-8f34-93ce228a40e3" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="Tiga switch berbentuk segitiga untuk praktik STP, root bridge, port role, priority, dan cost." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="SwitchA" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="015385ae-f5a1-4c24-9664-f4f2a8fccbb3" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="180" top="120">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="1"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="2"/>
+      </node>
+      <node id="2" name="SwitchB" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="c61c0e0d-3e5e-45e8-9e0f-9982095cc8ed" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="620" top="120">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="1"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+      </node>
+      <node id="3" name="SwitchC" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="9b591898-8f41-4645-b2d4-3a5b4e90f085" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="400" top="400">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="2"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="400" top="120" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="290" top="260" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="510" top="260" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>
