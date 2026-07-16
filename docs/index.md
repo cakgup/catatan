@@ -6,6 +6,17 @@ Dokumentasi ini mengumpulkan materi belajar, cheat sheet, dan write-up lab dari 
 
 - **Networking**
   - [AOS-CX Lab Guides](Networking/AOS-CX_Lab_Guides/README.md)
+  - [Spanning Tree Basics](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Spanning Tree Basics Lab Guide.md>)
+  - [Local MAC Authentication](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Local Mac Authentication Lab Guide.md>)
+  - [VSX Part 1](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - VSX Part 1 Lab Guide.md>)
+  - [Campus 2-Tier L2 Access VSX](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 2-Tier IPv4 L2 Access VSX Lab Guide.md>)
+  - [Deploying OSPF](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Deploying OSPF Lab Guide.md>)
+  - [Campus 2-Tier L3 Access OSPF](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 2-Tier L3 Access with OSPF Lab Guide.md>)
+  - [OSPFv2 Areas Basics](<Networking/AOS-CX_Lab_Guides/AOS-CX Switch Simulator - OSPFv2 Areas Basics Lab Guide.md>)
+  - [Campus 3-Tier L2 Access VSX OSPF](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator Lab - Campus 3-Tier IPv4 L2 Access with VSX and OSPF Lab Guide.md>)
+  - [Static VXLAN](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Static VXLAN Lab Guide.md>)
+  - [Basic BGP](<Networking/AOS-CX_Lab_Guides/AOS-CX Simulator - Basic BGP Lab Guide.md>)
+  - [VXLAN EVPN](<Networking/AOS-CX_Lab_Guides/AOS-CX Switch Simulator - VXLAN EVPN Lab Guide.md>)
   - [HPE Aruba Campus Access Fundamentals](Networking/HPE_Aruba_Campus_Access/README.md)
 - **Basis Data Enterprise**
   - [Cheat Sheet Oracle Day 1](<Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day1_command.md>)
