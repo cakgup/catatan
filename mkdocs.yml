@@ -1,8 +1,8 @@
 site_name: Basis Data & Networking Docs
 site_description: Kumpulan materi basis data, networking, dan write-up lab.
-site_url: https://gufroni.github.io/basis_data/
-repo_url: https://github.com/gufroni/basis_data
-repo_name: gufroni/basis_data
+site_url: https://cakgup.github.io/catatan/
+repo_url: https://github.com/cakgup/catatan
+repo_name: cakgup/catatan
 docs_dir: docs
 site_dir: site
 use_directory_urls: true
