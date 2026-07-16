@@ -1,0 +1,91 @@
+site_name: Basis Data & Networking Docs
+site_description: Kumpulan materi basis data, networking, dan write-up lab.
+site_url: https://gufroni.github.io/basis_data/
+repo_url: https://github.com/gufroni/basis_data
+repo_name: gufroni/basis_data
+docs_dir: docs
+site_dir: site
+use_directory_urls: true
+
+theme:
+  name: material
+  language: id
+  palette:
+    - scheme: default
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Ganti ke mode gelap
+    - scheme: slate
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Ganti ke mode terang
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Beranda: index.md
+  - Networking:
+      - AOS-CX Lab Guides: Networking/AOS-CX_Lab_Guides/README.md
+      - Implementing Campus Access Fundamentals: Networking/HPE_Aruba_Campus_Access/README.md
+  - Basis Data Enterprise:
+      - Cheat Sheet Day 1: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day1_command.md
+      - Cheat Sheet Day 2: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day2_command.md
+      - Cheat Sheet Day 3: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day3_command.md
+      - Cheat Sheet Day 4: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day4_command.md
+      - Cheat Sheet Day 5: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/cheat_sheet_oracle_day5_command.md
+      - Materi DBA 19c:
+          - Management Instance: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_instance.md
+          - Management Memory: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_memory.md
+          - Management Monitoring: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_db_monitoring.md
+          - Management Backup Recovery: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_backup_recovery.md
+          - Management Controlfile: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_controlfile.md
+          - Management Network: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_network.md
+          - Management PDB: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_pdb.md
+          - Management Performance: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_performance.md
+          - Management Redologfile: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_redologfile.md
+          - Management Resources: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_resources.md
+          - Management Temp TS: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_temp_ts.md
+          - Management TS: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_ts.md
+          - Management Undo TS: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_undo_ts.md
+          - Management User: Pelatihan Pengelolaan Basis Data Enterprise, 6 - 10 Juli 2026/File MD Pelatihan DBA 19c/manajement_user.md
+  - Write-Up Lab:
+      - Ringkasan: Write-Up Lab/README.md
+      - Catalina: Write-Up Lab/01_catalina.md
+      - Catalina Detail: Write-Up Lab/01_catalina_pembahasan_detail.md
+      - Portrait: Write-Up Lab/02_portrait.md
+      - Portrait Detail: Write-Up Lab/02_portrait_pembahasan_detail.md
+      - Gazette: Write-Up Lab/03_gazette.md
+      - Gazette Detail: Write-Up Lab/03_gazette_pembahasan_detail.md
+      - Statute: Write-Up Lab/04_statute.md
+      - Statute Detail: Write-Up Lab/04_statute_pembahasan_detail.md
+      - Cheatsheet: Write-Up Lab/cheatsheet.md
