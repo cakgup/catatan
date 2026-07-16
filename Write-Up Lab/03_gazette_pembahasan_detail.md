@@ -465,9 +465,16 @@ find / -type f -iname "*flag*" 2>/dev/null
 ### Output Contoh
 
 ```text
-/root/flag.txt
+/root/FLAG.txt
+/home/editor/FLAG.txt
 ```
 
+```text
+cat /root/FLAG.txt
+FLAG{d1r7yp1p3_5pl1c35_7h3_r007}
+cat /home/editor/FLAG.txt
+FLAG{5ql1_l34k5_7h3_n3w5r00m_cr3d5}
+```
 ### Baca Flag
 
 ```bash
