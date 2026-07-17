@@ -134,19 +134,6 @@ nmap -sn 192.168.56.0/24
 
 # 3. Tahap 2 — Port Scanning
 
-## 3.1 Scan seluruh port TCP
-
-```bash
-nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
-```
-
-## 3.2 Scan detail port yang ditemukan
-
-```bash
-nmap -sC -sV -p22,80,8080 "$TARGET" -oN service-scan.txt
-```
-
-## 3.3 Versi satu command
 
 ```bash
 nmap -sC -sV -p- "$TARGET"
@@ -159,9 +146,6 @@ nmap -sC -sV -p- "$TARGET"
 | `-p-` | scan port 1–65535 |
 | `-sC` | default NSE scripts |
 | `-sV` | deteksi versi service |
-| `-T4` | mempercepat timing |
-| `--min-rate 5000` | batas minimal packet rate |
-| `-oN` | simpan output normal |
 
 ## Interpretasi cepat
 
@@ -175,13 +159,6 @@ nmap -sC -sV -p- "$TARGET"
 | 5432 | PostgreSQL | credential, local-only DB |
 | 8009 | AJP | Tomcat/AJP check |
 | 10000 | Webmin | version and credential check |
-
-## Wajib hafal
-
-```bash
-nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
-nmap -sC -sV -p<PORTS> "$TARGET" -oN service-scan.txt
-```
 
 ---
 
@@ -260,20 +237,6 @@ nc -nv "$TARGET" <PORT>
 dirsearch -u "$BASE/"
 ```
 
-Alternatif:
-
-```bash
-feroxbuster \
-  -u "$BASE/" \
-  -w /usr/share/wordlists/dirb/common.txt
-```
-
-```bash
-dirb \
-  "$BASE/" \
-  /usr/share/wordlists/dirb/common.txt
-```
-
 ## 5.2 Extension penting
 
 ```bash
@@ -325,12 +288,6 @@ feroxbuster \
 | Ping/diagnostic | command injection |
 | Template preview | SSTI |
 | Download/export | path traversal, IDOR |
-
-## Wajib hafal
-
-```bash
-dirsearch -u "$BASE/"
-```
 
 ---
 
