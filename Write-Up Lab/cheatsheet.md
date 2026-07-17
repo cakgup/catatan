@@ -1588,7 +1588,7 @@ feroxbuster -u "$WEB/" -w /usr/share/wordlists/dirb/common.txt
 # =========================================================
 # 5. TEST FOOTHOLD
 # =========================================================
-SQLi   : 'OR'1'='1
+SQLi   : ' OR '1'='1'-- -
 LFI    : ?page=../../../../etc/passwd
 SSTI   : {{7*7}}
 CMDi   : ; id
@@ -1791,7 +1791,8 @@ dirsearch -u "$WEB/"
 ## Q4 — SQLi login dasar?
 
 ```text
-'OR'1'='1'
+' OR '1'='1'-- -
+admin'-- -
 ```
 
 ## Q5 — SQLMap urutan?
