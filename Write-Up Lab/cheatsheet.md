@@ -104,21 +104,6 @@ Alternatif:
 nmap -sn 192.168.56.0/24
 ```
 
-## Hasil yang dicatat
-
-```text
-Kali / LHOST :
-Target        :
-Subnet        :
-```
-
-## Wajib hafal
-
-```bash
-ip a
-nmap -sn 192.168.56.0/24
-```
-
 ---
 
 # 3. Tahap 2 — Port Scanning
