@@ -1,4 +1,4 @@
-# 04 — Write-Up Gabungan Lab Statute
+# 04 — Write-Up Lab Statute
 ## Path Traversal → Kebocoran `.env` → SSH Foothold → `sudo vim` → Root
 
 > **Ruang lingkup:** hanya untuk laboratorium, CTF, atau pengujian keamanan yang telah memperoleh izin tertulis.  
