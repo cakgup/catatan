@@ -1,4 +1,4 @@
-# 03 — Write-Up Gabungan Lab Gazette
+# 03 — Write-Up Lab Gazette
 ## SQL Injection → Credential Disclosure → SSH Foothold → Dirty Pipe → Root
 
 > **Ruang lingkup:** hanya untuk laboratorium, CTF, atau pengujian yang telah memperoleh izin tertulis.  
