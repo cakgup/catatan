@@ -1,4 +1,4 @@
-# Write-Up Lengkap Lab Portrait
+# Write-Up Lab Portrait
 ## SQL Injection → Credential Admin → Unrestricted File Upload → RCE `www-data` → Python Capability → Root
 
 > **Ruang lingkup:** hanya untuk laboratorium, CTF, pembelajaran, atau pengujian yang memiliki izin tertulis.
