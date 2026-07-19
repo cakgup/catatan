@@ -1,4 +1,4 @@
-# Write-Up Gabungan Lab Catalina
+# Write-Up Lab Catalina
 ## Tomcat Manager → Deploy WAR → RCE `tomcat` → Writable Root Cron → Root
 
 > **Khusus untuk ujian, laboratorium, CTF, atau pengujian keamanan yang telah memperoleh izin.**
