@@ -19,18 +19,6 @@ sudo apt update
 sudo apt install gnupg -y
 ```
 
-Saat GPG pertama kali digunakan, direktori berikut akan dibuat otomatis:
-
-```text
-~/.gnupg/
-```
-
-Pesan seperti berikut bukan error:
-
-```text
-gpg: keybox '/home/user/.gnupg/pubring.kbx' created
-```
-
 ---
 
 ## 2. Membuat Key GPG Baru
