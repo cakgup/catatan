@@ -31,7 +31,7 @@ Prinsip ini penting karena raw data merupakan bukti awal mengenai kondisi data k
    Jika suatu nilai perlu diperbaiki, sebaiknya nilai asli tetap tersedia dan hasil perbaikannya ditempatkan pada kolom baru, misalnya `Provinsi_Asli` dan `Provinsi_Standar`, atau `Kemiskinan_pct` dan `Kemiskinan_pct_Clean`. Pendekatan ini menjaga keterlacakan perubahan.
 
 5. **Dokumentasikan setiap aturan perubahan.**  
-   Setiap transformasi harus mempunyai alasan yang jelas, seperti aturan bisnis, referensi kode wilayah, batas nilai yang diperbolehkan, metode deteksi outlier, dan kebijakan penanganan duplikasi. Dalam workbook ini, dokumentasi tersebut dapat ditempatkan pada query `09_Dokumentasi_Rule`.
+   Setiap transformasi harus mempunyai alasan yang jelas, seperti aturan bisnis, referensi kode wilayah, batas nilai yang diperbolehkan, metode deteksi outlier, dan kebijakan penanganan duplikasi. Dalam workbook hasil praktik, dokumentasi tersebut dapat ditempatkan pada query `09_Dokumentasi_Rule`.
 
 6. **Simpan file hasil sebagai artefak yang berbeda.**  
    Jangan menyimpan hasil cleansing dengan menimpa file sumber. Gunakan nama dan lokasi yang berbeda, misalnya:
@@ -49,10 +49,13 @@ Prinsip ini penting karena raw data merupakan bukti awal mengenai kondisi data k
 
 ---
 
-Tutorial ini disusun berdasarkan dua file berikut:
+Tutorial ini menggunakan **satu-satunya file praktik**, yaitu:
 
-1. `02_ikad_panel_5016_dirty_cleansing.csv` — data mentah yang masih mengandung masalah kualitas data.
-2. `Query Cleansing.xlsx` — workbook Excel yang berisi rangkaian query Power Query untuk standardisasi, validasi, deteksi outlier, deduplikasi, error log, dan ringkasan kualitas data.
+```text
+02_ikad_panel_5016_dirty_cleansing.csv
+```
+
+Pengguna diasumsikan memulai dari **workbook Excel kosong** dan membangun seluruh query Power Query dari awal. Tidak ada workbook query siap pakai yang perlu dibuka atau diedit ketika praktik.
 
 ---
 
@@ -111,7 +114,7 @@ Beberapa masalah yang terdapat pada data mentah antara lain:
 
 ## 3. Arsitektur Query
 
-Alur cleansing dalam workbook adalah sebagai berikut:
+Alur cleansing yang akan dibangun adalah sebagai berikut:
 
 ```mermaid
 flowchart LR
@@ -143,95 +146,171 @@ flowchart LR
 
 ---
 
-## 4. Koreksi Penting Sebelum Menggunakan Workbook
+## 4. Kondisi Awal dan Catatan Teknis
 
-### 4.1 Sumber file masih menggunakan alamat komputer pembuat
-
-Query `01_Raw_Data` pada workbook menggunakan alamat absolut seperti berikut:
+Pada awal praktik, siapkan hanya file berikut:
 
 ```text
-D:\OneDrive - Kemenkeu\@ SITP\2026\DIKLAT\DATA ANALYTICS\Data\02_ikad_panel_5016_dirty_cleansing.csv
+02_ikad_panel_5016_dirty_cleansing.csv
 ```
 
-Alamat tersebut harus diubah agar menunjuk ke lokasi CSV pada komputer pengguna.
+Jangan membuka file CSV tersebut untuk memperbaiki nilai secara manual. Excel hanya digunakan untuk membuat workbook baru yang menyimpan koneksi, langkah transformasi, dan hasil cleansing. File CSV tetap berfungsi sebagai artefak sumber yang tidak berubah.
 
-### 4.2 Tipe data desimal pada query sumber harus diperbaiki
+### 4.1 Tipe data desimal harus dibaca dengan benar
 
-Pada query awal, banyak kolom desimal ditetapkan sebagai `Int64.Type`. Akibatnya, nilai dengan tanda desimal titik dapat dibaca secara salah.
+File CSV menggunakan titik sebagai tanda desimal, misalnya:
 
-Contoh kesalahan yang tersimpan pada workbook:
+```text
+49.69
+15.33
+5.45
+```
 
-| Nilai CSV | Nilai yang terbaca salah |
+Kolom-kolom tersebut harus menggunakan tipe `Decimal Number` atau `type number` dengan locale `English (United States)`/`en-US`. Jangan mengubahnya menjadi `Whole Number` atau `Int64.Type`.
+
+Contoh kesalahan parsing:
+
+| Nilai pada CSV | Nilai yang terbaca salah |
 |---:|---:|
 | `49.69` | `4969` |
 | `15.33` | `1533` |
 | `5.45` | `545` |
 
-Dampaknya adalah hampir seluruh baris ditandai invalid. Ringkasan yang tersimpan pada workbook menunjukkan 5.015 dari 5.016 baris invalid, padahal hasil pembacaan desimal yang benar hanya menghasilkan sekitar 25 baris invalid berdasarkan aturan yang digunakan.
+Kesalahan locale atau tipe data dapat menyebabkan hampir seluruh data dianggap invalid, meskipun nilai aslinya benar.
 
-**Perbaikannya:** gunakan `type number` untuk kolom desimal dan gunakan locale `en-US`, karena file CSV memakai titik sebagai pemisah desimal.
+### 4.2 Pemisahan file yang disarankan
+
+Gunakan struktur folder sederhana berikut:
+
+```text
+Latihan_Power_Query/
+├── raw/
+│   └── 02_ikad_panel_5016_dirty_cleansing.csv
+└── workbook/
+    └── Tutorial_Cleansing_IKAD.xlsx
+```
+
+File dalam folder `raw` tidak diubah. Workbook pada folder `workbook` menyimpan seluruh query dan hasil pengolahan.
 
 ---
 
-# BAGIAN A — MENGGUNAKAN WORKBOOK YANG SUDAH TERSEDIA
+# BAGIAN A — MEMBANGUN ALUR POWER QUERY DARI FILE CSV
 
-## 5. Menyiapkan File
+## 5. Membuat Workbook Latihan
 
-1. Buat satu folder kerja, misalnya:
-
-   ```text
-   D:\Latihan_Power_Query\
-   ```
-
-2. Letakkan kedua file dalam folder yang sama:
+1. Buka **Microsoft Excel Desktop**.
+2. Pilih **Blank workbook** atau **Buku kerja kosong**.
+3. Pilih **File → Save As**.
+4. Simpan workbook dengan nama, misalnya:
 
    ```text
-   D:\Latihan_Power_Query\02_ikad_panel_5016_dirty_cleansing.csv
-   D:\Latihan_Power_Query\Query Cleansing.xlsx
+   Tutorial_Cleansing_IKAD.xlsx
    ```
 
-3. Buka file `Query Cleansing.xlsx` menggunakan Microsoft Excel Desktop.
+5. Jangan membuka dan menyimpan ulang file CSV. File CSV hanya akan dipanggil sebagai sumber melalui Power Query.
 
 > Power Query pada Excel Desktop Windows mempunyai fitur yang lebih lengkap dibandingkan Excel versi web.
 
 ---
 
-## 6. Membuka Power Query Editor
+## 6. Memulai Power Query dari File CSV
+
+Power Query dapat dibuka melalui **Get Data** atau **Launch Power Query Editor**. Pada praktik ini belum ada query yang tersedia, sehingga pengguna harus membuat koneksi baru ke file CSV.
+
+### 6.1 Cara utama: melalui Get Data
+
+1. Pada workbook Excel kosong, pilih tab **Data**.
+2. Klik **Get Data**.
+3. Pilih **From File → From Text/CSV**.
+4. Pilih file:
+
+   ```text
+   02_ikad_panel_5016_dirty_cleansing.csv
+   ```
+
+5. Pada jendela pratinjau, pastikan:
+   - **File Origin/Encoding** menggunakan UTF-8 atau `65001`;
+   - **Delimiter** menggunakan koma atau **Comma**;
+   - baris pertama terlihat sebagai nama kolom;
+   - nilai desimal masih terlihat seperti `49.69`, bukan `4969`.
+6. Klik **Transform Data**, bukan **Load**.
+7. Jendela **Power Query Editor** akan terbuka.
+
+### 6.2 Cara alternatif: melalui Launch Power Query Editor
+
+Pada versi Excel yang menyediakan menu tersebut:
 
 1. Pilih tab **Data**.
-2. Klik **Queries & Connections**.
-3. Pada panel sebelah kanan, klik kanan query `01_Raw_Data`.
-4. Pilih **Edit**.
-5. Jendela **Power Query Editor** akan terbuka.
+2. Klik **Get Data → Launch Power Query Editor**.
+3. Pada Power Query Editor, pilih **Home → New Source**.
+4. Pilih **File → Text/CSV**.
+5. Pilih file `02_ikad_panel_5016_dirty_cleansing.csv`.
+6. Pastikan delimiter, encoding, dan tampilan desimal sudah benar.
+7. Klik **OK** atau **Transform Data**.
 
-Di panel kiri akan terlihat query:
+> Nama menu dapat sedikit berbeda antarversi Excel. Prinsipnya tetap sama: buat **New Source** dari file **Text/CSV**, bukan mengedit query yang sudah tersedia.
 
-- `01_Raw_Data`
-- `02_Standardisasi`
-- `03_Validasi`
-- `04_Outlier`
-- `05_Clean_Data`
-- `06_Error_Log`
-- `07_Data_Quality_Summary`
-- `09_Dokumentasi_Rule`
-- `Ref_Provinsi`
+### 6.3 Mengganti nama query sumber
+
+1. Pada panel **Queries** di sebelah kiri, klik kanan query yang baru dibuat.
+2. Pilih **Rename**.
+3. Ubah namanya menjadi:
+
+   ```text
+   01_Raw_Data
+   ```
+
+Query `01_Raw_Data` merupakan representasi file sumber di dalam Power Query. Perubahan pada query tidak mengubah file CSV asli.
 
 ---
 
-## 7. Memperbaiki Query `01_Raw_Data`
+## 7. Menyiapkan Query `01_Raw_Data`
 
-### 7.1 Membuka Advanced Editor
+### 7.1 Mempromosikan baris pertama sebagai header
+
+Apabila header belum terbaca otomatis:
+
+1. Pilih tab **Home** atau **Transform**.
+2. Klik **Use First Row as Headers**.
+3. Pastikan nama kolom seperti `ID_Observasi`, `Tahun`, `Provinsi`, dan `Kemiskinan_pct` tampil sebagai header.
+
+### 7.2 Menghapus langkah tipe data otomatis yang keliru
+
+Power Query biasanya menambahkan langkah `Changed Type` secara otomatis. Periksa langkah tersebut pada panel **Applied Steps**.
+
+Apabila kolom desimal berubah menjadi whole number atau menghasilkan error:
+
+1. Klik tanda **X** di sebelah langkah `Changed Type` untuk menghapusnya.
+2. Tetapkan tipe data kembali secara eksplisit menggunakan locale yang sesuai.
+
+### 7.3 Menetapkan tipe data melalui antarmuka
+
+Untuk kolom bilangan bulat seperti `Tahun`, `Urutan_Waktu`, `Kode_Provinsi`, dan `Jumlah_Penduduk`:
+
+1. Pilih kolom.
+2. Klik ikon tipe data pada header.
+3. Pilih **Whole Number**.
+
+Untuk kolom indikator yang mempunyai angka desimal:
+
+1. Pilih satu atau beberapa kolom.
+2. Pilih **Transform → Data Type → Using Locale...**.
+3. Atur:
+   - **Data Type:** Decimal Number;
+   - **Locale:** English (United States).
+4. Klik **OK**.
+
+### 7.4 Alternatif: menggunakan Advanced Editor
 
 1. Pilih query `01_Raw_Data`.
-2. Pilih tab **Home**.
-3. Klik **Advanced Editor**.
-4. Ganti kode lama dengan kode berikut.
-5. Ubah bagian `File.Contents` sesuai lokasi file CSV.
+2. Pilih **Home → Advanced Editor**.
+3. Ganti kode dengan kode berikut.
+4. Sesuaikan alamat pada `File.Contents` dengan lokasi file CSV di komputer.
 
 ```powerquery
 let
     Source = Csv.Document(
-        File.Contents("D:\Latihan_Power_Query\02_ikad_panel_5016_dirty_cleansing.csv"),
+        File.Contents("D:\Latihan_Power_Query\raw\02_ikad_panel_5016_dirty_cleansing.csv"),
         [
             Delimiter = ",",
             Columns = 40,
@@ -297,108 +376,121 @@ in
     #"Changed Type"
 ```
 
-### 7.2 Alasan penggunaan `en-US`
+### 7.5 Memeriksa hasil impor
 
-File CSV memakai format desimal seperti:
+Sebelum membuat query berikutnya, periksa beberapa nilai:
 
-```text
-49.69
-15.33
-5.45
-```
-
-Locale `en-US` membaca titik sebagai tanda desimal. Apabila locale yang digunakan menganggap titik sebagai pemisah ribuan, angka dapat berubah menjadi `4969`, `1533`, dan `545`.
-
-### 7.3 Pemeriksaan hasil
-
-Setelah kode diterapkan, periksa beberapa nilai:
-
+- jumlah kolom harus **40**;
 - `Urbanisasi_pct` harus tampil sekitar `27` sampai `87`;
 - `Kemiskinan_pct` harus tampil sekitar `9` sampai `28`;
 - `NPL_pct` umumnya berupa angka satu atau dua digit;
-- jangan lanjut apabila nilai `49.69` masih tampil sebagai `4969`.
+- nilai `49.69` tidak boleh berubah menjadi `4969`;
+- ikon tipe data kolom desimal harus menunjukkan **Decimal Number**.
+
+Apabila hasil belum benar, perbaiki query sumber terlebih dahulu. Jangan melanjutkan ke tahap standardisasi sebelum parsing data benar.
 
 ---
 
-## 8. Menjalankan Seluruh Query
+## 8. Membuat Struktur Query dari Awal
 
-Setelah query sumber diperbaiki:
+Setelah `01_Raw_Data` benar, buat query lanjutan menggunakan **Reference**. Reference membuat query baru yang bergantung pada hasil query sebelumnya tanpa menduplikasi seluruh langkah sumber.
 
-1. Klik **Home → Close & Load**.
-2. Kembali ke Excel.
-3. Pilih tab **Data**.
-4. Klik **Refresh All**.
-5. Tunggu sampai seluruh query selesai diperbarui.
+### 8.1 Membuat query standardisasi
 
-Urutan dependensi akan dijalankan secara otomatis oleh Power Query.
+1. Klik kanan `01_Raw_Data`.
+2. Pilih **Reference**.
+3. Ganti nama query baru menjadi:
 
----
+   ```text
+   02_Standardisasi
+   ```
 
-## 9. Memeriksa Hasil Workbook
+### 8.2 Membuat query validasi
 
-### 9.1 Sheet `05_Clean_Data`
+1. Klik kanan `02_Standardisasi`.
+2. Pilih **Reference**.
+3. Ganti nama menjadi:
 
-Sheet ini merupakan hasil akhir cleansing. Proses yang dilakukan meliputi:
+   ```text
+   03_Validasi
+   ```
 
-- menghitung total flag masalah;
-- mengurutkan baris dari yang paling sedikit bermasalah;
-- mempertahankan satu baris terbaik untuk setiap `ID_Observasi`;
-- mengganti nama provinsi dan wilayah dengan nilai standar;
-- mengganti `NPL_pct` dengan nilai NPL yang sudah dibersihkan;
-- menambahkan `Status_Kualitas_Data`.
+### 8.3 Membuat query outlier
 
-Status akhir yang digunakan:
+1. Klik kanan `03_Validasi`.
+2. Pilih **Reference**.
+3. Ganti nama menjadi:
 
-| Jumlah flag | Status |
-|---:|---|
-| 0 | Bersih |
-| 1 | Perlu Pemeriksaan Ringan |
-| 2–3 | Perlu Pemeriksaan |
-| Lebih dari 3 | Bermasalah Tinggi |
+   ```text
+   04_Outlier
+   ```
 
-Jumlah baris akhir seharusnya mendekati jumlah ID unik, yaitu **4.951 baris**.
+### 8.4 Membuat query output
 
-### 9.2 Sheet `06_Error_Log`
+Buat tiga reference dari `04_Outlier`:
 
-Sheet ini hanya memuat baris yang mempunyai minimal satu masalah:
+| Query baru | Sumber reference | Fungsi |
+|---|---|---|
+| `05_Clean_Data` | `04_Outlier` | Data akhir setelah deduplikasi dan pemilihan nilai clean. |
+| `06_Error_Log` | `04_Outlier` | Daftar baris yang mempunyai masalah kualitas data. |
+| `07_Data_Quality_Summary` | `04_Outlier` | Ringkasan jumlah dan persentase masalah. |
 
-- missing value;
-- nilai invalid;
-- outlier IQR;
-- ID duplikat;
-- format atau nama yang dikoreksi.
+### 8.5 Membuat query referensi provinsi
 
-Kolom `Daftar_Masalah` menggabungkan seluruh masalah dalam satu teks, misalnya:
+Query `Ref_Provinsi` dapat dibuat dengan dua cara:
+
+- membuat reference dari `01_Raw_Data`, lalu menyisakan kolom kode, provinsi, dan wilayah; atau
+- menggunakan tabel referensi resmi yang dibuat pada workbook.
+
+Cara kedua lebih direkomendasikan dan dijelaskan pada **Tahap 4 — Membuat Referensi Provinsi**.
+
+### 8.6 Membuat query dokumentasi aturan
+
+1. Pilih **Home → New Source → Other Sources → Blank Query**.
+2. Ganti nama menjadi:
+
+   ```text
+   09_Dokumentasi_Rule
+   ```
+
+3. Query ini dapat diisi dengan tabel aturan, dasar validasi, metode penanganan, dan catatan audit.
+
+Struktur query akhir yang akan dibangun:
 
 ```text
-Missing value; ID duplikat; Format/nama dikoreksi
+01_Raw_Data
+├── Ref_Provinsi
+└── 02_Standardisasi
+    └── 03_Validasi
+        └── 04_Outlier
+            ├── 05_Clean_Data
+            ├── 06_Error_Log
+            └── 07_Data_Quality_Summary
+09_Dokumentasi_Rule
 ```
 
-Sheet ini dapat digunakan sebagai daftar kerja untuk verifikasi ke pemilik data.
+> Setelah membuat nama dan dependensi query, lanjutkan transformasi pada Bagian B secara berurutan. Query tidak harus langsung dimuat ke worksheet pada tahap ini.
 
-### 9.3 Sheet `07_Data_Quality_Summary`
+---
 
-Sheet ini memberikan ringkasan:
+## 9. Menyimpan Query Sumber sebagai Connection Only
 
-- total baris;
-- baris bersih;
-- baris bermasalah;
-- jumlah flag missing;
-- jumlah flag invalid;
-- jumlah flag outlier;
-- jumlah flag duplikat;
-- jumlah flag format.
+Agar data mentah tidak langsung memenuhi worksheet:
 
-> Nilai pada ringkasan baru dapat dipercaya setelah masalah tipe data pada `01_Raw_Data` diperbaiki.
+1. Pilih **Home → Close & Load → Close & Load To...**.
+2. Untuk query `01_Raw_Data`, pilih **Only Create Connection**.
+3. Lakukan hal yang sama untuk query perantara setelah selesai dibuat.
+4. Simpan workbook.
 
-### 9.4 Sheet `09_Dokumentasi_Rule`
+Apabila opsi **Close & Load To...** tidak muncul:
 
-Sheet ini berisi dokumentasi aturan kualitas data. Dokumentasi ini penting untuk:
+1. Pilih **Close & Load** terlebih dahulu.
+2. Di Excel, buka **Data → Queries & Connections**.
+3. Klik kanan nama query.
+4. Pilih **Load To...**.
+5. Pilih **Only Create Connection**.
 
-- audit trail;
-- konsistensi proses cleansing;
-- persetujuan pemilik data;
-- penjelasan alasan suatu nilai diubah atau dipertahankan.
+Query output `05_Clean_Data`, `06_Error_Log`, dan `07_Data_Quality_Summary` akan dimuat sebagai tabel setelah seluruh langkah transformasi selesai.
 
 ---
 
@@ -534,17 +626,66 @@ Query `Ref_Provinsi` menggunakan tiga kolom:
 - `Provinsi_Standar`
 - `Wilayah_Standar`
 
-### Cara yang digunakan pada workbook
+### 13.1 Membentuk `Ref_Provinsi` dari file CSV
 
-1. Ambil data dari `01_Raw_Data`.
-2. Bersihkan teks.
-3. Pilih kolom kode provinsi, provinsi, dan wilayah.
-4. Hapus duplikasi berdasarkan `Kode_Provinsi`.
-5. Ubah nama kolom menjadi nama standar.
+Karena pada awal praktik hanya tersedia file CSV, bentuk tabel referensi sementara dari `01_Raw_Data`:
 
-### Cara yang lebih direkomendasikan
+1. Klik kanan query `01_Raw_Data`.
+2. Pilih **Reference**.
+3. Ganti nama query menjadi `Ref_Provinsi`.
+4. Pilih hanya kolom:
+   - `Kode_Provinsi`;
+   - `Provinsi`;
+   - `Wilayah`.
+5. Pilih kolom `Provinsi` dan `Wilayah`, lalu gunakan **Transform → Format → Clean**.
+6. Gunakan **Transform → Format → Trim**.
+7. Gunakan **Transform → Format → Capitalize Each Word** sebagai normalisasi sementara.
+8. Urutkan `Kode_Provinsi` dari kecil ke besar.
+9. Pilih kolom `Kode_Provinsi`, lalu pilih **Home → Remove Rows → Remove Duplicates**.
+10. Ubah nama kolom:
+    - `Provinsi` menjadi `Provinsi_Standar`;
+    - `Wilayah` menjadi `Wilayah_Standar`.
 
-Buat tabel referensi resmi secara manual di Excel, misalnya:
+Contoh kode M:
+
+```powerquery
+let
+    Source = #"01_Raw_Data",
+    #"Selected Columns" = Table.SelectColumns(
+        Source,
+        {"Kode_Provinsi", "Provinsi", "Wilayah"}
+    ),
+    #"Cleaned Text" = Table.TransformColumns(
+        #"Selected Columns",
+        {
+            {"Provinsi", each if _ = null then null else Text.Proper(Text.Trim(Text.Clean(Text.From(_)))), type text},
+            {"Wilayah", each if _ = null then null else Text.Proper(Text.Trim(Text.Clean(Text.From(_)))), type text}
+        }
+    ),
+    #"Sorted Rows" = Table.Sort(
+        #"Cleaned Text",
+        {{"Kode_Provinsi", Order.Ascending}}
+    ),
+    #"Removed Duplicates" = Table.Distinct(
+        #"Sorted Rows",
+        {"Kode_Provinsi"}
+    ),
+    #"Renamed Columns" = Table.RenameColumns(
+        #"Removed Duplicates",
+        {
+            {"Provinsi", "Provinsi_Standar"},
+            {"Wilayah", "Wilayah_Standar"}
+        }
+    )
+in
+    #"Renamed Columns"
+```
+
+> Referensi yang dibentuk dari raw data bersifat sementara. Setelah tersedia master data wilayah yang resmi, gantilah sumber `Ref_Provinsi` dengan master tersebut agar nama singkatan dan klasifikasi wilayah tidak bergantung pada variasi dalam data mentah.
+
+### 13.2 Opsi yang lebih kuat: tabel referensi resmi
+
+Apabila kemudian tersedia daftar referensi resmi, buat tabel tersebut secara manual di Excel, misalnya:
 
 | Kode_Provinsi | Provinsi_Standar | Wilayah_Standar |
 |---:|---|---|
@@ -628,9 +769,9 @@ Contoh kategori status:
 | Wilayah berbeda dengan referensi | Nama Wilayah Dikoreksi |
 | Seluruhnya sesuai | Sesuai |
 
-### Catatan terhadap query workbook
+### Catatan terhadap logika standardisasi
 
-Query yang tersedia membandingkan teks setelah `Text.Lower` dan `Text.Trim`. Akibatnya, perbedaan kapitalisasi dan spasi dapat dianggap **Sesuai**, meskipun sebenarnya terjadi perubahan.
+Apabila nilai dibandingkan setelah `Text.Lower` dan `Text.Trim`, perbedaan kapitalisasi dan spasi dapat dianggap **Sesuai**, meskipun sebenarnya telah terjadi perubahan format.
 
 Agar setiap perubahan tercatat, gunakan perbandingan nilai asli secara tepat:
 
@@ -728,7 +869,7 @@ Nilai di atas 100 tidak otomatis salah karena rasio DPK terhadap PDRB dapat mele
 
 ## 17. Tahap 8 — Membuat Flag Missing
 
-Flag missing pada workbook menggunakan tiga variabel utama:
+Pada tutorial ini, flag missing menggunakan tiga variabel utama:
 
 - `Kemiskinan_pct`
 - `Urbanisasi_pct`
@@ -891,7 +1032,7 @@ in
     Source
 ```
 
-Query workbook kemudian menambahkan:
+Pada query `04_Outlier`, tambahkan:
 
 - `Batas_Bawah_Kemiskinan`;
 - `Batas_Atas_Kemiskinan`;
@@ -926,7 +1067,7 @@ in
     else x
 ```
 
-> Workbook tetap mempertahankan `Kemiskinan_pct` asli dan menambahkan `Kemiskinan_pct_Winsor`. Pendekatan ini lebih aman karena nilai asli tidak hilang.
+> Pertahankan `Kemiskinan_pct` asli dan tambahkan `Kemiskinan_pct_Winsor`. Pendekatan ini lebih aman karena nilai asli tidak hilang.
 
 ---
 
@@ -1050,7 +1191,7 @@ Setelah perbaikan pembacaan desimal dan pencatatan perubahan format, hasil indik
 
 ## 25. Mengatur Query agar Tidak Semua Dimuat ke Worksheet
 
-Query perantara sebaiknya menggunakan **Connection Only** agar workbook lebih ringan.
+Query perantara sebaiknya menggunakan **Connection Only** agar workbook hasil latihan lebih ringan.
 
 ### Query yang disarankan sebagai Connection Only
 
@@ -1082,7 +1223,7 @@ Cara mengatur:
 Apabila CSV diperbarui tetapi struktur kolom tidak berubah:
 
 1. Simpan CSV baru dengan nama dan lokasi yang sama.
-2. Buka workbook.
+2. Buka workbook `Tutorial_Cleansing_IKAD.xlsx`.
 3. Pilih **Data → Refresh All**.
 4. Periksa:
    - jumlah baris pada `07_Data_Quality_Summary`;
@@ -1211,7 +1352,7 @@ Periksa:
 - nilai batas IQR;
 - apakah seluruh baris salah ditandai akibat kesalahan parsing.
 
-Pada workbook awal, penyebab utamanya adalah angka desimal terbaca sebagai angka ribuan.
+Pada kondisi tersebut, penyebab yang paling mungkin adalah angka desimal terbaca sebagai angka ribuan.
 
 ---
 
@@ -1252,24 +1393,25 @@ Pada workbook awal, penyebab utamanya adalah angka desimal terbaca sebagai angka
 ## 31. Ringkasan Proses
 
 ```text
-1. Simpan CSV dan workbook dalam folder kerja.
-2. Buka Query Cleansing.xlsx.
-3. Buka Power Query Editor.
-4. Perbaiki alamat file pada 01_Raw_Data.
-5. Ubah kolom desimal menjadi type number dengan locale en-US.
-6. Refresh seluruh query.
-7. Periksa standardisasi provinsi, wilayah, dan triwulan.
-8. Periksa flag missing, invalid, format, duplikat, dan outlier.
-9. Gunakan 05_Clean_Data sebagai dataset analisis.
-10. Gunakan 06_Error_Log untuk verifikasi masalah.
-11. Gunakan 07_Data_Quality_Summary untuk pelaporan kualitas data.
-12. Dokumentasikan setiap perubahan aturan pada 09_Dokumentasi_Rule.
+1. Pertahankan 02_ikad_panel_5016_dirty_cleansing.csv sebagai artefak raw yang tidak diubah.
+2. Buka workbook Excel kosong dan simpan sebagai Tutorial_Cleansing_IKAD.xlsx.
+3. Pilih Data → Get Data → From File → From Text/CSV.
+4. Pilih file CSV, lalu klik Transform Data.
+5. Ubah nama query menjadi 01_Raw_Data.
+6. Pastikan 40 kolom terbaca dan tipe desimal menggunakan type number dengan locale en-US.
+7. Buat query lanjutan menggunakan Reference: 02_Standardisasi, 03_Validasi, dan 04_Outlier.
+8. Buat output 05_Clean_Data, 06_Error_Log, dan 07_Data_Quality_Summary.
+9. Buat Ref_Provinsi dan 09_Dokumentasi_Rule.
+10. Terapkan standardisasi teks, validasi, duplikasi, outlier, dan winsorization.
+11. Atur query perantara sebagai Connection Only.
+12. Muat query output ke worksheet dan lakukan Data → Refresh All.
+13. Periksa hasil menggunakan checklist kualitas data.
 ```
 
 ---
 
 ## 32. Kesimpulan
 
-Power Query memungkinkan proses data cleansing dibuat secara terstruktur, transparan, dapat diaudit, dan dapat dijalankan ulang. Pada studi kasus ini, proses dipisahkan menjadi query sumber, standardisasi, validasi, deteksi outlier, data bersih, error log, dan ringkasan kualitas data.
+Power Query memungkinkan proses data cleansing dibangun dari satu file CSV secara terstruktur, transparan, dapat diaudit, dan dapat dijalankan ulang. Pengguna memulai dari workbook Excel kosong, mengimpor CSV melalui **Get Data** atau **Launch Power Query Editor**, lalu membuat rangkaian query sumber, standardisasi, validasi, deteksi outlier, data bersih, error log, dan ringkasan kualitas data.
 
-Hal paling penting sebelum menggunakan workbook adalah memperbaiki pembacaan tipe data desimal. Kolom desimal harus menggunakan `type number` dengan locale yang sesuai. Setelah koreksi tersebut, proses cleansing dapat digunakan secara berulang melalui perintah **Refresh All** tanpa membersihkan data secara manual dari awal.
+Raw data tidak pernah diperbaiki secara langsung. Seluruh perubahan hanya terjadi pada lapisan query, sehingga kondisi awal data tetap tersedia sebagai artefak dan setiap transformasi dapat ditelusuri melalui **Applied Steps**. Hal teknis paling penting adalah memastikan kolom desimal menggunakan `type number` dengan locale `en-US`. Setelah seluruh query selesai dibuat, proses dapat dijalankan ulang melalui **Refresh All** tanpa mengulangi cleansing secara manual.
