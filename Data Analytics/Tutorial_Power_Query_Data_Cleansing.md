@@ -204,7 +204,7 @@ File dalam folder `raw` tidak diubah. Workbook pada folder `workbook` menyimpan 
 4. Simpan workbook dengan nama, misalnya:
 
    ```text
-   Tutorial_Cleansing_IKAD.xlsx
+   Cleansing_IKAD.xlsx
    ```
 
 5. Jangan membuka dan menyimpan ulang file CSV. File CSV hanya akan dipanggil sebagai sumber melalui Power Query.
