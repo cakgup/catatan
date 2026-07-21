@@ -64,6 +64,7 @@ Pengguna diasumsikan memulai dari **workbook Excel kosong** dan membangun seluru
 Setelah mengikuti tutorial ini, pengguna dapat:
 
 - mengimpor data CSV ke Power Query;
+- melakukan cleansing melalui antarmuka Power Query tanpa menulis kode M;
 - menetapkan tipe data dengan benar;
 - membersihkan spasi, karakter tersembunyi, dan kapitalisasi teks;
 - menstandardisasi nama provinsi, wilayah, dan triwulan;
@@ -71,6 +72,19 @@ Setelah mengikuti tutorial ini, pengguna dapat:
 - membuat nilai hasil cleansing tanpa menghilangkan data asli;
 - menghasilkan tabel data bersih, error log, dan ringkasan kualitas data;
 - memperbarui seluruh hasil hanya dengan perintah **Refresh All**.
+
+---
+
+### Dua jalur belajar yang tersedia
+
+Tutorial ini menyediakan dua jalur yang menghasilkan alur pengolahan yang sama:
+
+| Jalur | Cara bekerja | Cocok untuk |
+|---|---|---|
+| **Jalur Pemula—tanpa menulis kode M** | Menggunakan menu seperti **Transform**, **Replace Values**, **Conditional Column**, **Group By**, **Merge Queries**, **Remove Duplicates**, dan **Filter Rows**. | Peserta yang belum memahami bahasa M atau pemrograman. |
+| **Jalur Teknis—menggunakan kode M** | Menggunakan **Custom Column**, formula bar, fungsi, dan **Advanced Editor**. | Peserta yang membutuhkan proses lebih ringkas, dinamis, dan mudah digunakan ulang. |
+
+> **Catatan istilah:** Dalam Power Query, setiap proses tetap disimpan sebagai sebuah *query*. Istilah **tanpa query** dalam konteks pembelajaran ini dimaknai sebagai **tanpa menulis kode query/M secara manual**. Peserta cukup menggunakan antarmuka grafis, sedangkan Excel membuat kode dan daftar **Applied Steps** secara otomatis.
 
 ---
 
@@ -494,7 +508,635 @@ Query output `05_Clean_Data`, `06_Error_Log`, dan `07_Data_Quality_Summary` akan
 
 ---
 
-# BAGIAN B — PENJELASAN SETIAP TAHAP CLEANSING
+# BAGIAN B — JALUR PEMULA TANPA MENULIS KODE M
+
+Bagian ini ditujukan bagi peserta yang belum dapat melakukan coding. Seluruh transformasi dibuat dengan tombol pada Power Query Editor. Peserta **tidak perlu membuka Advanced Editor** dan tidak perlu mengetik formula M.
+
+Power Query tetap mencatat seluruh tindakan pada panel **Applied Steps**. Dengan demikian, metode ini tetap transparan, dapat di-*refresh*, dan tidak mengubah file CSV asli.
+
+## B.1 Ringkasan Alur Tanpa Coding
+
+| Tahap | Menu utama yang digunakan | Hasil |
+|---|---|---|
+| Impor sumber | **Data → Get Data → From Text/CSV** | `01_Raw_Data` |
+| Membersihkan teks | **Transform → Format → Clean/Trim/Capitalize Each Word** | Teks lebih konsisten |
+| Menyimpan nilai asli | **Duplicate Column** | Kolom audit seperti `Provinsi_Asli` |
+| Menormalkan triwulan | **Add Column → Conditional Column** | `Triwulan_Standar` |
+| Standardisasi provinsi | **Reference, Remove Duplicates, Merge Queries** | Nama provinsi dan wilayah standar |
+| Validasi | **Conditional Column** | Status missing dan invalid |
+| Duplikasi | **Group By, Merge Queries, Conditional Column** | `Flag_Duplikat` |
+| Outlier | **Conditional Column** dengan batas IQR latihan | `Flag_Outlier` dan nilai winsorized |
+| Jumlah masalah | **Add Column → Statistics → Sum** | `Jumlah_Flag_Masalah` |
+| Data bersih | **Sort, Filter Rows, Remove Duplicates** | `05_Clean_Data` |
+| Error log | **Reference dan Filter Rows** | `06_Error_Log` |
+| Ringkasan kualitas | **Load to Table/PivotTable** | Rekap jumlah dan persentase masalah |
+
+### Prinsip kerja jalur pemula
+
+1. Selalu mulai dari query hasil **Reference**, bukan mengedit file CSV.
+2. Pertahankan kolom asli sebelum melakukan standardisasi.
+3. Gunakan kolom status dan flag; jangan langsung menghapus baris bermasalah.
+4. Periksa hasil setiap langkah melalui pratinjau data dan **Column Quality**.
+5. Beri nama setiap langkah pada **Applied Steps** agar mudah dipahami.
+
+---
+
+## B.2 Mengaktifkan Data Profiling
+
+Data profiling membantu peserta melihat kualitas kolom tanpa membuat formula.
+
+1. Buka Power Query Editor.
+2. Pilih tab **View**.
+3. Aktifkan:
+   - **Column quality**;
+   - **Column distribution**;
+   - **Column profile**.
+4. Pada bagian bawah Power Query Editor, ubah profiling dari **Based on top 1000 rows** menjadi **Based on entire data set**.
+
+Informasi yang dapat dilihat:
+
+- persentase **Valid**, **Error**, dan **Empty**;
+- jumlah nilai berbeda dan nilai unik;
+- nilai minimum, maksimum, rata-rata, serta distribusi data;
+- nilai yang paling sering muncul.
+
+> Data profiling hanya membantu pemeriksaan. Fitur ini tidak menggantikan aturan bisnis dan tidak mengubah data.
+
+---
+
+## B.3 Menyiapkan `01_Raw_Data` Tanpa Coding
+
+Gunakan langkah pada Bagian A untuk mengimpor CSV. Pada query `01_Raw_Data`, lakukan hanya transformasi teknis yang diperlukan agar data dapat dibaca dengan benar.
+
+### Menetapkan tipe data
+
+1. Pilih kolom teks seperti `ID_Observasi`, `Periode`, `Triwulan`, `Provinsi`, dan `Wilayah`.
+2. Klik ikon tipe data pada header, lalu pilih **Text**.
+3. Pilih kolom bilangan bulat seperti `Tahun`, `Urutan_Waktu`, `Kode_Provinsi`, dan `Jumlah_Penduduk`.
+4. Pilih tipe **Whole Number**.
+5. Pilih seluruh kolom indikator desimal.
+6. Pilih **Transform → Data Type → Using Locale...**.
+7. Atur:
+   - **Data Type:** Decimal Number;
+   - **Locale:** English (United States).
+8. Klik **OK**.
+
+### Memberi nama langkah
+
+Pada panel **Applied Steps**:
+
+1. Klik kanan sebuah langkah.
+2. Pilih **Rename**.
+3. Gunakan nama yang menjelaskan tindakan, misalnya:
+   - `Header Dipromosikan`;
+   - `Tipe Data Bilangan Bulat`;
+   - `Tipe Data Desimal en-US`.
+
+Penamaan ini memudahkan peserta memahami proses tanpa membaca kode M.
+
+---
+
+## B.4 Membersihkan Teks pada `02_Standardisasi`
+
+### B.4.1 Menyimpan nilai asli
+
+1. Pilih query `02_Standardisasi`.
+2. Klik kanan kolom `Provinsi`.
+3. Pilih **Duplicate Column**.
+4. Ubah nama hasil duplikasi menjadi `Provinsi_Asli`.
+5. Duplikasi kolom `Wilayah` dan ubah namanya menjadi `Wilayah_Asli`.
+6. Duplikasi kolom `Triwulan` dan ubah namanya menjadi `Triwulan_Asli`.
+
+Kolom asli tersebut tidak diubah dan digunakan sebagai jejak audit.
+
+### B.4.2 Membersihkan spasi dan karakter tersembunyi
+
+Untuk kolom `Provinsi`, `Wilayah`, `Triwulan`, `ID_Observasi`, dan `Periode`:
+
+1. Pilih kolom yang akan dibersihkan. Gunakan `Ctrl` untuk memilih beberapa kolom.
+2. Pilih **Transform → Format → Clean**.
+3. Pilih **Transform → Format → Trim**.
+
+Untuk `Provinsi` dan `Wilayah`:
+
+4. Pilih **Transform → Format → Capitalize Each Word**.
+
+Untuk `Triwulan`:
+
+5. Pilih **Transform → Format → UPPERCASE**.
+
+Contoh hasil:
+
+| Nilai awal | Setelah Clean/Trim/Format |
+|---|---|
+| ` ACEH ` | `Aceh` |
+| `sumatera` | `Sumatera` |
+| ` q2 ` | `Q2` |
+
+> Nama seperti `DKI Jakarta` dapat berubah menjadi `Dki Jakarta`. Nama akhir tetap harus diambil dari tabel referensi, bukan langsung dari hasil **Capitalize Each Word**.
+
+### B.4.3 Alternatif: Column From Examples
+
+Untuk transformasi pola sederhana, peserta juga dapat menggunakan fitur berbasis contoh:
+
+1. Pilih kolom sumber, misalnya `Provinsi` atau `Periode`.
+2. Pilih **Add Column → Column From Examples → From Selection**.
+3. Ketik dua atau tiga contoh hasil yang diinginkan.
+4. Power Query akan mencoba mengenali pola dan mengisi baris lainnya.
+5. Periksa nilai hasil pada beberapa bagian data, terutama variasi yang tidak digunakan sebagai contoh.
+6. Klik **OK** hanya apabila pola yang disarankan sudah benar.
+
+Fitur ini cocok untuk membersihkan pola teks yang konsisten, tetapi tidak boleh digunakan untuk menebak aturan bisnis. Untuk nama provinsi resmi dan klasifikasi wilayah, tetap gunakan tabel referensi.
+
+---
+
+## B.5 Menormalkan Triwulan dengan Conditional Column
+
+Buat kolom baru tanpa formula M:
+
+1. Pilih **Add Column → Conditional Column**.
+2. Isi **New column name** dengan `Triwulan_Standar`.
+3. Buat aturan berikut secara berurutan.
+
+| Kolom | Operator | Nilai | Output |
+|---|---|---|---|
+| `Triwulan` | equals | `Q1` | `Q1` |
+| `Triwulan` | equals | `1` | `Q1` |
+| `Triwulan` | equals | `I` | `Q1` |
+| `Triwulan` | equals | `TW-I` | `Q1` |
+| `Triwulan` | equals | `Q2` | `Q2` |
+| `Triwulan` | equals | `2` | `Q2` |
+| `Triwulan` | equals | `II` | `Q2` |
+| `Triwulan` | equals | `TW-II` | `Q2` |
+| `Triwulan` | equals | `Q3` | `Q3` |
+| `Triwulan` | equals | `3` | `Q3` |
+| `Triwulan` | equals | `III` | `Q3` |
+| `Triwulan` | equals | `TW-III` | `Q3` |
+| `Triwulan` | equals | `Q4` | `Q4` |
+| `Triwulan` | equals | `4` | `Q4` |
+| `Triwulan` | equals | `IV` | `Q4` |
+| `Triwulan` | equals | `TW-IV` | `Q4` |
+
+4. Pada bagian **Else**, pilih **Select a column**, kemudian pilih `Triwulan`.
+5. Klik **OK**.
+
+Dengan pilihan tersebut, nilai tidak dikenal seperti `Q5` tetap dipertahankan agar dapat ditandai sebagai invalid. Nilai tidak langsung dihapus atau diubah diam-diam.
+
+### Membuat status triwulan
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Status_Triwulan`.
+3. Atur:
+   - jika `Triwulan_Standar` equals `(null)`/kosong → `Missing`;
+   - jika `Triwulan_Standar` sama dengan `Q1` → `Valid`;
+   - *else if* sama dengan `Q2` → `Valid`;
+   - *else if* sama dengan `Q3` → `Valid`;
+   - *else if* sama dengan `Q4` → `Valid`;
+   - **Else** → `Invalid`.
+
+Pada sebagian versi Excel, nilai kosong dipilih sebagai **(null)**; pada versi lain, kolom nilai dibiarkan kosong. Periksa pratinjau hasil. Jika dialog tidak dapat mengenali null, gunakan filter **(null)** untuk pemeriksaan missing dan tetap pertahankan nilai kosong pada error log.
+
+---
+
+## B.6 Membuat `Ref_Provinsi` dengan Menu Power Query
+
+1. Klik kanan query `01_Raw_Data`.
+2. Pilih **Reference**.
+3. Ubah nama query menjadi `Ref_Provinsi`.
+4. Pilih kolom `Kode_Provinsi`, `Provinsi`, dan `Wilayah`.
+5. Pilih **Home → Remove Columns → Remove Other Columns**.
+6. Pilih kolom `Provinsi` dan `Wilayah`.
+7. Gunakan:
+   - **Transform → Format → Clean**;
+   - **Transform → Format → Trim**;
+   - **Transform → Format → Capitalize Each Word**.
+8. Urutkan `Kode_Provinsi` dari kecil ke besar.
+9. Pilih kolom `Kode_Provinsi`.
+10. Pilih **Home → Remove Rows → Remove Duplicates**.
+11. Ubah nama:
+    - `Provinsi` menjadi `Provinsi_Standar`;
+    - `Wilayah` menjadi `Wilayah_Standar`.
+
+> Referensi ini hanya digunakan untuk latihan. Untuk pekerjaan resmi, gunakan master kode provinsi yang sah dan terverifikasi.
+
+---
+
+## B.7 Menggabungkan Referensi Provinsi Tanpa Coding
+
+1. Kembali ke query `02_Standardisasi`.
+2. Pilih **Home → Merge Queries**.
+3. Pada tabel pertama, klik kolom `Kode_Provinsi`.
+4. Pada tabel kedua, pilih `Ref_Provinsi`, lalu klik `Kode_Provinsi`.
+5. Pada **Join Kind**, pilih **Left Outer**.
+6. Klik **OK**.
+7. Pada kolom hasil merge, klik ikon **Expand**.
+8. Pilih:
+   - `Provinsi_Standar`;
+   - `Wilayah_Standar`.
+9. Hilangkan centang **Use original column name as prefix**.
+10. Klik **OK**.
+
+### Membuat status standardisasi
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Status_Standardisasi`.
+3. Buat aturan:
+
+| Kondisi | Output |
+|---|---|
+| `Provinsi_Standar` is null | `Provinsi Tidak Dikenali` |
+| `Provinsi_Asli` is null | `Nama Provinsi Kosong` |
+| `Provinsi_Asli` does not equal `Provinsi_Standar` | `Nama Provinsi Dikoreksi` |
+| `Wilayah_Asli` is null | `Nama Wilayah Kosong` |
+| `Wilayah_Asli` does not equal `Wilayah_Standar` | `Nama Wilayah Dikoreksi` |
+| Else | `Sesuai` |
+
+Untuk membandingkan dengan kolom lain pada bagian nilai, ubah pilihan dari **Enter a value** menjadi **Select a column**. Apabila opsi tersebut tidak tersedia pada versi Excel yang digunakan, pilih **Add Column → Column From Examples → From All Columns**, isi beberapa contoh status, lalu periksa formula yang dihasilkan dan seluruh hasil kolom sebelum melanjutkan.
+
+### Membuat `Flag_Format`
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Flag_Format`.
+3. Jika `Status_Standardisasi` **does not equal** `Sesuai`, beri output `1`.
+4. **Else** beri output `0`.
+5. Ubah tipe kolom menjadi **Whole Number**.
+
+---
+
+## B.8 Membuat Status Validasi Numerik dengan Conditional Column
+
+Lakukan pada query `03_Validasi`.
+
+> Untuk mendeteksi nilai kosong pada dialog **Conditional Column**, pilih operator **equals** dan nilai **(null)**. Pada sebagian versi Excel, kolom nilai cukup dibiarkan kosong. Selalu periksa pratinjau agar nilai null tidak berubah menjadi teks `"null"`.
+
+### B.8.1 Status urbanisasi
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Status_Urbanisasi`.
+3. Buat aturan:
+   - `Urbanisasi_pct` is null → `Missing`;
+   - `Urbanisasi_pct` is less than `0` → `Invalid: Negatif`;
+   - `Urbanisasi_pct` is greater than `100` → `Invalid: Di atas 100%`;
+   - **Else** → `Valid`.
+
+### B.8.2 Status kemiskinan
+
+Ulangi langkah yang sama dan beri nama `Status_Kemiskinan`:
+
+- null → `Missing`;
+- kurang dari 0 → `Invalid: Negatif`;
+- lebih dari 100 → `Invalid: Di atas 100%`;
+- selain itu → `Valid`.
+
+### B.8.3 Status NPL
+
+Buat `Status_NPL`:
+
+- null → `Missing`;
+- kurang dari 0 → `Invalid: Negatif`;
+- lebih dari 100 → `Invalid: Di atas 100%`;
+- selain itu → `Valid`.
+
+### B.8.4 Status Kredit/PDRB
+
+Buat `Status_Kredit_PDRB`:
+
+- null → `Missing`;
+- kurang dari 0 → `Invalid: Negatif`;
+- lebih dari 100 → `Warning: Di atas 100%`;
+- selain itu → `Valid`.
+
+### B.8.5 Status DPK/PDRB
+
+Buat `Status_DPK_PDRB`:
+
+- null → `Missing`;
+- kurang dari 0 → `Invalid: Negatif`;
+- selain itu → `Valid`.
+
+> Rasio di atas 100 tidak selalu salah. Status harus mengikuti definisi indikator dan aturan bisnis, bukan sekadar bentuk angkanya.
+
+---
+
+## B.9 Membuat Flag Missing dan Invalid Tanpa Formula
+
+### B.9.1 `Flag_Missing`
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Flag_Missing`.
+3. Buat kondisi pertama: jika `Status_Urbanisasi` equals `Missing`, output `1`.
+4. Klik **Add Clause** untuk membuat kondisi *else if* berikutnya.
+5. Tambahkan secara berurutan:
+   - jika `Status_Kemiskinan` equals `Missing`, output `1`;
+   - jika `Status_NPL` equals `Missing`, output `1`.
+6. Isi **Else** dengan `0`.
+7. Ubah tipe menjadi **Whole Number**.
+
+Walaupun dialog menampilkannya sebagai rangkaian *if–else if*, hasilnya setara dengan logika OR karena setiap kondisi missing menghasilkan nilai `1`.
+
+### B.9.2 `Flag_Invalid`
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Flag_Invalid`.
+3. Buat kondisi pertama: jika `Status_Urbanisasi` begins with `Invalid`, output `1`.
+4. Klik **Add Clause**, lalu tambahkan kondisi *else if* berikut dengan output yang sama-sama `1`:
+   - `Status_Kemiskinan` begins with `Invalid`;
+   - `Status_NPL` begins with `Invalid`;
+   - `Status_Kredit_PDRB` begins with `Invalid`;
+   - `Status_DPK_PDRB` begins with `Invalid`;
+   - `Status_Triwulan` equals `Invalid`.
+5. Isi **Else** dengan `0`.
+6. Ubah tipe menjadi **Whole Number**.
+
+### Perlakuan nilai invalid untuk peserta pemula
+
+Untuk jalur tanpa coding, pendekatan paling aman adalah **tidak menimpa nilai invalid**. Pertahankan nilai asli, beri status dan flag, lalu:
+
+- masukkan baris tersebut ke `06_Error_Log`; atau
+- filter `Flag_Invalid = 0` pada output analisis yang mensyaratkan data valid.
+
+Pendekatan ini lebih mudah diaudit dibandingkan mengganti nilai secara otomatis tanpa aturan yang jelas.
+
+---
+
+## B.10 Mendeteksi Duplikasi dengan Group By
+
+Buat query pembantu `Ref_Duplikat`.
+
+1. Klik kanan `02_Standardisasi`.
+2. Pilih **Reference**.
+3. Ubah nama menjadi `Ref_Duplikat`.
+4. Pilih kolom `ID_Observasi`.
+5. Pilih **Home → Remove Columns → Remove Other Columns**.
+6. Pilih **Home → Group By**.
+7. Atur:
+   - **Group by:** `ID_Observasi`;
+   - **New column name:** `Jumlah_Kemunculan`;
+   - **Operation:** Count Rows.
+8. Klik **OK**.
+
+> Gunakan sumber `02_Standardisasi`, bukan `03_Validasi`, agar tidak terbentuk circular dependency ketika hasil `Ref_Duplikat` digabungkan ke `03_Validasi`.
+
+Gabungkan kembali ke query `03_Validasi`:
+
+1. Pilih query `03_Validasi`.
+2. Pilih **Home → Merge Queries**.
+3. Gabungkan `ID_Observasi` dengan `ID_Observasi` pada `Ref_Duplikat`.
+4. Pilih **Left Outer**.
+5. Expand `Jumlah_Kemunculan`.
+6. Tambahkan **Conditional Column** bernama `Flag_Duplikat`:
+   - jika `Jumlah_Kemunculan` lebih besar dari `1` → `1`;
+   - **Else** → `0`.
+7. Ubah tipe menjadi **Whole Number**.
+
+Query `Ref_Duplikat` cukup disimpan sebagai **Connection Only**.
+
+---
+
+## B.11 Mendeteksi Outlier Tanpa Menulis Kode M
+
+Antarmuka standar Power Query tidak menyediakan tombol langsung untuk menghitung **Q1**, **Q3**, dan **IQR** secara dinamis. Karena itu, jalur pemula menggunakan batas yang telah dihitung untuk file latihan ini:
+
+| Komponen | Nilai |
+|---|---:|
+| Q1 | 16,68 |
+| Q3 | 19,9225 |
+| Batas bawah | 11,81625 |
+| Batas atas | 24,78625 |
+
+### Membuat `Flag_Outlier`
+
+Pada query `04_Outlier`:
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Flag_Outlier`.
+3. Buat aturan:
+   - jika `Kemiskinan_pct` equals `(null)` → `0`;
+   - jika `Kemiskinan_pct` is less than `11.81625` → `1`;
+   - jika `Kemiskinan_pct` is greater than `24.78625` → `1`;
+   - **Else** → `0`.
+4. Ubah tipe menjadi **Whole Number**.
+
+Gunakan tanda desimal sesuai pengaturan regional Excel. Jika `11.81625` tidak diterima, masukkan `11,81625`; pastikan hasil pratinjau tetap bertipe angka, bukan teks.
+
+### Membuat nilai winsorized
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Kemiskinan_pct_Winsor`.
+3. Atur:
+   - jika `Kemiskinan_pct` is less than `11.81625` → `11.81625`;
+   - jika `Kemiskinan_pct` is greater than `24.78625` → `24.78625`;
+   - **Else** → pilih **Select a column**, lalu `Kemiskinan_pct`.
+4. Ubah tipe menjadi **Decimal Number**.
+
+Apabila nilai kosong berubah menjadi error, tambahkan kondisi paling awal `Kemiskinan_pct is null` dan biarkan output kosong/null sesuai opsi yang tersedia pada versi Excel.
+
+### Batasan jalur tanpa coding
+
+Batas `11.81625` dan `24.78625` hanya berlaku untuk dataset latihan yang sedang digunakan. Jika isi CSV berubah, batas harus dihitung ulang.
+
+Alternatif bagi peserta pemula:
+
+1. muat data valid ke worksheet;
+2. hitung Q1 dan Q3 menggunakan fungsi Excel `QUARTILE.INC`;
+3. hitung batas bawah dan batas atas pada worksheet;
+4. perbarui angka pada **Conditional Column**.
+
+Untuk perhitungan IQR yang otomatis mengikuti setiap refresh, gunakan kode M pada Bagian C.
+
+---
+
+## B.12 Menghitung Jumlah Masalah dengan Menu Statistics
+
+Agar satu baris dapat diketahui mempunyai berapa masalah:
+
+1. Pada query `04_Outlier`, pilih kolom:
+   - `Flag_Missing`;
+   - `Flag_Invalid`;
+   - `Flag_Outlier`;
+   - `Flag_Duplikat`;
+   - `Flag_Format`.
+2. Pilih **Add Column → Statistics → Sum**.
+3. Ubah nama kolom hasil menjadi `Jumlah_Flag_Masalah`.
+4. Pastikan tipe datanya **Whole Number**.
+
+Apabila menu **Statistics → Sum** tidak tersedia pada versi Excel tertentu, jumlahkan flag secara bertahap melalui **Add Column → Standard → Add**.
+
+### Membuat `Flag_Bermasalah`
+
+1. Pilih **Add Column → Conditional Column**.
+2. Beri nama `Flag_Bermasalah`.
+3. Jika `Jumlah_Flag_Masalah` lebih besar dari `0`, beri output `1`.
+4. **Else** beri output `0`.
+
+---
+
+## B.13 Membuat `05_Clean_Data` Tanpa Coding
+
+1. Klik kanan query `04_Outlier`.
+2. Pilih **Reference**.
+3. Ubah nama menjadi `05_Clean_Data`.
+4. Urutkan `Jumlah_Flag_Masalah` dari kecil ke besar.
+5. Urutkan `Urutan_Waktu` dari kecil ke besar sebagai aturan tambahan.
+6. Pilih kolom `ID_Observasi`.
+7. Pilih **Home → Remove Rows → Remove Duplicates**.
+
+Dengan cara tersebut, record dengan jumlah masalah lebih sedikit ditempatkan lebih dahulu sebelum duplikasi dihapus.
+
+### Menentukan tingkat kebersihan output
+
+Pilih salah satu kebijakan berikut.
+
+**Kebijakan A—konservatif:**
+
+- pertahankan baris missing dan outlier;
+- pertahankan seluruh kolom flag;
+- gunakan `Kemiskinan_pct_Winsor` untuk analisis yang membutuhkan perlakuan outlier;
+- filter hanya `Flag_Invalid = 0`.
+
+**Kebijakan B—ketat:**
+
+- filter `Flag_Missing = 0`;
+- filter `Flag_Invalid = 0`;
+- gunakan nilai winsorized;
+- pertahankan satu record per `ID_Observasi`.
+
+> Kebijakan pemilihan data harus ditentukan sebelum analisis dan dicatat pada dokumentasi aturan. Jangan menghapus data hanya untuk memperbaiki tampilan hasil.
+
+### Catatan deduplikasi
+
+Pengurutan dan **Remove Duplicates** melalui antarmuka cocok untuk latihan. Untuk proses produksi yang membutuhkan hasil deterministik dan aturan prioritas kompleks, gunakan metode kode M pada Bagian C serta tambahkan sumber/tanggal pembaruan sebagai pemecah seri.
+
+---
+
+## B.14 Membuat `06_Error_Log` Tanpa Coding
+
+1. Klik kanan query `04_Outlier`.
+2. Pilih **Reference**.
+3. Ubah nama menjadi `06_Error_Log`.
+4. Klik filter pada `Flag_Bermasalah`.
+5. Pilih hanya nilai `1`.
+6. Pertahankan kolom identitas, nilai asli, kolom status, dan seluruh flag.
+7. Opsional: pindahkan kolom berikut ke bagian depan:
+   - `ID_Observasi`;
+   - `Periode`;
+   - `Provinsi_Asli`;
+   - `Provinsi_Standar`;
+   - `Jumlah_Flag_Masalah`.
+
+Pada jalur tanpa coding, tidak wajib membuat satu kolom teks `Daftar_Masalah`. Kolom status seperti `Status_Urbanisasi`, `Status_NPL`, dan `Status_Standardisasi` sudah menunjukkan masalah secara lebih rinci.
+
+---
+
+## B.15 Membuat Ringkasan Kualitas Tanpa Coding
+
+Cara paling mudah bagi peserta pemula adalah menggunakan hasil Power Query sebagai tabel, kemudian membuat PivotTable atau ringkasan formula di Excel.
+
+### Opsi 1—PivotTable
+
+1. Muat query `04_Outlier` ke worksheet sementara atau ke **Data Model**.
+2. Pilih **Insert → PivotTable**.
+3. Masukkan ke bagian **Values**:
+   - `ID_Observasi` dan ubah menjadi **Count**;
+   - `Flag_Missing` sebagai **Sum**;
+   - `Flag_Invalid` sebagai **Sum**;
+   - `Flag_Outlier` sebagai **Sum**;
+   - `Flag_Duplikat` sebagai **Sum**;
+   - `Flag_Format` sebagai **Sum**;
+   - `Flag_Bermasalah` sebagai **Sum**.
+4. Ubah nama field menjadi nama yang mudah dipahami, misalnya `Total Baris`, `Missing`, dan `Invalid`.
+5. Buat persentase di samping PivotTable dengan membagi setiap jumlah masalah dengan `Total Baris`.
+
+### Opsi 2—Formula Excel pada tabel hasil load
+
+Misalkan tabel hasil diberi nama `tblQuality`, gunakan formula terstruktur seperti:
+
+```excel
+=ROWS(tblQuality[ID_Observasi])
+=SUM(tblQuality[Flag_Missing])
+=SUM(tblQuality[Flag_Invalid])
+=SUM(tblQuality[Flag_Outlier])
+=SUM(tblQuality[Flag_Duplikat])
+=SUM(tblQuality[Flag_Format])
+=SUM(tblQuality[Flag_Bermasalah])
+```
+
+Persentase dapat dihitung dengan:
+
+```excel
+=Jumlah_Masalah/Total_Baris
+```
+
+Format hasil sebagai **Percentage**.
+
+> PivotTable dan formula Excel akan dihitung ulang setelah query di-*refresh*. Namun, pastikan tabel sumber telah selesai diperbarui sebelum membaca ringkasan.
+
+---
+
+## B.16 Mengatur Load pada Jalur Tanpa Coding
+
+Simpan query perantara sebagai **Connection Only**:
+
+- `01_Raw_Data`;
+- `Ref_Provinsi`;
+- `Ref_Duplikat`;
+- `02_Standardisasi`;
+- `03_Validasi`;
+- `04_Outlier`.
+
+Muat sebagai tabel:
+
+- `05_Clean_Data`;
+- `06_Error_Log`;
+- `04_Outlier` hanya apabila diperlukan untuk PivotTable/ringkasan kualitas.
+
+Langkah:
+
+1. Pilih **Home → Close & Load → Close & Load To...**.
+2. Pilih **Only Create Connection** untuk query perantara.
+3. Pilih **Table** untuk query output.
+4. Setelah kembali ke Excel, pilih **Data → Refresh All**.
+
+---
+
+## B.17 Checklist Jalur Tanpa Coding
+
+- [ ] File CSV tidak diedit atau disimpan ulang.
+- [ ] Query sumber dibuat melalui **Get Data**.
+- [ ] Tipe desimal menggunakan locale `English (United States)`.
+- [ ] Nilai asli telah diduplikasi sebelum standardisasi.
+- [ ] Clean dan Trim diterapkan pada kolom teks.
+- [ ] Triwulan dinormalkan dengan **Conditional Column**.
+- [ ] Provinsi digabungkan dengan `Ref_Provinsi` melalui **Merge Queries**.
+- [ ] Status missing dan invalid dibuat dengan **Conditional Column**.
+- [ ] Jumlah kemunculan ID dihitung dengan **Group By**.
+- [ ] Outlier diberi flag menggunakan batas IQR latihan.
+- [ ] Jumlah flag dihitung menggunakan **Statistics → Sum**.
+- [ ] Data bersih dan error log dibuat melalui **Reference**.
+- [ ] Ringkasan kualitas dibuat melalui PivotTable atau formula Excel.
+- [ ] Semua hasil diperiksa kembali setelah **Refresh All**.
+
+---
+
+## B.18 Perbandingan Jalur Pemula dan Jalur Kode M
+
+| Aspek | Jalur antarmuka/tanpa coding | Jalur kode M |
+|---|---|---|
+| Kemudahan awal | Lebih mudah dipelajari | Membutuhkan pemahaman formula dan fungsi |
+| Transparansi | Terlihat melalui Applied Steps | Terlihat melalui Applied Steps dan kode |
+| Standardisasi sederhana | Sangat sesuai | Sangat sesuai |
+| Validasi berbasis kondisi | Dapat menggunakan Conditional Column | Lebih ringkas dan fleksibel |
+| Normalisasi banyak variasi | Membutuhkan banyak aturan klik | Dapat dibuat sebagai fungsi reusable |
+| IQR dinamis | Tidak tersedia langsung; batas perlu diperbarui | Dapat dihitung otomatis setiap refresh |
+| Penyusunan daftar masalah | Lebih mudah mempertahankan beberapa kolom status | Dapat menggabungkan seluruh masalah menjadi satu teks |
+| Deduplikasi kompleks | Terbatas pada sort dan remove duplicates | Dapat menggunakan aturan prioritas yang lebih kuat |
+| Cocok untuk produksi | Cocok untuk alur sederhana | Lebih cocok untuk alur besar dan berulang |
+
+> Rekomendasi pembelajaran: mulai dari jalur antarmuka agar peserta memahami logika cleansing. Setelah memahami fungsi setiap langkah, lanjutkan ke kode M untuk otomatisasi yang lebih dinamis.
+
+---
+
+# BAGIAN C — PENJELASAN TEKNIS DAN KODE M (OPSIONAL)
 
 ## 10. Tahap 1 — Membersihkan Nama Kolom
 
@@ -1187,7 +1829,7 @@ Setelah perbaikan pembacaan desimal dan pencatatan perubahan format, hasil indik
 
 ---
 
-# BAGIAN C — PENGATURAN LOAD DAN REFRESH
+# BAGIAN D — PENGATURAN LOAD DAN REFRESH
 
 ## 25. Mengatur Query agar Tidak Semua Dimuat ke Worksheet
 
@@ -1270,7 +1912,7 @@ in
 
 ---
 
-# BAGIAN D — QUALITY CHECK
+# BAGIAN E — QUALITY CHECK
 
 ## 28. Checklist Pemeriksaan setelah Refresh
 
@@ -1400,18 +2042,21 @@ Pada kondisi tersebut, penyebab yang paling mungkin adalah angka desimal terbaca
 5. Ubah nama query menjadi 01_Raw_Data.
 6. Pastikan 40 kolom terbaca dan tipe desimal menggunakan type number dengan locale en-US.
 7. Buat query lanjutan menggunakan Reference: 02_Standardisasi, 03_Validasi, dan 04_Outlier.
-8. Buat output 05_Clean_Data, 06_Error_Log, dan 07_Data_Quality_Summary.
-9. Buat Ref_Provinsi dan 09_Dokumentasi_Rule.
-10. Terapkan standardisasi teks, validasi, duplikasi, outlier, dan winsorization.
-11. Atur query perantara sebagai Connection Only.
-12. Muat query output ke worksheet dan lakukan Data → Refresh All.
-13. Periksa hasil menggunakan checklist kualitas data.
+8. Pilih jalur belajar:
+   - **jalur antarmuka**, menggunakan Clean, Trim, Conditional Column, Group By, Merge Queries, Statistics, Filter, dan Remove Duplicates; atau
+   - **jalur kode M**, menggunakan Custom Column, fungsi, dan Advanced Editor.
+9. Buat output 05_Clean_Data, 06_Error_Log, dan ringkasan kualitas data.
+10. Buat Ref_Provinsi, Ref_Duplikat, dan 09_Dokumentasi_Rule sesuai kebutuhan.
+11. Terapkan standardisasi teks, validasi, duplikasi, outlier, dan winsorization tanpa mengubah raw data.
+12. Atur query perantara sebagai Connection Only.
+13. Muat query output ke worksheet dan lakukan Data → Refresh All.
+14. Periksa hasil menggunakan checklist kualitas data.
 ```
 
 ---
 
 ## 32. Kesimpulan
 
-Power Query memungkinkan proses data cleansing dibangun dari satu file CSV secara terstruktur, transparan, dapat diaudit, dan dapat dijalankan ulang. Pengguna memulai dari workbook Excel kosong, mengimpor CSV melalui **Get Data** atau **Launch Power Query Editor**, lalu membuat rangkaian query sumber, standardisasi, validasi, deteksi outlier, data bersih, error log, dan ringkasan kualitas data.
+Power Query memungkinkan proses data cleansing dibangun dari satu file CSV secara terstruktur, transparan, dapat diaudit, dan dapat dijalankan ulang. Pengguna memulai dari workbook Excel kosong, mengimpor CSV melalui **Get Data** atau **Launch Power Query Editor**, lalu membuat rangkaian query sumber, standardisasi, validasi, deteksi outlier, data bersih, error log, dan ringkasan kualitas data. Peserta pemula dapat menyelesaikan sebagian besar proses melalui menu grafis seperti **Conditional Column**, **Group By**, **Merge Queries**, dan **Remove Duplicates**, tanpa menulis kode M.
 
 Raw data tidak pernah diperbaiki secara langsung. Seluruh perubahan hanya terjadi pada lapisan query, sehingga kondisi awal data tetap tersedia sebagai artefak dan setiap transformasi dapat ditelusuri melalui **Applied Steps**. Hal teknis paling penting adalah memastikan kolom desimal menggunakan `type number` dengan locale `en-US`. Setelah seluruh query selesai dibuat, proses dapat dijalankan ulang melalui **Refresh All** tanpa mengulangi cleansing secara manual.
