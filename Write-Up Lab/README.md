@@ -13,7 +13,7 @@ Fokus versi ini adalah **cepat sampai root/flag saat ujian close book**. Bagian 
 | [Gazette](03_gazette.md) | `192.168.56.121:8000` | SQLi → credential → SSH `editor` → Dirty Pipe → UID 0 | Cari dulu dengan `find / -type f -iname "*flag*" 2>/dev/null` |
 | [Statute](04_statute.md) | `192.168.56.120:8080` | Path Traversal → `.env` → SSH `operator` → `sudo vim` → root | Cari dulu dengan `find / -type f -iname "*flag*" 2>/dev/null` |
 | [SIPADU](05_sipadu.md) | `192.168.56.13:8081` | LFI → Apache access log poisoning → RCE `www-data` → SUID bash → root | User flag ada di `/home/petugas/flag.txt`, root flag di `/root/flag.txt` |
-| [SIMON](06_simon.md) | `192.168.56.12:8347/monitor/` | OS command injection → RCE `www-data` → `sudo gawk` NOPASSWD → root | User flag di `/home/monitor/flag.txt`, root flag di `/root/flag.txt` |
+| [SIMON](06_simon.md) | `192.168.56.12:8347` | OS command injection → RCE `www-data` → `sudo gawk` NOPASSWD → root | User flag di `/home/monitor/flag.txt`, root flag di `/root/flag.txt` |
 | [SIMASET](07_simaset.md) | `192.168.56.14` | SQLi auth bypass → upload PHP → web shell → Python capability `cap_setuid` → root | User flag di `/home/pengelola/flag.txt`, root flag di `/root/flag.txt` |
 
 ## Prinsip Ujian
