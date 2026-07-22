@@ -485,12 +485,6 @@ Masukkan:
 8.8.8.8; ls -la /home/monitor
 ```
 
-Capture menggunakan:
-
-```text
-8.8.8.8; ls /home/monitor
-```
-
 ### Output Evidence
 
 ```text
