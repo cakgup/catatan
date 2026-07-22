@@ -742,12 +742,6 @@ Tahap LFI-to-RCE sudah terbukti. Selanjutnya lakukan stabilisasi shell dan local
 python3 -c 'import pty; pty.spawn("/bin/bash")'
 ```
 
-Capture juga menunjukkan bentuk equivalent:
-
-```bash
-python3 -c 'import pty; pty.spawn("/bin/bash")'
-```
-
 ### Set Environment
 
 ```bash
