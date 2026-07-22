@@ -746,8 +746,6 @@ Mencari salah konfigurasi lokal yang dapat digunakan account `www-data` untuk me
 ```bash
 id
 uname -a
-cat /etc/os-release
-sudo -l 2>&1
 ```
 
 ### Cari Binary SUID
