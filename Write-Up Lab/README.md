@@ -66,21 +66,7 @@ SQLi → Upload → Web shell → Capability → Find FLAG
 
 ## Catatan Tambahan
 
-- File yang saat ini tersedia di folder ini mencakup `Catalina`, `Portrait`, `Gazette`, `Statute`, `SIPADU`, `SIMON`, dan `SIMASET`.
-- `README.md` ini berfungsi sebagai peta cepat; detail langkah, evidence, dan close-book flow ada di masing-masing file VM.
-- Selain write-up VM, folder ini juga memuat [cheatsheet umum](cheatsheet.md) dan [ringkasan materi](Ringkasan_Materi.md) sebagai referensi umum.
-
-## Link Cepat
-
-- [01 Catalina](01_catalina.md)
-- [02 Portrait](02_portrait.md)
-- [03 Gazette](03_gazette.md)
-- [04 Statute](04_statute.md)
-- [05 SIPADU](05_sipadu.md)
-- [06 SIMON](06_simon.md)
-- [07 SIMASET](07_simaset.md)
-- [Cheatsheet](cheatsheet.md)
-- [Ringkasan Materi](Ringkasan_Materi.md)
+Selain write-up VM, folder ini juga memuat [cheatsheet umum](cheatsheet.md) dan [ringkasan materi](Ringkasan_Materi.md) sebagai referensi umum.
 
 ## Format Jawaban Singkat
 
