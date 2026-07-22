@@ -746,8 +746,6 @@ Mencari salah konfigurasi lokal yang dapat digunakan account `www-data` untuk me
 ```bash
 id
 uname -a
-cat /etc/os-release
-sudo -l 2>&1
 ```
 
 ### Cari Binary SUID
@@ -804,25 +802,6 @@ Perhatikan karakter `s` pada permission owner:
 ---
 
 ## 15. Fase 13 — Privilege Escalation melalui SUID Bash
-
-### Percobaan yang Tidak Diperlukan
-
-Capture menunjukkan command:
-
-```bash
-mount -p
-```
-
-Output:
-
-```text
-mount: invalid option -- 'p'
-Try 'mount --help' for more information.
-```
-
-Opsi `-p` yang dibutuhkan adalah opsi milik **Bash**, bukan `mount`.
-
-### Command yang Benar
 
 ```bash
 bash -p
