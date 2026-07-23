@@ -39,31 +39,6 @@ Kalau sudah ketemu path-nya:
 cat /path/flag
 ```
 
-## Mnemonic
-
-```text
-Catalina = T-W-C-R-F
-Tomcat → WAR → Cron → Root → Find FLAG
-
-Gazette = S-S-D-R-F
-SQLi → SSH → DirtyPipe → Root → Find FLAG
-
-Portrait = S-U-C-R-F
-SQLi → Upload → Capability → Root → Find FLAG
-
-Statute = T-E-S-V-F
-Traversal → Env → SSH → Vim → Find FLAG
-
-SIPADU = L-L-R-S-F
-LFI → Log poisoning → RCE → SUID bash → Find FLAG
-
-SIMON = C-W-S-R-F
-Command injection → Web RCE → Sudo gawk → Root → Find FLAG
-
-SIMASET = S-U-W-C-F
-SQLi → Upload → Web shell → Capability → Find FLAG
-```
-
 ## Catatan Tambahan
 
 Selain write-up VM, folder ini juga memuat [cheatsheet umum](cheatsheet.md) dan [ringkasan materi](Ringkasan_Materi.md) sebagai referensi umum.
