@@ -374,7 +374,7 @@ OK - Deployed application at context path [/catalina-shell]
 ## 8.4 Buka Listener
 
 ```bash
-nc -lvnp 4444
+rlwrap nc -lvnp 4444
 ```
 
 Output:
