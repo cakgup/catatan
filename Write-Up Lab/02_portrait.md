@@ -446,7 +446,6 @@ Upload `cakgup1.php` melalui fitur pada `/profile`.
 Gunakan Burp Suite untuk mengubah bagian multipart seperti berikut:
 
 ```http
-Content-Disposition: form-data; name="file"; filename="cakgup1.php"
 Content-Type: image/jpeg
 ```
 
