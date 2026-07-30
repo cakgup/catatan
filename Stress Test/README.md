@@ -50,41 +50,81 @@ Jumlah concurrent user tetap **100**, bukan 800.
 
 # 3. Cara Menentukan Target CCU
 
-## 3.1 Dari data penggunaan nyata
+Target CCU sebaiknya tidak ditentukan hanya dengan perkiraan. Gunakan data yang paling mendekati kondisi nyata.
 
-Metode terbaik adalah menggunakan data production, misalnya:
+Urutan sumber data yang disarankan:
+
+1. data monitoring production;
+2. proyeksi kebutuhan bisnis;
+3. jumlah pengguna terdaftar;
+4. pola kejadian khusus;
+5. tambahan cadangan kapasitas.
+
+---
+
+## 3.1 Metode terbaik: data monitoring production
+
+Jika aplikasi sudah digunakan, gunakan data aktual seperti:
 
 - jumlah session aktif pada jam sibuk;
-- jumlah login baru per menit;
-- rata-rata durasi session;
-- pola penggunaan pada tanggal atau periode puncak.
+- jumlah login atau session baru per menit;
+- rata-rata lama session;
+- pola penggunaan harian;
+- tanggal atau periode dengan beban tertinggi;
+- jumlah request per detik pada jam sibuk.
 
 Contoh:
 
 ```text
-Peak active session : 500 user
-Cadangan kapasitas  : 30%
-Target pengujian    : 500 × 130% = 650 CCU
+Peak active session aktual : 500 user
+Cadangan kapasitas         : 30%
+Target pengujian           : 500 × 130% = 650 CCU
 ```
 
-## 3.2 Dari proyeksi bisnis
+Artinya, sistem diuji tidak hanya pada 500 user aktual, tetapi juga diberi cadangan 30%.
 
-Gunakan rumus:
+Cadangan kapasitas biasanya digunakan untuk mengantisipasi:
+
+- pertumbuhan jumlah pengguna;
+- lonjakan pada periode tertentu;
+- keterlambatan respons;
+- perubahan pola penggunaan;
+- kegagalan sebagian node atau server.
+
+---
+
+## 3.2 Menggunakan proyeksi bisnis
+
+Jika aplikasi belum production, target dapat dihitung dari:
+
+- jumlah pengguna aktif per hari;
+- jam operasional;
+- rata-rata durasi session.
+
+Rumus pertama:
 
 ```text
 Session per jam = Pengguna aktif per hari ÷ Jam operasional
 ```
 
-Kemudian:
+Rumus kedua:
 
 ```text
-CCU = Session masuk per menit × Rata-rata durasi session
+Session per menit = Session per jam ÷ 60
 ```
 
-Contoh:
+Rumus target CCU:
 
 ```text
-Pengguna aktif per hari : 6.000
+CCU = Session masuk per menit × Rata-rata durasi session dalam menit
+```
+
+Rumus tersebut merupakan penerapan sederhana dari konsep *Little’s Law*.
+
+### Contoh 1 — durasi session 60 menit
+
+```text
+Pengguna aktif per hari : 6.000 user
 Jam operasional         : 8 jam
 Durasi session          : 60 menit
 ```
@@ -92,41 +132,247 @@ Durasi session          : 60 menit
 Perhitungan:
 
 ```text
-Session per jam   = 6.000 ÷ 8 = 750
-Session per menit = 750 ÷ 60 = 12,5
-CCU                = 12,5 × 60 = 750
+Session per jam   = 6.000 ÷ 8
+                   = 750 session/jam
+
+Session per menit = 750 ÷ 60
+                   = 12,5 session/menit
+
+CCU                = 12,5 × 60
+                   = 750 concurrent users
 ```
 
-Jika durasi session hanya 15 menit:
+### Contoh 2 — durasi session 15 menit
 
 ```text
-CCU = 12,5 × 15 = 187,5
-```
-
-Target dapat dibulatkan menjadi **188 CCU**.
-
-## 3.3 Jika baru tersedia jumlah pengguna terdaftar
-
-Gunakan asumsi yang disepakati bersama pemilik proses bisnis.
-
-Contoh:
-
-```text
-Total pengguna terdaftar       : 10.000
-Aktif pada hari sibuk          : 40%
-Aktif bersamaan                : 20% dari pengguna harian
+Session per menit : 12,5
+Durasi session    : 15 menit
 ```
 
 Perhitungan:
 
 ```text
-Pengguna harian = 10.000 × 40% = 4.000
-Target CCU      = 4.000 × 20%  = 800
+CCU = 12,5 × 15
+    = 187,5
 ```
 
-Asumsi ini harus dikonfirmasi karena bukan data aktual.
+Target dapat dibulatkan menjadi sekitar:
+
+```text
+188 CCU
+```
+
+### Hal yang perlu diperhatikan
+
+Rata-rata durasi session harus menggambarkan waktu pengguna benar-benar aktif, bukan sekadar waktu token atau cookie masih berlaku.
+
+Misalnya:
+
+```text
+Token berlaku       : 2 jam
+Pengguna aktif nyata: 15 menit
+```
+
+Gunakan 15 menit, bukan 2 jam.
 
 ---
+
+## 3.3 Menggunakan jumlah pengguna terdaftar
+
+Metode ini digunakan jika belum tersedia data penggunaan aktual.
+
+Contoh asumsi:
+
+```text
+Total pengguna terdaftar       : 10.000
+Pengguna aktif pada hari sibuk : 40%
+Pengguna aktif bersamaan       : 20% dari pengguna harian
+```
+
+Perhitungan:
+
+```text
+Pengguna harian = 10.000 × 40%
+                = 4.000 user
+
+Target CCU      = 4.000 × 20%
+                = 800 concurrent users
+```
+
+Metode ini hanya perkiraan. Persentase pengguna aktif harus dikonfirmasi bersama pemilik proses bisnis.
+
+---
+
+## 3.4 Menggunakan pola kejadian khusus
+
+Beberapa aplikasi tidak sibuk setiap hari, tetapi mengalami lonjakan pada waktu tertentu.
+
+Contoh:
+
+- pembukaan periode input;
+- batas waktu pelaporan;
+- proses persetujuan serentak;
+- kegiatan tutup buku;
+- pengumuman kepada seluruh unit;
+- transaksi massal;
+- pencairan atau pembayaran pada tanggal tertentu.
+
+Dalam kondisi tersebut, target CCU harus mengikuti kondisi puncak tersebut, bukan rata-rata harian.
+
+Contoh:
+
+```text
+Pengguna normal aktif bersamaan : 200 user
+Saat batas waktu pelaporan      : 700 user
+```
+
+Target pengujian sebaiknya mengikuti:
+
+```text
+700 CCU
+```
+
+kemudian ditambah cadangan kapasitas.
+
+---
+
+## 3.5 Menambahkan cadangan kapasitas
+
+Setelah memperoleh target dasar, tambahkan cadangan.
+
+Contoh:
+
+```text
+Target dasar        : 750 CCU
+Cadangan kapasitas  : 20%
+Target dengan buffer: 750 × 120%
+                    : 900 CCU
+```
+
+Besarnya cadangan dapat disepakati, misalnya:
+
+| Kondisi | Cadangan awal |
+|---|---:|
+| Pola penggunaan stabil | 10–20% |
+| Pengguna masih bertumbuh | 20–30% |
+| Beban sulit diprediksi | 30–50% |
+| Sistem sangat kritis | ditentukan berdasarkan SLA dan risiko |
+
+Angka tersebut bukan aturan mutlak. Keputusan harus mempertimbangkan kebutuhan bisnis dan risiko layanan.
+
+---
+
+## 3.6 Menyusun level skenario pengujian
+
+Setelah target CCU diperoleh, jangan langsung menguji pada angka tertinggi.
+
+Gunakan tahapan:
+
+| Jenis pengujian | Tujuan |
+|---|---|
+| Smoke test | memastikan test plan, token, data, dan payload benar |
+| Baseline test | memperoleh performa awal pada beban rendah |
+| Load test | menguji kebutuhan operasional |
+| Stress test | mencari penurunan performa |
+| Breakpoint test | mencari batas kegagalan sistem |
+| Soak test | melihat kestabilan dalam durasi panjang |
+
+Contoh jika target bisnis adalah:
+
+```text
+750 CCU
+```
+
+Tahapan awal dapat disusun:
+
+```text
+Smoke test  : 3–10 user
+Baseline    : 200–300 user
+Load test   : 500–750 user
+Stress test : 825–1.125 user
+Breakpoint  : dinaikkan bertahap sampai gagal
+```
+
+Angka tersebut perlu disesuaikan dengan kemampuan environment dan risiko pengujian.
+
+---
+
+## 3.7 Jika pengujian dilakukan pada development
+
+Jika spesifikasi development belum menyerupai production, jangan langsung menguji target bisnis penuh.
+
+Contoh:
+
+```text
+Target production : 750 CCU
+Skenario awal DEV : 40, 60, 80, dan 100 CU
+```
+
+Tujuan pengujian DEV adalah:
+
+- memastikan test plan bekerja;
+- menemukan endpoint dengan error rate tinggi;
+- mengenali bottleneck awal;
+- mengukur pola penurunan performa;
+- menjadi dasar optimalisasi.
+
+Hasil DEV tidak boleh langsung digunakan untuk menyimpulkan bahwa target production terpenuhi atau tidak terpenuhi.
+
+Perbedaannya dapat meliputi:
+
+- CPU dan RAM;
+- jumlah server;
+- load balancer;
+- database;
+- storage;
+- jaringan;
+- redundansi;
+- high availability;
+- connection pool;
+- timeout.
+
+Setelah optimalisasi dilakukan, retest sebaiknya menggunakan environment yang spesifikasi, konfigurasi, dan topologinya mendekati production.
+
+---
+
+## 3.8 Contoh keputusan penentuan target
+
+Misalnya diketahui:
+
+```text
+Pengguna aktif per hari : 6.000
+Jam operasional         : 8 jam
+Durasi session          : 60 menit
+Target dasar            : 750 CCU
+Cadangan                : 20%
+```
+
+Maka:
+
+```text
+Target kapasitas = 750 × 120%
+                 = 900 CCU
+```
+
+Skenario pengujian dapat dibuat:
+
+```text
+Smoke test  : 5 user
+Baseline    : 100–300 user
+Load test   : 500–750 user
+Stress test : 825–900 user
+```
+
+Jika masih menggunakan environment development yang kecil, mulai dari:
+
+```text
+40, 60, 80, dan 100 CU
+```
+
+kemudian lanjutkan pada environment production-like.
+
+---
+
 
 # 4. Skenario Development yang Digunakan
 
