@@ -1,558 +1,998 @@
-# PANDUAN HANDS-ON
-# Oracle Database Vault 19c dan Data Redaction
+# Panduan Ringkas dan Hands-On Oracle Database Vault 19c
 
-> Panduan praktikum langkah demi langkah untuk peserta  
-> Basis utama: *Oracle Database Vault Administrator's Guide 19c (E96302-23, June 2024)*  
-> Bagian Data Redaction menggunakan `DBMS_REDACT` dan praktik yang telah diuji pada lab.
+> Ringkasan terstruktur dari **Oracle Database Vault Administrator's Guide 19c, E96302-23, June 2024**, dilengkapi praktik laboratorium dan catatan operasional.  
+> Tujuan dokumen ini adalah membuat panduan Oracle yang sangat panjang menjadi lebih mudah dipahami, namun tetap mempertahankan terminologi dan model keamanan Oracle Database Vault.
 
 ---
 
-## 1. Tujuan Panduan
+# Cara Menggunakan Panduan Ini
 
-Setelah mengikuti panduan ini, peserta diharapkan mampu:
+Dokumen ini dibagi menjadi lima bagian:
 
-1. memahami fungsi Oracle Database Vault (DV);
-2. membedakan peran `DV_OWNER`, `DV_ADMIN`, `DV_ACCTMGR`, dan developer aplikasi;
-3. mengecek apakah Database Vault sudah aktif;
-4. mengecek user, profile, expiry date, dan role yang dimiliki;
-5. memberikan dan mencabut role Database Vault;
-6. membuat role custom untuk developer aplikasi;
-7. membuat dan mengelola Realm;
-8. menambahkan dan menghapus user dari Realm;
-9. memahami perbedaan Realm Owner dan Realm Participant;
-10. memberikan Realm authorization secara sementara;
-11. menerapkan Oracle Data Redaction pada kolom sensitif;
-12. menguji hasil redaction dari user aplikasi;
-13. melakukan troubleshooting terhadap error yang umum muncul;
-14. melakukan monitoring konfigurasi Database Vault;
-15. menangani kebutuhan maintenance tanpa sembarangan membuka Realm.
+1. **Bagian I — Memahami Database Vault**  
+   Ringkasan konsep Oracle Database Vault dan seluruh kelompok materi dalam Oracle Administrator's Guide.
 
----
+2. **Bagian II — Komponen Inti Database Vault**  
+   Penjelasan lebih dalam mengenai Realm, Rule, Rule Set, Command Rule, Factor, Secure Application Role, Policy, Simulation Mode, dan Operations Control.
 
-# 2. Konsep Dasar
+3. **Bagian III — Role dan Separation of Duties**  
+   Menjelaskan siapa melakukan apa: `DV_OWNER`, `DV_ADMIN`, `DV_ACCTMGR`, monitoring, developer aplikasi, dan role khusus.
 
-## 2.1 Apa itu Oracle Database Vault?
+4. **Bagian IV — Hands-On Lab**  
+   Praktik terurut dari pengecekan Database Vault sampai pembuatan Realm dan pengujian akses.
 
-Oracle Database Vault adalah fitur Oracle Database untuk membatasi akses terhadap data dan object database, termasuk dari akun yang memiliki privilege tinggi.
+5. **Bagian V — Operasional, Troubleshooting, dan Data Redaction**  
+   Runbook ketika aplikasi/DBA mengalami kendala, monitoring, error umum, dan integrasi praktik Data Redaction.
 
-Tujuan utamanya adalah:
-
-- separation of duties;
-- least privilege;
-- pembatasan DBA terhadap data aplikasi;
-- pengamanan object sensitif;
-- pemberian akses berdasarkan konteks;
-- audit dan monitoring akses.
-
-Mental model sederhana:
-
-```text
-DATABASE
-   |
-   +-- Realm
-   |     |
-   |     +-- Object yang dilindungi
-   |     +-- User/Role yang diotorisasi
-   |
-   +-- Rule
-   |
-   +-- Rule Set
-   |
-   +-- Command Rule
-   |
-   +-- Factor
-   |
-   +-- Policy
-```
-
-### Komponen utama
-
-| Komponen | Fungsi sederhana |
-|---|---|
-| Realm | Pagar untuk schema/object/role |
-| Realm Authorization | Menentukan siapa yang boleh melewati pagar |
-| Rule | Satu kondisi keamanan |
-| Rule Set | Kumpulan rule |
-| Command Rule | Membatasi SQL tertentu |
-| Factor | Konteks sesi seperti IP, user, host, module |
-| Secure Application Role | Role yang aktif jika rule terpenuhi |
-| Policy | Pengelompokan konfigurasi DV |
-| Simulation Mode | Menguji DV tanpa langsung memblok SQL |
+Jika peserta baru mengenal Database Vault, **jangan langsung menjalankan script**. Baca Bagian I–III terlebih dahulu.
 
 ---
 
-# 3. Pembagian Peran Peserta
+# BAGIAN I — MEMAHAMI ORACLE DATABASE VAULT
 
-Untuk praktikum ini digunakan contoh pembagian berikut.
+# 1. Database Vault dalam Satu Kalimat
 
-| User Lab | Fungsi | Role utama |
-|---|---|---|
-| `LATIHAN` | Security Administrator utama | `DV_OWNER` |
-| `LATIHAN1` | DBA / DV Configuration Administrator | `DV_ADMIN` |
-| `LATIHAN2` | Account Administrator | `DV_ACCTMGR` |
-| `LATIHAN3` | Developer aplikasi | `APP_DEV_STANDARD` |
+Oracle Database Vault adalah lapisan kontrol keamanan di atas privilege Oracle Database yang bertujuan untuk:
 
-> Catatan: secara fungsi, `DV_ACCTMGR` lebih tepat disebut **Account Administrator**, bukan Security Administrator.
+> **mencegah privileged account menggunakan kewenangannya untuk mengakses data atau mengubah konfigurasi yang tidak menjadi tanggung jawabnya.**
+
+Contoh sederhana:
+
+```text
+Sebelum Database Vault
+
+DBA
+ |
+ +-- SELECT ANY TABLE
+ |
+ +-- bisa membaca hampir seluruh tabel
+
+
+Setelah Database Vault
+
+DBA
+ |
+ +-- SELECT ANY TABLE
+ |
+ +-- Realm
+       |
+       +-- HR.EMPLOYEES
+       +-- FINANCE.TRANSACTION
+       |
+       +-- DBA tidak authorized
+           -> akses diblok
+```
+
+Database Vault **tidak menggantikan** privilege model Oracle.
+
+Database Vault bekerja sebagai **lapisan tambahan** di atas:
+
+- system privilege;
+- object privilege;
+- role;
+- ownership schema.
 
 ---
 
-# 4. Perbedaan Role Penting
+# 2. Masalah yang Diselesaikan Database Vault
 
-## 4.1 DV_OWNER
+Oracle Database Vault terutama menjawab tiga masalah.
 
-`DV_OWNER` adalah role dengan kewenangan paling tinggi dalam administrasi Database Vault.
+## 2.1 Privileged account terlalu kuat
 
-Fungsi utamanya:
-
-- mengelola konfigurasi Database Vault;
-- menggunakan package DV;
-- memberikan sebagian besar role DV kepada user lain;
-- mengelola administrator DV;
-- melakukan monitoring dan reporting DV.
-
-Mental model:
+Akun seperti DBA bisa memiliki:
 
 ```text
-DV_OWNER = pemilik / administrator tertinggi DV
+SELECT ANY TABLE
+DROP ANY TABLE
+ALTER ANY TABLE
+EXECUTE ANY PROCEDURE
 ```
 
-## 4.2 DV_ADMIN
+Tanpa kontrol tambahan, privilege ini dapat digunakan pada data aplikasi yang sebenarnya tidak perlu dilihat oleh DBA.
 
-`DV_ADMIN` adalah administrator teknis konfigurasi Database Vault.
-
-Fungsi:
-
-- menjalankan package `DBMS_MACADM`;
-- menjalankan package `DBMS_MACUTL`;
-- mengelola Realm;
-- mengelola Rule;
-- mengelola Rule Set;
-- mengelola Command Rule;
-- mengelola Factor;
-- melakukan monitoring dan reporting tertentu.
-
-Mental model:
-
-```text
-DV_OWNER > DV_ADMIN
-```
-
-`DV_OWNER` lebih tinggi daripada `DV_ADMIN`.
-
-## 4.3 DV_ACCTMGR
-
-`DV_ACCTMGR` khusus untuk account management.
-
-Dapat digunakan untuk:
-
-- `CREATE USER`;
-- `ALTER USER`;
-- `DROP USER`;
-- membuat/mengubah profile;
-- memberikan `CREATE SESSION`.
-
-Batasan penting:
-
-- tidak dapat mengubah atau menghapus `DVSYS`;
-- tidak dapat mengubah atau menghapus user yang memiliki `DV_OWNER`;
-- tidak dapat mengubah atau menghapus user yang memiliki `DV_ADMIN`;
-- tidak dapat mengganti password pemegang `DV_OWNER`/`DV_ADMIN` tanpa prosedur yang sesuai.
-
-`DV_ACCTMGR` merupakan jalur separation of duties yang terpisah dari `DV_OWNER`.
-
-## 4.4 Developer Aplikasi
-
-Developer aplikasi **tidak perlu** diberi:
-
-```text
-DV_OWNER
-DV_ADMIN
-DV_ACCTMGR
-```
-
-Gunakan role aplikasi/custom role dengan privilege minimum.
-
-Contoh dalam lab:
-
-```text
-APP_DEV_STANDARD
-```
+Database Vault dapat membatasi penggunaan privilege tersebut terhadap object yang dilindungi.
 
 ---
 
-# 5. Persiapan Koneksi
+## 2.2 Separation of Duties
 
-Contoh koneksi SQL*Plus:
+Tanpa Database Vault, satu DBA sering mengerjakan semuanya:
 
-```sql
-sqlplus USER/PASSWORD@DB_HOST:1521/PDB_SERVICE
+```text
+buat user
+reset password
+ubah schema
+akses data
+buat security policy
+patch database
+audit
 ```
 
-Contoh pola:
-
-```sql
-sqlplus latihan/<password>@DB_HOST:1521/pdbxsakti
-```
-
-Untuk SYS:
-
-```sql
-sqlplus sys/<password>@DB_HOST:1521/pdbxsakti as sysdba
-```
-
-> Jangan menuliskan password asli ke dalam script, dokumen, repository, atau chat bersama.
-
-Setelah login, selalu verifikasi:
-
-```sql
-SHOW USER;
-SHOW CON_NAME;
-```
+Database Vault memisahkan tanggung jawab.
 
 Contoh:
 
 ```text
-USER is "LATIHAN"
-
-CON_NAME
-------------------------------
-PDBXSAKTI
-```
-
-Ini penting karena Database Vault pada lingkungan multitenant bekerja berdasarkan container.
-
----
-
-# 6. Setting SQL*Plus Agar Output Rapi
-
-Jalankan:
-
-```sql
-SET LINESIZE 250
-SET PAGESIZE 100
-SET WRAP OFF
-SET TRIMSPOOL ON
-```
-
-Untuk query user/role:
-
-```sql
-COLUMN username       FORMAT A15
-COLUMN grantee        FORMAT A20
-COLUMN granted_role   FORMAT A22
-COLUMN profile        FORMAT A20
-COLUMN account_status FORMAT A18
-COLUMN expiry_date    FORMAT A12
-COLUMN roles          FORMAT A80
-```
-
-Untuk tabel `TIM_PJKI`:
-
-```sql
-COLUMN ID_PEG         FORMAT 99999
-COLUMN NAMA_DEPAN     FORMAT A20
-COLUMN NAMA_BELAKANG  FORMAT A20
-COLUMN EMAIL          FORMAT A35
-COLUMN TGL_MASUK      FORMAT A12
-COLUMN TABUNGAN       FORMAT 999,999,999.99
+Security Administrator    -> DV_OWNER / DV_ADMIN
+Account Administrator     -> DV_ACCTMGR
+Monitoring                -> DV_MONITOR
+Security Analyst          -> DV_SECANALYST
+Patching                  -> DV_PATCH_ADMIN
+Application Developer     -> application role
 ```
 
 ---
 
-# 7. LAB 1 — Mengecek Status Database Vault
+## 2.3 Database consolidation dan Multitenant
 
-## Pelaksana
+Dalam arsitektur CDB/PDB:
 
-`SYS`, `DV_OWNER`, atau administrator yang memiliki hak monitoring sesuai konfigurasi.
-
-## 7.1 Cek container
-
-```sql
-SHOW CON_NAME;
+```text
+CDB$ROOT
+ |
+ +-- PDB A
+ +-- PDB B
+ +-- PDB C
 ```
 
-## 7.2 Cek status DV pada PDB aktif
+Infrastructure DBA dapat menjadi **common user**.
+
+Oracle Database Vault 19c menyediakan **Operations Control** untuk mencegah common user di root membaca data lokal di PDB.
+
+---
+
+# 3. Peta Seluruh Oracle Database Vault Administrator's Guide
+
+Oracle Database Vault Administrator's Guide 19c terdiri dari materi konsep, konfigurasi, operasi, API, view, monitoring, dan reporting.
+
+Berikut resume seluruh struktur panduan.
+
+| Bab Oracle | Fokus | Yang Harus Dipahami Peserta |
+|---|---|---|
+| 1 | Introduction | tujuan DV, komponen, privileged accounts, multitenant |
+| 2 | What to Expect After Enable | perubahan privilege dan authorization setelah DV aktif |
+| 3 | Getting Started | konfigurasi, enable, verifikasi, quick-start Realm |
+| 4 | Configuring Realms | perlindungan schema/object/role |
+| 5 | Configuring Rule Sets | kondisi keamanan dan evaluasi rule |
+| 6 | Configuring Command Rules | pembatasan SQL statement |
+| 7 | Configuring Factors | konteks session seperti IP, host, user, module |
+| 8 | Secure Application Roles | role yang aktif hanya jika rule set lolos |
+| 9 | Database Vault Policies | pengelompokan Realm + Command Rule |
+| 10 | Simulation Mode | uji policy tanpa langsung memblok aktivitas |
+| 11 | Integration | integrasi dengan Oracle products |
+| 12 | DBA Operations | Data Pump, Scheduler, RMAN, Operations Control, maintenance |
+| 13 | Schemas, Roles, Accounts | separation of duties dan default DV roles |
+| 14 | Realm APIs | API `DBMS_MACADM` untuk Realm |
+| 15 | Rule Set APIs | API Rule dan Rule Set |
+| 16 | Command Rule APIs | API Command Rule |
+| 17 | Factor APIs | API Factor |
+| 18 | Secure Application Role APIs | `DBMS_MACSEC_ROLES` |
+| 19 | Oracle Label Security APIs | integrasi DV dengan OLS |
+| 20 | Utility APIs | `DBMS_MACUTL` |
+| 21 | General Administrative APIs | authorization maintenance, Data Pump, Scheduler, DDL, Operations Control |
+| 22 | Policy APIs | create/update policy dan anggota policy |
+| 23 | API Reference | indeks package DV |
+| 24 | Data Dictionary Views | `DBA_DV_*`, `CDB_DV_*`, audit views |
+| 25 | Monitoring | violation dan perubahan konfigurasi |
+| 26 | Reports | report konfigurasi, audit, privilege, powerful accounts |
+
+Bab 14–23 sebagian besar merupakan **referensi API**. Untuk peserta operasional, yang paling penting adalah memahami Bab 1–13, kemudian menggunakan Bab 14–24 sebagai referensi command.
+
+---
+
+# 4. Apa yang Berubah Setelah Database Vault Aktif?
+
+Setelah Database Vault dikonfigurasi dan di-enable:
+
+- beberapa privilege administratif dipisahkan ke DV roles;
+- beberapa privilege yang sebelumnya dimiliki role DBA dapat dicabut atau dibatasi;
+- account management dipisahkan dari security administration;
+- `SYS`/`SYSTEM` tidak lagi menjadi jawaban otomatis untuk setiap pekerjaan;
+- Realm dan Command Rule dapat memblok operasi walaupun user mempunyai system privilege.
+
+Mental model:
+
+```text
+Privilege Oracle
+      +
+Database Vault Authorization
+      +
+Command Rule / Rule Set
+      =
+Apakah operasi akhirnya diizinkan?
+```
+
+Karena itu:
+
+```text
+"Punya privilege"
+```
+
+tidak selalu sama dengan:
+
+```text
+"Boleh menjalankan operasi"
+```
+
+---
+
+# 5. Arsitektur Komponen Database Vault
+
+Gunakan diagram ini sebagai peta mental utama.
+
+```text
+                        ORACLE DATABASE VAULT
+                               |
+        +----------------------+----------------------+
+        |                      |                      |
+      Realm                 Command Rule            Factor
+        |                      |                      |
+  Lindungi object         Batasi SQL             Context session
+        |                      |                      |
+        +------------+---------+----------------------+
+                     |
+                  Rule Set
+                     |
+                  Rule(s)
+                     |
+        kondisi TRUE / FALSE saat runtime
+                     |
+              +------+------+
+              |             |
+            Allow          Deny
+```
+
+Komponen lain:
+
+```text
+Secure Application Role
+        |
+        +-- Rule Set menentukan apakah role boleh aktif
+
+Policy
+        |
+        +-- mengelompokkan Realm dan Command Rule
+
+Simulation Mode
+        |
+        +-- mencatat violation tanpa memblok operasi
+```
+
+---
+
+# BAGIAN II — KOMPONEN INTI DATABASE VAULT
+
+# 6. Realm — Komponen Paling Penting
+
+## 6.1 Apa itu Realm?
+
+Realm adalah batas keamanan yang melindungi:
+
+- seluruh schema;
+- table;
+- view;
+- procedure;
+- package;
+- sequence;
+- role;
+- dan object Oracle lain yang didukung.
+
+Analogi:
+
+```text
+Privilege = kunci gedung
+
+Realm = pintu ruangan khusus
+
+Walaupun DBA punya kunci gedung,
+dia tetap tidak bisa masuk ruangan
+kalau tidak authorized ke Realm.
+```
+
+---
+
+# 7. Regular Realm vs Mandatory Realm
+
+Oracle menyediakan dua jenis Realm.
+
+## 7.1 Regular Realm
+
+Regular Realm terutama mencegah penggunaan **system privilege** terhadap Realm-secured object.
+
+User yang memang:
+
+- memiliki object; atau
+- mendapat direct object privilege,
+
+masih dapat melakukan beberapa akses seperti query/DML sesuai privilege yang dimiliki.
+
+Namun untuk operasi yang menggunakan system privilege terhadap protected objects, Realm authorization diperlukan.
+
+---
+
+## 7.2 Mandatory Realm
+
+Mandatory Realm lebih ketat.
+
+Mandatory Realm memblok:
+
+- system privilege access;
+- object privilege access;
+- bahkan object owner,
+
+jika user belum authorized ke Realm.
+
+Contoh:
+
+```text
+LATIHAN adalah owner TIM_PJKI
+            |
+            +-- TIM_PJKI masuk Mandatory Realm
+            |
+            +-- LATIHAN tidak authorized
+                    |
+                    +-- LATIHAN dapat ikut terblok
+```
+
+Karena itu Mandatory Realm harus dirancang dengan sangat hati-hati.
+
+---
+
+# 8. Default Realm Oracle
+
+Oracle Database Vault menyediakan beberapa Realm bawaan.
+
+Yang penting diketahui:
+
+| Realm | Fungsi |
+|---|---|
+| Oracle Database Vault Realm | melindungi konfigurasi DVSYS, DVF, LBACSYS |
+| Database Vault Account Management Realm | melindungi account/profile management |
+| Oracle Enterprise Manager Realm | kebutuhan monitoring Enterprise Manager |
+| Oracle Default Schema Protection Realm | perlindungan schema/role komponen Oracle |
+| Oracle System Privilege and Role Management Realm | melindungi Oracle-supplied roles |
+| Oracle Default Component Protection Realm | melindungi SYSTEM dan OUTLN |
+
+Jangan mengubah default Realm tanpa memahami dampaknya.
+
+---
+
+# 9. Realm Object
+
+Realm tidak melindungi apa pun sampai object dimasukkan ke dalam Realm.
+
+Contoh:
+
+```text
+Realm             : LATIHAN Data Realm
+Protected object  : LATIHAN.TIM_PJKI
+```
+
+Verifikasi:
+
+```sql
+SELECT realm_name,
+       owner,
+       object_name,
+       object_type
+FROM DVSYS.DBA_DV_REALM_OBJECT
+ORDER BY realm_name, owner, object_name;
+```
+
+---
+
+# 10. Realm Authorization
+
+Realm authorization menentukan user/role yang boleh menggunakan privilege-nya terhadap Realm-secured object.
+
+Ada dua tingkat utama.
+
+## Participant
+
+Participant:
+
+- boleh menggunakan system/direct privilege yang memang sudah diberikan;
+- tidak otomatis mendapatkan privilege baru.
+
+Realm tidak menggantikan GRANT biasa.
+
+Jadi:
+
+```text
+Realm Participant
+       +
+SELECT privilege
+       =
+bisa SELECT
+```
+
+Participant tanpa privilege SELECT tetap tidak otomatis dapat SELECT.
+
+---
+
+## Owner
+
+Realm Owner mempunyai authorization seperti Participant ditambah kewenangan untuk:
+
+- grant/revoke Realm-secured roles;
+- grant/revoke privilege pada Realm-protected object.
+
+Catatan penting:
+
+> Menjadi Realm Owner tidak sama dengan `DV_OWNER`.
+
+`DV_OWNER` adalah role administrasi Database Vault.
+
+Realm Owner adalah **authorization terhadap Realm tertentu**.
+
+---
+
+# 11. Siapa yang Bisa Menambahkan User ke Realm?
+
+Oracle membedakan:
+
+```text
+Realm Owner
+```
+
+dan:
+
+```text
+DV_OWNER / DV_ADMIN
+```
+
+Realm Owner **tidak otomatis dapat menambahkan user baru menjadi Realm Owner/Participant**.
+
+Penambahan Realm authorization dilakukan oleh administrator DV seperti `DV_OWNER` atau `DV_ADMIN` sesuai kewenangan.
+
+Contoh:
+
+```sql
+BEGIN
+  DVSYS.DBMS_MACADM.ADD_AUTH_TO_REALM(
+    realm_name   => 'LATIHAN Data Realm',
+    grantee      => 'LATIHAN',
+    auth_options => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER
+  );
+END;
+/
+```
+
+---
+
+# 12. Rule dan Rule Set
+
+## 12.1 Rule
+
+Rule adalah ekspresi PL/SQL yang menghasilkan kondisi:
+
+```text
+TRUE
+atau
+FALSE
+```
+
+Contoh kebutuhan:
+
+```text
+hanya jam kerja
+hanya IP tertentu
+hanya user tertentu
+hanya module aplikasi tertentu
+```
+
+---
+
+## 12.2 Rule Set
+
+Rule Set adalah kumpulan satu atau lebih Rule.
+
+Dua pola evaluasi utama:
+
+```text
+ALL
+```
+
+Semua rule harus `TRUE`.
+
+```text
+ANY
+```
+
+Minimal satu rule harus `TRUE`.
+
+Contoh:
+
+```text
+RULE 1 : waktu 08:00 - 17:00
+RULE 2 : IP berasal dari network internal
+RULE 3 : user = APP_ADMIN
+
+Rule Set = ALL
+
+Akses hanya lolos jika:
+RULE1 && RULE2 && RULE3 = TRUE
+```
+
+---
+
+# 13. Rule Set pada Realm Authorization
+
+Realm authorization dapat dikaitkan dengan Rule Set.
+
+Contoh:
+
+```text
+LATIHAN
+  |
+  +-- Realm Owner
+  |
+  +-- hanya jika RS_MAINTENANCE = TRUE
+```
+
+Ini sangat berguna untuk:
+
+- temporary access;
+- maintenance window;
+- emergency authorization;
+- pembatasan jam;
+- pembatasan lokasi.
+
+Contoh:
+
+```sql
+BEGIN
+  DVSYS.DBMS_MACADM.ADD_AUTH_TO_REALM(
+    realm_name    => 'LATIHAN Data Realm',
+    grantee       => 'LATIHAN',
+    rule_set_name => 'RS_MAINTENANCE',
+    auth_options  => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER
+  );
+END;
+/
+```
+
+---
+
+# 14. Command Rule
+
+Command Rule digunakan ketika yang ingin dikontrol bukan hanya object, tetapi **SQL command**.
+
+Contoh:
+
+```text
+CONNECT
+ALTER SYSTEM
+ALTER SESSION
+CREATE TABLE
+DROP TABLE
+SELECT
+```
+
+Mental model:
+
+```text
+Realm
+  -> "object mana yang dilindungi?"
+
+Command Rule
+  -> "SQL apa yang boleh dilakukan?"
+```
+
+Command Rule menggunakan Rule Set untuk mengambil keputusan.
+
+Contoh:
+
+```text
+ALTER SYSTEM
+     |
+     +-- Rule Set "Maintenance Hours"
+                |
+                +-- TRUE -> boleh
+                +-- FALSE -> ditolak
+```
+
+---
+
+# 15. Factor
+
+Factor adalah informasi konteks session.
+
+Contoh factor Oracle Database Vault:
+
+```text
+Session_User
+Client_IP
+Database_Hostname
+Network_Protocol
+Module
+Client_Identifier
+Domain
+```
+
+Factor berguna ketika policy harus membedakan konteks.
+
+Contoh:
+
+```text
+User APP_USER
+    |
+    +-- login dari aplikasi resmi -> allow
+    |
+    +-- login dari SQL Developer -> deny
+```
+
+Kombinasinya:
+
+```text
+Factor
+  -> Rule
+      -> Rule Set
+          -> CONNECT Command Rule
+```
+
+Oracle bahkan memberikan tutorial untuk mencegah akses menggunakan ad-hoc tools dengan pola ini.
+
+---
+
+# 16. Secure Application Role
+
+Secure Application Role adalah role yang tidak cukup hanya di-GRANT.
+
+Role baru dapat diaktifkan ketika Rule Set yang terkait bernilai `TRUE`.
+
+Flow:
+
+```text
+User login
+   |
+   +-- request SET ROLE
+   |
+   +-- Database Vault mengevaluasi Rule Set
+          |
+          +-- TRUE  -> role aktif
+          +-- FALSE -> role tidak aktif
+```
+
+Package utama:
+
+```text
+DBMS_MACSEC_ROLES
+```
+
+Contoh pengecekan:
+
+```sql
+BEGIN
+  IF DVSYS.DBMS_MACSEC_ROLES.CAN_SET_ROLE('APP_SECURE_ROLE') THEN
+    DBMS_OUTPUT.PUT_LINE('Role can be enabled');
+  END IF;
+END;
+/
+```
+
+Aktivasi:
+
+```sql
+EXEC DVSYS.DBMS_MACSEC_ROLES.SET_ROLE('APP_SECURE_ROLE');
+```
+
+---
+
+# 17. Database Vault Policy
+
+Database Vault Policy mengelompokkan:
+
+```text
+Realm
++
+Command Rule
+```
+
+menjadi satu unit kebijakan.
+
+Contoh:
+
+```text
+SAKTI Security Policy
+ |
+ +-- SAKTI Realm
+ +-- CONNECT Command Rule
+ +-- ALTER SYSTEM Command Rule
+```
+
+Manfaatnya:
+
+- policy aplikasi mudah dikelola;
+- bisa enable/disable bersama;
+- bisa simulation mode;
+- administrasi tertentu dapat didelegasikan melalui `DV_POLICY_OWNER`.
+
+Status policy utama:
+
+```text
+ENABLED
+DISABLED
+SIMULATION
+PARTIAL
+```
+
+Mode `PARTIAL` membiarkan masing-masing Realm/Command Rule mempertahankan statusnya sendiri.
+
+---
+
+# 18. Simulation Mode
+
+Simulation Mode adalah salah satu fitur yang paling berguna sebelum enforcement production.
+
+Dalam Simulation Mode:
+
+```text
+SQL dijalankan
++
+violation dicatat
++
+operasi tidak langsung diblok
+```
+
+Gunakan ketika:
+
+- membuat Realm baru;
+- menambah object ke Realm;
+- menghapus object dari Realm;
+- menambah Realm authorization;
+- menghapus Realm authorization;
+- mengubah Command Rule;
+- menguji Factor baru.
+
+Query:
 
 ```sql
 SELECT *
-FROM SYS.DBA_DV_STATUS;
+FROM DVSYS.DBA_DV_SIMULATION_LOG
+ORDER BY timestamp DESC;
 ```
 
-atau:
+Kode violation penting:
+
+| Code | Arti |
+|---:|---|
+| 1000 | Realm violation |
+| 1001 | Command Rule violation |
+| 1002 | Data Pump authorization violation |
+| 1003 | Simulation violation |
+| 1004 | Scheduler authorization violation |
+| 1005 | DDL authorization violation |
+| 1006 | PARSE_AS_USER violation |
+
+---
+
+# 19. Operations Control
+
+Operations Control adalah fitur penting Database Vault 19c untuk Multitenant.
+
+Tujuan:
+
+> membatasi common user/infrastructure DBA agar tidak otomatis dapat mengakses local PDB data.
+
+Contoh:
+
+```text
+CDB Root
+ |
+ +-- C##INFRA_DBA
+ |
+ +-- PDB SAKTI
+       |
+       +-- APP_SCHEMA
+       +-- sensitive data
+```
+
+Dengan Operations Control:
+
+```text
+C##INFRA_DBA
+```
+
+dapat mengelola infrastructure tetapi tidak otomatis melihat local application data.
+
+Status:
 
 ```sql
 SELECT *
 FROM DBA_DV_STATUS;
 ```
 
-Interpretasi:
-
-```text
-DV_CONFIGURE_STATUS = TRUE
-```
-
-artinya DV sudah dikonfigurasi.
-
-```text
-DV_ENABLE_STATUS = TRUE
-```
-
-artinya DV sudah aktif.
-
-```text
-DV_APP_PROTECTION = NOT CONFIGURED
-```
-
-bukan berarti DV tidak aktif. Ini hanya menunjukkan **Operations Control / App Protection** belum dikonfigurasi.
-
-## 7.3 Cek seluruh PDB
-
-Dari akun yang punya akses ke CDB view:
-
-```sql
-SELECT *
-FROM CDB_DV_STATUS
-ORDER BY CON_ID, NAME;
-```
-
-## 7.4 Cek system privilege yang dimiliki SYS
-
-Query ini berasal dari dokumentasi operasional SITP dan berguna untuk mengetahui system privilege yang melekat pada akun `SYS`.
-
-```sql
-SELECT *
-FROM DBA_SYS_PRIVS
-WHERE 1=1
-AND GRANTEE = 'SYS'
---AND PRIVILEGE = 'SELECT ANY TABLE'
-;
-```
-
-Jika ingin mencari privilege tertentu, aktifkan filter dengan menghapus tanda komentar:
-
-```sql
-SELECT *
-FROM DBA_SYS_PRIVS
-WHERE GRANTEE = 'SYS'
-AND PRIVILEGE = 'SELECT ANY TABLE';
-```
-
-### Kapan query ini digunakan?
-
-Gunakan ketika peserta ingin:
-
-- memastikan privilege tertentu memang dimiliki `SYS`;
-- membandingkan privilege native DBA dengan kontrol tambahan dari Database Vault;
-- melakukan troubleshooting ketika suatu operasi DBA tetap dibatasi walaupun akun memiliki privilege tinggi.
-
-> Penting: keberadaan system privilege tidak selalu berarti operasi pasti diizinkan ketika Database Vault aktif. Realm dan Command Rule dapat memberikan lapisan kontrol tambahan.
-
----
-
-## 7.5 Cek seluruh database user
-
-Query dari dokumentasi SITP:
-
-```sql
-SELECT *
-FROM ALL_USERS
-WHERE 1=1
--- AND USERNAME = 'LATIHAN'
-;
-```
-
-Untuk mencari user tertentu:
-
-```sql
-SELECT *
-FROM ALL_USERS
-WHERE USERNAME = 'LATIHAN';
-```
-
-`ALL_USERS` cocok untuk melihat daftar user yang dapat diketahui oleh session saat ini.
-
-Jika memiliki privilege DBA dan memerlukan informasi account yang lebih lengkap, gunakan `DBA_USERS`.
-
----
-
-## 7.6 Cek status, tanggal dibuat, profile, dan expiry account
-
-Versi asli dokumentasi SITP:
-
-```sql
-SELECT username,
-       account_status,
-       created,
-       expiry_date
-FROM dba_users
-WHERE username LIKE 'LAT%'
-ORDER BY username;
-```
-
-Untuk praktikum, query dapat diperluas dengan kolom `PROFILE`:
-
-```sql
-SELECT username,
-       account_status,
-       profile,
-       created,
-       expiry_date
-FROM dba_users
-WHERE username LIKE 'LAT%'
-ORDER BY username;
-```
-
-### Arti kolom
-
-| Kolom | Arti |
-|---|---|
-| `USERNAME` | Nama database user |
-| `ACCOUNT_STATUS` | Status account, misalnya `OPEN`, `LOCKED`, atau `EXPIRED` |
-| `PROFILE` | Profile yang diterapkan ke user |
-| `CREATED` | Tanggal user dibuat |
-| `EXPIRY_DATE` | Tanggal password/account terkait password akan kedaluwarsa |
-
-Untuk output yang lebih mudah dibaca:
-
-```sql
-COLUMN username       FORMAT A15
-COLUMN account_status FORMAT A18
-COLUMN profile        FORMAT A20
-COLUMN created        FORMAT A12
-COLUMN expiry_date    FORMAT A12
-
-SELECT username,
-       account_status,
-       profile,
-       TO_CHAR(created,'DD-MON-YY') AS created,
-       TO_CHAR(expiry_date,'DD-MON-YY') AS expiry_date
-FROM dba_users
-WHERE username LIKE 'LAT%'
-ORDER BY username;
-```
-
----
-
-## 7.7 Cek audit trail database
-
-Query dari dokumentasi SITP:
-
-```sql
-SELECT *
-FROM DBA_AUDIT_TRAIL
-WHERE 1=1
--- AND USERNAME = 'LATIHAN'
-ORDER BY TIMESTAMP DESC
-;
-```
-
-Untuk melihat aktivitas user tertentu:
-
-```sql
-SELECT *
-FROM DBA_AUDIT_TRAIL
-WHERE USERNAME = 'LATIHAN'
-ORDER BY TIMESTAMP DESC;
-```
-
-### Penggunaan
-
-Query ini berguna untuk:
-
-- menelusuri aktivitas user;
-- melihat waktu eksekusi;
-- membantu investigasi setelah terjadi kegagalan akses;
-- menghubungkan kejadian aplikasi dengan aktivitas database.
-
-> Catatan: `DBA_AUDIT_TRAIL` adalah view audit tradisional. Jika database menggunakan Unified Auditing, administrator juga perlu memeriksa view audit Unified Auditing sesuai konfigurasi database.
-
----
-
-## 7.8 Cek seluruh tabel pada schema yang sedang digunakan
-
-Query dari dokumentasi SITP:
-
-```sql
-SELECT table_name,
-       status,
-       last_analyzed
-FROM user_tables
-ORDER BY table_name;
-```
-
-### Arti kolom
-
-| Kolom | Arti |
-|---|---|
-| `TABLE_NAME` | Nama tabel milik schema yang sedang login |
-| `STATUS` | Status object |
-| `LAST_ANALYZED` | Waktu terakhir statistik tabel dianalisis |
-
-Query ini menggunakan `USER_TABLES`, sehingga hanya menampilkan tabel milik **schema user yang sedang aktif**.
-
-Sebelum menjalankan, verifikasi user:
-
-```sql
-SHOW USER;
-```
-
 Contoh:
 
 ```text
-USER is "LATIHAN"
+DV_APP_PROTECTION   NOT CONFIGURED
+DV_CONFIGURE_STATUS TRUE
+DV_ENABLE_STATUS    TRUE
 ```
 
-maka query `USER_TABLES` akan menampilkan tabel milik schema `LATIHAN`.
+`NOT CONFIGURED` pada `DV_APP_PROTECTION` berarti **Operations Control belum dikonfigurasi**, bukan berarti Database Vault mati.
+
+Enable:
+
+```sql
+EXEC DVSYS.DBMS_MACADM.ENABLE_APP_PROTECTION;
+```
+
+Oracle merekomendasikan Operations Control pada production multitenant tetap aktif jika memang dipilih sebagai model keamanan.
+
+Exception list tersedia untuk trusted common user/package yang memang membutuhkan akses.
 
 ---
 
-# 8. LAB 2 — Mengecek Role Database Vault yang Tersedia
+# 20. Integrasi dengan Oracle Products
 
-```sql
-SELECT role
-FROM dba_roles
-WHERE role LIKE 'DV_%'
-ORDER BY role;
+Oracle Guide juga membahas integrasi dengan:
+
+- Oracle Enterprise Manager;
+- Oracle Label Security;
+- Oracle Data Guard;
+- Oracle APEX;
+- Oracle Data Pump;
+- Oracle Scheduler;
+- Information Lifecycle Management;
+- Database Replay;
+- RMAN;
+- XStream;
+- Oracle GoldenGate.
+
+Pesan utamanya:
+
+> aktivitas administratif tertentu yang sebelumnya bekerja karena privilege DBA dapat memerlukan authorization Database Vault khusus setelah DV aktif.
+
+Jangan langsung menyimpulkan:
+
+```text
+"fitur Oracle rusak"
 ```
 
-Pada multitenant:
+ketika Data Pump/Scheduler/APEX gagal setelah DV aktif.
 
-```sql
-SELECT con_id,
-       role
-FROM cdb_roles
-WHERE role LIKE 'DV_%'
-ORDER BY con_id, role;
+Periksa authorization DV yang relevan.
+
+---
+
+# BAGIAN III — ROLE DAN SEPARATION OF DUTIES
+
+# 21. Peta Role Database Vault
+
+Oracle mengelompokkan role menjadi beberapa kategori.
+
+## Security Administrative Roles
+
+```text
+DV_OWNER
+DV_ADMIN
+DV_MONITOR
+DV_SECANALYST
+DV_PATCH_ADMIN
+DV_DATAPUMP_NETWORK_LINK
+DV_XSTREAM_ADMIN
+DV_GOLDENGATE_ADMIN
+DV_GOLDENGATE_REDO_ACCESS
+DV_AUDIT_CLEANUP
 ```
 
-Contoh role yang mungkin ditemukan:
+## Resource Management Roles
+
+```text
+DV_POLICY_OWNER
+DV_REALM_OWNER
+DV_REALM_RESOURCE
+```
+
+## Account Management Responsibility
 
 ```text
 DV_ACCTMGR
-DV_ADMIN
-DV_AUDIT_CLEANUP
-DV_DATAPUMP_NETWORK_LINK
-DV_GOLDENGATE_ADMIN
-DV_GOLDENGATE_REDO_ACCESS
-DV_MONITOR
-DV_OWNER
-DV_PATCH_ADMIN
-DV_POLICY_OWNER
-DV_SECANALYST
-DV_XSTREAM_ADMIN
 ```
 
 ---
 
-# 9. Catatan Khusus DV_REALM_RESOURCE
+# 22. Role Utama yang Wajib Dipahami
 
-Menurut Oracle Database Vault Administrator's Guide, `DV_REALM_RESOURCE` adalah role untuk **application access** dan diberikan kepada Realm Participant.
+| Role | Fungsi | Catatan |
+|---|---|---|
+| `DV_OWNER` | mengelola role dan konfigurasi DV | role keamanan tertinggi DV |
+| `DV_ADMIN` | administrator konfigurasi DV | execute seluruh package DV utama |
+| `DV_MONITOR` | monitoring DV | fokus monitoring, bukan konfigurasi |
+| `DV_SECANALYST` | analisis/report keamanan | menjalankan report dan membaca view tertentu |
+| `DV_ACCTMGR` | user/profile management | jalur SoD terpisah |
+| `DV_PATCH_ADMIN` | patching | berikan hanya saat diperlukan |
+| `DV_AUDIT_CLEANUP` | purge audit | bukan admin DV umum |
+| `DV_POLICY_OWNER` | administrasi policy terbatas | delegation policy |
+| `DV_REALM_OWNER` | application/realm management | juga harus terkait authorization Realm |
+| `DV_REALM_RESOURCE` | application access | menurut guide diberikan ke Realm Participant |
 
-Namun pada environment lab, role tersebut pernah tidak ditemukan:
+---
+
+# 23. DV_OWNER vs DV_ADMIN vs DV_ACCTMGR
 
 ```text
-ORA-01919: Role 'DV_REALM_RESOURCE' does not exist
+                    DATABASE VAULT
+                         |
+          +--------------+--------------+
+          |                             |
+ Security Administration       Account Administration
+          |                             |
+     DV_OWNER                          DV_ACCTMGR
+          |
+      DV_ADMIN
 ```
+
+Secara sederhana:
+
+```text
+DV_OWNER > DV_ADMIN
+```
+
+untuk jalur administrasi keamanan DV.
+
+Namun:
+
+```text
+DV_ACCTMGR
+```
+
+bukan sekadar “role lebih rendah”.
+
+Ia berada pada jalur responsibility yang berbeda.
+
+---
+
+# 24. Siapa Sebaiknya Memegang Role Apa?
+
+Model sederhana:
+
+| Fungsi Organisasi | Role |
+|---|---|
+| Security Admin utama | `DV_OWNER` |
+| DBA yang mengelola konfigurasi DV | `DV_ADMIN` |
+| DBA/account administrator | `DV_ACCTMGR` |
+| Monitoring | `DV_MONITOR` |
+| Security analyst | `DV_SECANALYST` |
+| Patch operator | temporary `DV_PATCH_ADMIN` |
+| Developer aplikasi | custom application role |
+| Application/Realm manager | `DV_REALM_OWNER` jika memang diperlukan |
+
+---
+
+# 25. Developer Jangan Diberi DV_ADMIN
+
+Developer aplikasi normal tidak perlu:
+
+```text
+DV_OWNER
+DV_ADMIN
+DV_ACCTMGR
+```
+
+Developer sebaiknya menggunakan:
+
+- system privilege minimal;
+- object privilege minimal;
+- custom application role;
+- Realm authorization bila diperlukan.
+
+---
+
+# 26. DV_REALM_RESOURCE dan Kondisi Environment Lab
+
+Menurut Oracle Guide:
+
+```text
+DV_REALM_RESOURCE
+```
+
+adalah default Database Vault role untuk **application access** dan diberikan kepada Realm Participants.
+
+Namun pada environment lab, role ini pernah tidak tersedia.
 
 Verifikasi:
 
@@ -562,33 +1002,149 @@ FROM dba_roles
 WHERE role = 'DV_REALM_RESOURCE';
 ```
 
-atau:
+Jika:
 
-```sql
-SELECT con_id, role
-FROM cdb_roles
-WHERE role = 'DV_REALM_RESOURCE';
+```text
+no rows selected
 ```
 
-Jika tidak ada:
+jangan membuat role Oracle-supplied tersebut secara manual dengan nama yang sama.
 
-**Jangan membuat role bernama `DV_REALM_RESOURCE` secara manual.**
-
-Untuk latihan, gunakan custom role seperti:
+Untuk latihan digunakan workaround lokal:
 
 ```text
 APP_DEV_STANDARD
 ```
 
-Untuk production, ketidakhadiran default role DV perlu diverifikasi oleh DBA/database support terhadap instalasi dan katalog Database Vault.
+Catatan:
+
+> `APP_DEV_STANDARD` adalah custom role latihan dan **bukan pengganti resmi `DV_REALM_RESOURCE`**.
+
+Untuk production, ketidakhadiran Oracle-supplied role perlu diperiksa terhadap instalasi/patch/catalog Database Vault.
 
 ---
 
-# 10. LAB 3 — Mengecek User Pemegang DV_OWNER
+# BAGIAN IV — HANDS-ON LAB
+
+# 27. Pembagian User Lab
+
+Contoh:
+
+| User | Fungsi Lab | Role |
+|---|---|---|
+| `LATIHAN` | Security Admin | `DV_OWNER` |
+| `LATIHAN1` | DV Configuration DBA | `DV_ADMIN` |
+| `LATIHAN2` | Account Administrator | `DV_ACCTMGR` |
+| `LATIHAN3` | Developer | `APP_DEV_STANDARD` |
+
+Jangan gunakan password produksi pada dokumen latihan.
+
+---
+
+# 28. Setting SQL*Plus
+
+```sql
+SET LINESIZE 250
+SET PAGESIZE 100
+SET WRAP OFF
+SET TRIMSPOOL ON
+
+COLUMN username       FORMAT A18
+COLUMN grantee        FORMAT A20
+COLUMN granted_role   FORMAT A25
+COLUMN profile        FORMAT A20
+COLUMN account_status FORMAT A18
+COLUMN expiry_date    FORMAT A12
+```
+
+Selalu cek:
+
+```sql
+SHOW USER;
+SHOW CON_NAME;
+```
+
+---
+
+# 29. Lab 1 — Verifikasi Database Vault
+
+```sql
+SELECT *
+FROM SYS.DBA_DV_STATUS;
+```
+
+Jika login sebagai DBA/SYSDBA:
+
+```sql
+SELECT *
+FROM DBA_DV_STATUS;
+```
+
+Expected:
+
+```text
+DV_CONFIGURE_STATUS TRUE
+DV_ENABLE_STATUS    TRUE
+```
+
+Multitenant:
+
+```sql
+SELECT *
+FROM CDB_DV_STATUS
+ORDER BY CON_ID, NAME;
+```
+
+---
+
+# 30. Lab 2 — Lihat Semua Role DV
+
+```sql
+SELECT role
+FROM dba_roles
+WHERE role LIKE 'DV_%'
+ORDER BY role;
+```
+
+CDB:
+
+```sql
+SELECT con_id, role
+FROM cdb_roles
+WHERE role LIKE 'DV_%'
+ORDER BY con_id, role;
+```
+
+---
+
+# 31. Lab 3 — Lihat User dan Role
+
+```sql
+SELECT u.username,
+       u.account_status,
+       u.profile,
+       TO_CHAR(u.created,'DD-MON-YY') AS created,
+       TO_CHAR(u.expiry_date,'DD-MON-YY') AS expiry_date,
+       LISTAGG(rp.granted_role, ', ')
+         WITHIN GROUP (ORDER BY rp.granted_role) AS roles
+FROM dba_users u
+LEFT JOIN dba_role_privs rp
+       ON rp.grantee = u.username
+WHERE u.username LIKE 'LAT%'
+GROUP BY u.username,
+         u.account_status,
+         u.profile,
+         u.created,
+         u.expiry_date
+ORDER BY u.username;
+```
+
+---
+
+# 32. Lab 4 — Cek Pemegang DV_OWNER
 
 ```sql
 SELECT grantee,
-       granted_role,
        admin_option,
        default_role
 FROM dba_role_privs
@@ -602,36 +1158,34 @@ Interpretasi:
 ADMIN_OPTION = YES
 ```
 
-berarti user tersebut dapat meneruskan grant role sesuai aturan DV.
-
-```text
-ADMIN_OPTION = NO
-```
-
-berarti user memiliki role tetapi grant tersebut tidak diberikan `WITH ADMIN OPTION`.
+grant role tersebut membawa kemampuan admin option.
 
 ```text
 DEFAULT_ROLE = YES
 ```
 
-berarti role otomatis aktif pada saat login.
+role aktif secara default saat login.
 
 ---
 
-# 11. LAB 4 — Grant DV_OWNER
+# 33. Lab 5 — Grant dan Revoke DV_OWNER
 
-## Pelaksana
-
-User yang memang sudah mempunyai `DV_OWNER` dan kewenangan grant yang sesuai.
+Grant:
 
 ```sql
 GRANT DV_OWNER TO LATIHAN;
 ```
 
-Jika `LATIHAN` juga harus dapat meneruskan grant:
+Dengan admin option:
 
 ```sql
 GRANT DV_OWNER TO LATIHAN WITH ADMIN OPTION;
+```
+
+Revoke:
+
+```sql
+REVOKE DV_OWNER FROM LATIHAN;
 ```
 
 Verifikasi:
@@ -642,56 +1196,19 @@ SELECT grantee,
        admin_option,
        default_role
 FROM dba_role_privs
-WHERE grantee = 'LATIHAN'
-AND granted_role = 'DV_OWNER';
+WHERE grantee = 'LATIHAN';
 ```
+
+Pastikan tetap ada minimal account DV owner yang dapat digunakan untuk administrasi.
 
 ---
 
-# 12. LAB 5 — Revoke DV_OWNER
+# 34. Lab 6 — Grant DV_ADMIN
 
-Login dengan akun DV Owner lain.
-
-```sql
-REVOKE DV_OWNER FROM LATIHAN;
-```
-
-Verifikasi:
-
-```sql
-SELECT grantee,
-       granted_role
-FROM dba_role_privs
-WHERE grantee = 'LATIHAN'
-AND granted_role = 'DV_OWNER';
-```
-
-Jika:
-
-```text
-no rows selected
-```
-
-maka role sudah berhasil dicabut.
-
-> Jangan sampai seluruh user `DV_OWNER` terhapus. Minimal harus tetap tersedia account DV Owner yang dapat digunakan.
-
----
-
-# 13. LAB 6 — Grant DV_ADMIN
-
-## Pelaksana
-
-`DV_OWNER`
+Dilakukan oleh account yang mempunyai kewenangan `DV_OWNER`.
 
 ```sql
 GRANT DV_ADMIN TO LATIHAN1;
-```
-
-Jika perlu delegation:
-
-```sql
-GRANT DV_ADMIN TO LATIHAN1 WITH ADMIN OPTION;
 ```
 
 Verifikasi:
@@ -706,56 +1223,24 @@ WHERE grantee = 'LATIHAN1';
 
 ---
 
-# 14. LAB 7 — Grant DV_ACCTMGR
+# 35. Lab 7 — DV_ACCTMGR
 
-Hal penting:
+`DV_ACCTMGR` sengaja dipisahkan dari `DV_OWNER`.
 
-```text
-DV_OWNER tidak digunakan untuk memberikan DV_ACCTMGR.
-```
-
-Pemisahan ini memang disengaja oleh Database Vault.
-
-Pada konfigurasi standar, gunakan account `DV_ACCTMGR` yang memang mempunyai kemampuan meneruskan role tersebut, misalnya backup account DV_ACCTMGR.
-
-```sql
-GRANT DV_ACCTMGR TO LATIHAN2;
-```
-
-Jika account tersebut harus dapat meneruskan role:
-
-```sql
-GRANT DV_ACCTMGR TO LATIHAN2 WITH ADMIN OPTION;
-```
-
-Error yang pernah muncul jika menggunakan jalur yang tidak sesuai:
+Jika grant menggunakan jalur yang tidak diizinkan, dapat muncul:
 
 ```text
-ORA-47410: Insufficient realm privileges to GRANT on DV_ACCTMGR
+ORA-47410:
+Insufficient realm privileges to GRANT on DV_ACCTMGR
 ```
 
-Maknanya: grant role tersebut sedang dilindungi oleh mekanisme Database Vault.
+Gunakan account `DV_ACCTMGR` yang memang mempunyai kewenangan grant sesuai setup Database Vault.
 
 ---
 
-# 15. LAB 8 — Membuat Role Developer
+# 36. Lab 8 — Custom Developer Role
 
-Karena `DV_REALM_RESOURCE` tidak tersedia pada environment lab, dibuat role custom.
-
-## 15.1 APP_DEV_READONLY
-
-```sql
-CREATE ROLE APP_DEV_READONLY;
-GRANT CREATE SESSION TO APP_DEV_READONLY;
-```
-
-Akses tabel diberikan terpisah:
-
-```sql
-GRANT SELECT ON LATIHAN.TIM_PJKI TO APP_DEV_READONLY;
-```
-
-## 15.2 APP_DEV_STANDARD
+Role developer standar:
 
 ```sql
 CREATE ROLE APP_DEV_STANDARD;
@@ -766,9 +1251,9 @@ GRANT CREATE PROCEDURE TO APP_DEV_STANDARD;
 GRANT CREATE SEQUENCE  TO APP_DEV_STANDARD;
 ```
 
-Role ini tidak otomatis boleh membuat tabel atau trigger.
+Jika developer memang membutuhkan table/trigger, buat role lebih tinggi secara terpisah.
 
-## 15.3 APP_DEV_LEAD
+Contoh:
 
 ```sql
 CREATE ROLE APP_DEV_LEAD;
@@ -782,180 +1267,22 @@ GRANT CREATE TRIGGER   TO APP_DEV_LEAD;
 GRANT CREATE SYNONYM   TO APP_DEV_LEAD;
 ```
 
-## 15.4 Grant ke Developer
-
-```sql
-GRANT APP_DEV_STANDARD TO LATIHAN3;
-```
-
-Verifikasi:
-
-```sql
-SELECT grantee,
-       granted_role,
-       admin_option,
-       default_role
-FROM dba_role_privs
-WHERE grantee = 'LATIHAN3'
-ORDER BY granted_role;
-```
-
----
-
-# 16. Troubleshooting ORA-01924 Saat Grant Role Custom
+Hindari:
 
 ```text
-ORA-01924: Role "APP_DEV_STANDARD" not granted or does not exist
+SELECT ANY TABLE
+CREATE ANY TABLE
+EXECUTE ANY PROCEDURE
+UNLIMITED TABLESPACE
 ```
 
-## 16.1 Apakah role benar-benar ada?
-
-```sql
-SELECT role
-FROM dba_roles
-WHERE role = 'APP_DEV_STANDARD';
-```
-
-## 16.2 Apakah grantor berhak meneruskan role?
-
-```sql
-SELECT grantee,
-       granted_role,
-       admin_option
-FROM dba_role_privs
-WHERE granted_role = 'APP_DEV_STANDARD';
-```
-
-Jika hanya `SYS` yang memiliki `ADMIN_OPTION = YES`, lakukan grant sebagai user yang memang berwenang.
-
-Contoh lab:
-
-```sql
-CONN sys/<password>@DB_HOST:1521/PDB_SERVICE AS SYSDBA
-GRANT APP_DEV_STANDARD TO LATIHAN3;
-```
-
-Jika ingin administrator lain meneruskannya:
-
-```sql
-GRANT APP_DEV_STANDARD TO <ADMIN_USER> WITH ADMIN OPTION;
-```
+kecuali benar-benar dibutuhkan dan disetujui.
 
 ---
 
-# 17. LAB 9 — Query User, Profile, Expiry dan Role
+# 37. Lab 9 — Membuat Realm
 
-## 17.1 Satu baris per role
-
-```sql
-SELECT u.username,
-       u.profile,
-       u.expiry_date,
-       rp.granted_role,
-       rp.admin_option,
-       rp.default_role
-FROM dba_users u
-LEFT JOIN dba_role_privs rp
-       ON rp.grantee = u.username
-WHERE u.username LIKE 'LAT%'
-ORDER BY u.username, rp.granted_role;
-```
-
-## 17.2 Semua role dalam satu baris
-
-```sql
-SELECT u.username,
-       u.profile,
-       TO_CHAR(u.expiry_date,'DD-MON-YY') AS expiry_date,
-       LISTAGG(rp.granted_role, ', ')
-         WITHIN GROUP (ORDER BY rp.granted_role) AS roles
-FROM dba_users u
-LEFT JOIN dba_role_privs rp
-       ON rp.grantee = u.username
-WHERE u.username LIKE 'LAT%'
-GROUP BY u.username,
-         u.profile,
-         u.expiry_date
-ORDER BY u.username;
-```
-
-## 17.3 Versi CDB/PDB
-
-```sql
-SELECT u.con_id,
-       u.username,
-       u.profile,
-       TO_CHAR(u.expiry_date,'DD-MON-YY') AS expiry_date,
-       LISTAGG(rp.granted_role, ', ')
-         WITHIN GROUP (ORDER BY rp.granted_role) AS roles
-FROM cdb_users u
-LEFT JOIN cdb_role_privs rp
-       ON rp.grantee = u.username
-      AND rp.con_id  = u.con_id
-WHERE u.username LIKE 'LAT%'
-GROUP BY u.con_id,
-         u.username,
-         u.profile,
-         u.expiry_date
-ORDER BY u.con_id, u.username;
-```
-
----
-
-# 18. LAB 10 — Data Praktikum TIM_PJKI
-
-Contoh struktur tabel:
-
-```sql
-CREATE TABLE TIM_PJKI (
-    ID_PEG        NUMBER,
-    NAMA_DEPAN    VARCHAR2(50),
-    NAMA_BELAKANG VARCHAR2(50),
-    EMAIL         VARCHAR2(100),
-    TGL_MASUK     DATE,
-    TABUNGAN      NUMBER(8,2)
-);
-```
-
-Cek struktur:
-
-```sql
-DESC TIM_PJKI;
-```
-
-Query lengkap:
-
-```sql
-SELECT ID_PEG,
-       NAMA_DEPAN,
-       NAMA_BELAKANG,
-       EMAIL,
-       TO_CHAR(TGL_MASUK,'DD-MON-YYYY') AS TGL_MASUK,
-       TABUNGAN
-FROM TIM_PJKI;
-```
-
-Dari user lain:
-
-```sql
-SELECT ID_PEG,
-       NAMA_DEPAN,
-       NAMA_BELAKANG,
-       EMAIL,
-       TO_CHAR(TGL_MASUK,'DD-MON-YYYY') AS TGL_MASUK,
-       TABUNGAN
-FROM LATIHAN.TIM_PJKI;
-```
-
----
-
-# 19. LAB 11 — Membuat Realm
-
-## Pelaksana
-
-`DV_OWNER` atau `DV_ADMIN` sesuai otorisasi.
-
-> Lab menggunakan **Mandatory Realm** (`realm_type => 1`) agar efek Realm authorization terlihat jelas. Pada production, pilih regular atau mandatory realm berdasarkan desain keamanan.
+Contoh Realm latihan:
 
 ```sql
 BEGIN
@@ -971,20 +1298,13 @@ END;
 /
 ```
 
-Verifikasi:
+`realm_type => 1` digunakan pada contoh lab untuk Mandatory Realm.
 
-```sql
-SELECT realm_name,
-       enabled
-FROM DVSYS.DBA_DV_REALM
-WHERE realm_name = 'LATIHAN Data Realm';
-```
+Untuk production, pilih Regular/Mandatory berdasarkan desain keamanan, bukan sekadar contoh script.
 
 ---
 
-# 20. LAB 12 — Menambahkan Object ke Realm
-
-Untuk melindungi tabel saja:
+# 38. Lab 10 — Masukkan TIM_PJKI ke Realm
 
 ```sql
 BEGIN
@@ -1006,15 +1326,14 @@ SELECT realm_name,
        object_name,
        object_type
 FROM DVSYS.DBA_DV_REALM_OBJECT
-WHERE realm_name = 'LATIHAN Data Realm'
-ORDER BY owner, object_name;
+WHERE realm_name = 'LATIHAN Data Realm';
 ```
 
 ---
 
-# 21. LAB 13 — Memberikan Realm Authorization
+# 39. Lab 11 — Realm Authorization
 
-## 21.1 Menjadikan LATIHAN sebagai Realm Owner
+Tambahkan `LATIHAN` sebagai Realm Owner:
 
 ```sql
 BEGIN
@@ -1039,25 +1358,9 @@ WHERE realm_name = 'LATIHAN Data Realm'
 ORDER BY grantee;
 ```
 
-## 21.2 Realm Owner vs Participant
-
-```text
-Realm Owner
-    |
-    +-- administrator/pengelola realm
-    +-- hak lebih tinggi terhadap resource realm
-
-Realm Participant
-    |
-    +-- user/role aplikasi yang diotorisasi
-    +-- tidak otomatis menjadi admin DV
-```
-
-Jangan menjadikan semua developer sebagai Realm Owner.
-
 ---
 
-# 22. LAB 14 — Menghapus User dari Realm
+# 40. Lab 12 — Hapus User dari Realm
 
 ```sql
 BEGIN
@@ -1077,153 +1380,164 @@ SELECT realm_name,
        grantee,
        auth_options
 FROM DVSYS.DBA_DV_REALM_AUTH
-WHERE realm_name = 'LATIHAN Data Realm'
-ORDER BY grantee;
+WHERE realm_name = 'LATIHAN Data Realm';
 ```
 
 ---
 
-# 23. LAB 15 — Realm Authorization dengan Batas Waktu
+# 41. Lab 13 — Temporary Realm Authorization
 
-`ADD_AUTH_TO_REALM` **tidak memiliki parameter langsung "expired 30 hari"**.
-
-Gunakan:
+Tidak ada parameter langsung:
 
 ```text
-Rule + Rule Set + Realm Authorization
+expires_in => 30 days
 ```
 
-## 23.1 Tentukan tanggal kedaluwarsa
+pada `ADD_AUTH_TO_REALM`.
 
-```sql
-SELECT SYSDATE,
-       SYSDATE + 30 AS EXPIRY_DATE
-FROM dual;
+Gunakan Rule Set.
+
+Contoh logika:
+
+```text
+SYSDATE < tanggal_expired
 ```
 
-Catat tanggal hasilnya.
-
-Contoh rule:
+Contoh Rule:
 
 ```sql
 BEGIN
   DVSYS.DBMS_MACADM.CREATE_RULE(
-    rule_name => 'RULE_LATIHAN_VALID_30_HARI',
+    rule_name => 'RULE_TEMP_ACCESS',
     rule_expr => q'[SYSDATE < DATE '2026-09-20']'
   );
 END;
 /
 ```
 
-> Ganti tanggal contoh dengan tanggal 30 hari dari tanggal pelaksanaan.
+Tanggal harus disesuaikan dengan kebutuhan aktual.
 
-## 23.2 Buat Rule Set
+Kemudian kaitkan Rule ke Rule Set dan Rule Set ke Realm Authorization.
 
-```sql
-BEGIN
-  DVSYS.DBMS_MACADM.CREATE_RULE_SET(
-    rule_set_name   => 'RS_LATIHAN_30_HARI',
-    description     => 'Realm authorization LATIHAN dengan batas waktu',
-    enabled         => DVSYS.DBMS_MACUTL.G_YES,
-    eval_options    => DVSYS.DBMS_MACUTL.G_RULESET_EVAL_ALL,
-    audit_options   => DVSYS.DBMS_MACUTL.G_RULESET_AUDIT_FAIL,
-    fail_options    => DVSYS.DBMS_MACUTL.G_RULESET_FAIL_SHOW,
-    fail_message    => 'Realm authorization expired',
-    fail_code       => 20461,
-    handler_options => DVSYS.DBMS_MACUTL.G_RULESET_HANDLER_OFF,
-    handler         => NULL,
-    is_static       => FALSE
-  );
-END;
-/
-```
+Setelah masa akses selesai, untuk cleanup metadata tetap disarankan menghapus authorization jika sudah tidak diperlukan.
 
-## 23.3 Masukkan Rule ke Rule Set
+---
+
+# 42. Lab 14 — Simulation Mode
+
+Sebelum Realm baru di-enforce pada aplikasi production:
+
+1. tempatkan Realm/policy pada Simulation Mode;
+2. lakukan normal application workload;
+3. query simulation log;
+4. identifikasi violation;
+5. perbaiki authorization/rule;
+6. baru enforce.
+
+Query:
 
 ```sql
-BEGIN
-  DVSYS.DBMS_MACADM.ADD_RULE_TO_RULE_SET(
-    rule_set_name => 'RS_LATIHAN_30_HARI',
-    rule_name     => 'RULE_LATIHAN_VALID_30_HARI'
-  );
-END;
-/
+SELECT session_user,
+       dv$_module,
+       dv$_client_identifier,
+       violation_type,
+       timestamp
+FROM DVSYS.DBA_DV_SIMULATION_LOG
+ORDER BY timestamp DESC;
 ```
 
-## 23.4 Kaitkan ke Realm Authorization
+---
+
+# BAGIAN V — OPERASIONAL DAN TROUBLESHOOTING
+
+# 43. Jangan Buka-Tutup Realm sebagai Solusi Pertama
+
+Jika aplikasi/DBA mengalami error setelah DV aktif:
+
+```text
+JANGAN LANGSUNG:
+DISABLE REALM
+```
+
+Gunakan urutan:
+
+```text
+1. Identifikasi user
+2. Identifikasi SQL yang gagal
+3. Cek Realm object
+4. Cek Realm authorization
+5. Cek Command Rule
+6. Cek Rule Set
+7. Cek simulation/audit log
+8. Berikan temporary named authorization bila perlu
+9. Jalankan maintenance
+10. Hapus temporary authorization
+```
+
+---
+
+# 44. Runbook Maintenance DBA
+
+Misalnya user:
+
+```text
+DBA_MAINT
+```
+
+harus melakukan maintenance pada protected object.
+
+## Step 1 — Tambahkan sementara
 
 ```sql
 BEGIN
   DVSYS.DBMS_MACADM.ADD_AUTH_TO_REALM(
-    realm_name    => 'LATIHAN Data Realm',
-    grantee       => 'LATIHAN',
-    rule_set_name => 'RS_LATIHAN_30_HARI',
-    auth_options  => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER,
-    auth_scope    => DVSYS.DBMS_MACUTL.G_SCOPE_LOCAL
+    realm_name   => '<APP_REALM>',
+    grantee      => 'DBA_MAINT',
+    auth_options => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER
   );
 END;
 /
 ```
 
-Setelah tanggal berakhir, authorization masih tercatat tetapi rule set tidak lagi mengizinkannya. Untuk hard cleanup, jalankan `DELETE_AUTH_FROM_REALM`.
+## Step 2 — Maintenance
+
+Lakukan hanya perubahan yang sudah disetujui.
+
+## Step 3 — Hapus authorization
+
+```sql
+BEGIN
+  DVSYS.DBMS_MACADM.DELETE_AUTH_FROM_REALM(
+    realm_name => '<APP_REALM>',
+    grantee    => 'DBA_MAINT'
+  );
+END;
+/
+```
+
+## Step 4 — Review audit
+
+Pastikan perubahan tercatat dan account tidak mempunyai authorization tersisa.
 
 ---
 
-# 24. LAB 16 — Menyiapkan Data Redaction
+# 45. Query Monitoring Inti
 
-Tujuan:
-
-```text
-LATIHAN3 tidak boleh melihat nilai asli TABUNGAN.
-```
-
-Data asli tetap tersimpan di tabel. Redaction dilakukan saat hasil query dikembalikan kepada user.
-
-## 24.1 Privilege DBMS_REDACT
-
-Login sebagai `SYS` pada PDB yang sama:
+## Status
 
 ```sql
-GRANT EXECUTE ON SYS.DBMS_REDACT TO LATIHAN;
+SELECT * FROM SYS.DBA_DV_STATUS;
 ```
 
-Jika privilege tersedia pada release/patch level yang digunakan:
+## Realm
 
 ```sql
-GRANT ADMINISTER REDACTION POLICY TO LATIHAN;
+SELECT realm_name, enabled
+FROM DVSYS.DBA_DV_REALM
+ORDER BY realm_name;
 ```
 
-Untuk Oracle 19c, pastikan account pembuat policy juga memiliki privilege yang dibutuhkan terhadap schema/object miliknya, misalnya `CREATE TABLE` untuk policy pada object di schema sendiri sesuai security model `DBMS_REDACT`.
-
-Verifikasi package privilege:
-
-```sql
-SELECT grantee,
-       owner,
-       table_name,
-       privilege
-FROM dba_tab_privs
-WHERE grantee = 'LATIHAN'
-AND table_name = 'DBMS_REDACT';
-```
-
-Verifikasi system privilege:
-
-```sql
-SELECT grantee,
-       privilege
-FROM dba_sys_privs
-WHERE grantee = 'LATIHAN'
-ORDER BY privilege;
-```
-
----
-
-# 25. Hubungan Realm dengan Data Redaction
-
-Jika `LATIHAN.TIM_PJKI` sudah masuk `LATIHAN Data Realm`, maka user yang mengelola policy pada object tersebut harus memiliki Realm authorization yang sesuai.
-
-Cek object:
+## Realm Object
 
 ```sql
 SELECT realm_name,
@@ -1231,13 +1545,10 @@ SELECT realm_name,
        object_name,
        object_type
 FROM DVSYS.DBA_DV_REALM_OBJECT
-WHERE owner = 'LATIHAN'
-AND (object_name = 'TIM_PJKI'
-     OR object_name = '%')
-ORDER BY realm_name;
+ORDER BY realm_name, owner, object_name;
 ```
 
-Cek authorization:
+## Authorization
 
 ```sql
 SELECT realm_name,
@@ -1245,45 +1556,250 @@ SELECT realm_name,
        auth_options,
        auth_rule_set_name
 FROM DVSYS.DBA_DV_REALM_AUTH
-WHERE realm_name = 'LATIHAN Data Realm'
-ORDER BY grantee;
+ORDER BY realm_name, grantee;
 ```
 
-Jika `LATIHAN` tidak muncul, tambahkan:
+## Command Rule
 
 ```sql
-BEGIN
-  DVSYS.DBMS_MACADM.ADD_AUTH_TO_REALM(
-    realm_name   => 'LATIHAN Data Realm',
-    grantee      => 'LATIHAN',
-    auth_options => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER
-  );
-END;
-/
+SELECT command,
+       object_owner,
+       object_name,
+       enabled,
+       rule_set_name
+FROM DVSYS.DBA_DV_COMMAND_RULE
+ORDER BY command, object_owner, object_name;
+```
+
+## Rule Set
+
+```sql
+SELECT rule_set_name,
+       enabled,
+       eval_options
+FROM DVSYS.DBA_DV_RULE_SET
+ORDER BY rule_set_name;
+```
+
+## Rule
+
+```sql
+SELECT rule_name,
+       rule_expr
+FROM DVSYS.DBA_DV_RULE
+ORDER BY rule_name;
+```
+
+## Factor
+
+```sql
+SELECT factor_name,
+       factor_type_name,
+       get_expr
+FROM DVSYS.DBA_DV_FACTOR
+ORDER BY factor_name;
+```
+
+## Policy
+
+```sql
+SELECT policy_name,
+       enabled,
+       description
+FROM DVSYS.DBA_DV_POLICY
+ORDER BY policy_name;
 ```
 
 ---
 
-# 26. Troubleshooting DBMS_REDACT
+# 46. Audit dan Reporting
 
-## 26.1 PLS-00201: DBMS_REDACT must be declared
+Oracle Guide membedakan monitoring perubahan konfigurasi dan enforcement.
+
+View penting:
 
 ```text
-PLS-00201: identifier 'DBMS_REDACT' must be declared
+DVSYS.DV$CONFIGURATION_AUDIT
+DVSYS.DV$ENFORCEMENT_AUDIT
+DBA_DV_SIMULATION_LOG
 ```
 
-Cek package:
+Contoh:
 
 ```sql
-SELECT owner,
-       object_name,
-       object_type,
-       status
-FROM dba_objects
-WHERE object_name = 'DBMS_REDACT';
+SELECT *
+FROM DVSYS.DV$CONFIGURATION_AUDIT;
 ```
 
-Cek privilege:
+```sql
+SELECT *
+FROM DVSYS.DV$ENFORCEMENT_AUDIT;
+```
+
+Oracle Database Vault Reports juga menyediakan laporan untuk:
+
+- Command Rule configuration issues;
+- Rule Set configuration issues;
+- Realm authorization issues;
+- Factor issues;
+- audit Realm;
+- audit Command Rule;
+- powerful accounts;
+- ANY privileges;
+- direct/indirect system privileges;
+- sensitive object access.
+
+---
+
+# 47. Query Operasional Tambahan
+
+## Cek privilege SYS
+
+```sql
+SELECT *
+FROM DBA_SYS_PRIVS
+WHERE GRANTEE = 'SYS'
+ORDER BY PRIVILEGE;
+```
+
+## Cek user
+
+```sql
+SELECT username,
+       account_status,
+       profile,
+       created,
+       expiry_date
+FROM dba_users
+WHERE username LIKE 'LAT%'
+ORDER BY username;
+```
+
+## Audit trail tradisional
+
+```sql
+SELECT *
+FROM DBA_AUDIT_TRAIL
+WHERE USERNAME = 'LATIHAN'
+ORDER BY TIMESTAMP DESC;
+```
+
+Jika database menggunakan Unified Auditing, gunakan view Unified Auditing sesuai konfigurasi audit database.
+
+---
+
+# 48. Troubleshooting Error Umum
+
+## ORA-47410
+
+```text
+Insufficient realm privileges
+```
+
+Artinya operasi diblok mekanisme Realm.
+
+Cek:
+
+```text
+Realm object
+Realm authorization
+protected role
+grantor
+```
+
+---
+
+## ORA-01924
+
+```text
+Role not granted or does not exist
+```
+
+Cek:
+
+```sql
+SELECT role
+FROM dba_roles
+WHERE role = '<ROLE>';
+```
+
+Kemudian:
+
+```sql
+SELECT grantee,
+       granted_role,
+       admin_option
+FROM dba_role_privs
+WHERE granted_role = '<ROLE>';
+```
+
+---
+
+## ORA-01919
+
+```text
+Role does not exist
+```
+
+Jika role Oracle-supplied DV seperti `DV_REALM_RESOURCE` tidak ditemukan, jangan langsung membuat role dengan nama yang sama.
+
+Verifikasi instalasi/catalog Database Vault.
+
+---
+
+## ORA-01031
+
+```text
+insufficient privileges
+```
+
+Dalam environment DV, jangan hanya cek Oracle privilege.
+
+Gunakan checklist:
+
+```text
+[ ] system privilege
+[ ] object privilege
+[ ] role
+[ ] Realm
+[ ] Realm authorization
+[ ] Rule Set
+[ ] Command Rule
+[ ] container/PDB
+```
+
+---
+
+# 49. Appendix — Data Redaction
+
+> Bagian ini merupakan **materi tambahan yang terkait praktik Database Security**, bukan komponen inti Oracle Database Vault Administrator's Guide.
+
+Data Redaction digunakan untuk menyamarkan nilai saat query dikembalikan kepada user.
+
+Data asli tetap tersimpan.
+
+Contoh:
+
+```text
+TABUNGAN asli : 25000000
+
+LATIHAN       : 25000000
+LATIHAN3      : redacted
+```
+
+---
+
+# 50. Privilege Data Redaction
+
+Account yang membuat policy harus mempunyai privilege yang diperlukan untuk `DBMS_REDACT` pada release/configuration yang digunakan.
+
+Contoh lab:
+
+```sql
+GRANT EXECUTE ON SYS.DBMS_REDACT TO LATIHAN;
+```
+
+Verifikasi:
 
 ```sql
 SELECT grantee,
@@ -1295,47 +1811,13 @@ WHERE table_name = 'DBMS_REDACT'
 AND grantee = 'LATIHAN';
 ```
 
-Jika belum ada:
-
-```sql
-GRANT EXECUTE ON SYS.DBMS_REDACT TO LATIHAN;
-```
-
-Gunakan package dengan schema eksplisit:
-
-```text
-SYS.DBMS_REDACT
-```
-
-## 26.2 ORA-01031 saat ADD_POLICY
-
-```text
-ORA-01031: insufficient privileges
-ORA-06512: at "SYS.DBMS_REDACT_INT"
-```
-
-Checklist:
-
-1. `EXECUTE ON SYS.DBMS_REDACT`;
-2. privilege Data Redaction yang dipersyaratkan;
-3. privilege object/schema yang dipersyaratkan;
-4. apakah object dilindungi Realm;
-5. apakah user sudah authorized ke Realm;
-6. apakah ada Command Rule yang membatasi operasi.
-
-Pada lab, salah satu penyebab yang ditemukan adalah `TIM_PJKI` sudah dilindungi Realm tetapi `LATIHAN` belum menjadi grantee pada realm.
+Jika object berada dalam Realm, Realm authorization juga harus memenuhi policy DV.
 
 ---
 
-# 27. LAB 17 — Membuat Data Redaction Policy
+# 51. Redaction pada TIM_PJKI.TABUNGAN
 
-Karena `TABUNGAN` bertipe `NUMBER`, hasil masking tidak ideal jika ingin literal `*****`.
-
-Untuk NUMBER gunakan `FULL`, `NULLIFY`, atau `PARTIAL` numerik.
-
-## 27.1 Opsi A — FULL
-
-Login sebagai `LATIHAN`:
+Contoh FULL:
 
 ```sql
 BEGIN
@@ -1352,56 +1834,7 @@ END;
 /
 ```
 
-## 27.2 Opsi B — NULLIFY
-
-```sql
-BEGIN
-  SYS.DBMS_REDACT.ADD_POLICY(
-    object_schema      => 'LATIHAN',
-    object_name        => 'TIM_PJKI',
-    policy_name        => 'RDC_TABUNGAN_LAT3',
-    column_name        => 'TABUNGAN',
-    function_type      => SYS.DBMS_REDACT.NULLIFY,
-    expression         => q'[SYS_CONTEXT('USERENV','SESSION_USER') = 'LATIHAN3']',
-    policy_description => 'NULL redaction TABUNGAN untuk LATIHAN3'
-  );
-END;
-/
-```
-
-## 27.3 Opsi C — PARTIAL NUMBER
-
-```sql
-BEGIN
-  SYS.DBMS_REDACT.ADD_POLICY(
-    object_schema       => 'LATIHAN',
-    object_name         => 'TIM_PJKI',
-    policy_name         => 'RDC_TABUNGAN_LAT3',
-    column_name         => 'TABUNGAN',
-    function_type       => SYS.DBMS_REDACT.PARTIAL,
-    function_parameters => '0,1,6',
-    expression          => q'[SYS_CONTEXT('USERENV','SESSION_USER') = 'LATIHAN3']',
-    policy_description  => 'Partial redaction TABUNGAN untuk LATIHAN3'
-  );
-END;
-/
-```
-
-> Untuk production, validasi format partial masking terhadap datatype dan pola data aktual.
-
----
-
-# 28. LAB 18 — Menguji Data Redaction
-
-## 28.1 Test sebagai LATIHAN3
-
-```sql
-CONN latihan3/<password>@DB_HOST:1521/PDB_SERVICE
-SHOW USER;
-SHOW CON_NAME;
-```
-
-Query:
+Test sebagai `LATIHAN3`:
 
 ```sql
 SELECT ID_PEG,
@@ -1410,46 +1843,29 @@ SELECT ID_PEG,
 FROM LATIHAN.TIM_PJKI;
 ```
 
-Expected result:
+---
+
+# 52. NUMBER Tidak Sama dengan Literal "*****"
+
+Jika `TABUNGAN` bertipe `NUMBER`, jangan berharap redaction langsung menghasilkan literal:
 
 ```text
-TABUNGAN tidak menampilkan nilai asli
+*****
 ```
 
-Tergantung jenis redaction:
+Pilihan yang lebih sesuai:
 
 ```text
-FULL     -> nilai fixed/redacted
-NULLIFY  -> NULL
-PARTIAL  -> nilai numerik tersamarkan
+FULL
+NULLIFY
+PARTIAL numeric
 ```
 
-## 28.2 Test sebagai LATIHAN
-
-```sql
-CONN latihan/<password>@DB_HOST:1521/PDB_SERVICE
-```
-
-```sql
-SELECT ID_PEG,
-       NAMA_DEPAN,
-       TABUNGAN
-FROM TIM_PJKI;
-```
-
-Expected:
-
-```text
-LATIHAN melihat data asli
-```
-
-karena expression hanya berlaku untuk `SESSION_USER = LATIHAN3`.
+Jika benar-benar membutuhkan karakter `*****`, gunakan layer karakter seperti view dengan `TO_CHAR`, kemudian terapkan masking/redaction sesuai kebutuhan.
 
 ---
 
-# 29. Cek EXEMPT REDACTION POLICY
-
-Jika user mempunyai `EXEMPT REDACTION POLICY`, redaction dapat dilewati.
+# 53. Cek EXEMPT REDACTION POLICY
 
 ```sql
 SELECT grantee,
@@ -1459,785 +1875,175 @@ WHERE grantee = 'LATIHAN3'
 AND privilege = 'EXEMPT REDACTION POLICY';
 ```
 
-Jika tidak dibutuhkan:
-
-```sql
-REVOKE EXEMPT REDACTION POLICY FROM LATIHAN3;
-```
+Jika user target masking mempunyai privilege bypass ini, redaction tidak akan memberikan hasil yang diharapkan.
 
 ---
 
-# 30. Mengecek Data Redaction Policy
+# 54. Checklist Kompetensi Peserta
 
-```sql
-SELECT object_owner,
-       object_name,
-       policy_name,
-       expression
-FROM redaction_policies
-WHERE object_owner = 'LATIHAN'
-AND object_name = 'TIM_PJKI';
-```
+## Security Admin / DV_OWNER
 
-Kolom:
+- [ ] memahami separation of duties
+- [ ] dapat menjelaskan Regular vs Mandatory Realm
+- [ ] dapat melihat status DV
+- [ ] dapat membuat Realm
+- [ ] dapat menambah protected object
+- [ ] dapat menambah/menghapus Realm authorization
+- [ ] memahami Rule dan Rule Set
+- [ ] memahami Command Rule
+- [ ] memahami Factor
+- [ ] memahami Simulation Mode
+- [ ] memahami Operations Control
+- [ ] tidak menggunakan disable Realm sebagai solusi pertama
 
-```sql
-SELECT object_owner,
-       object_name,
-       column_name,
-       function_type,
-       function_parameters
-FROM redaction_columns
-WHERE object_owner = 'LATIHAN'
-AND object_name = 'TIM_PJKI';
-```
+## DV_ADMIN
 
----
+- [ ] dapat menggunakan `DBMS_MACADM`
+- [ ] dapat mengecek Realm/Rule/Command Rule/Factor
+- [ ] dapat melakukan troubleshooting policy
+- [ ] dapat membaca `DBA_DV_*` views
+- [ ] memahami batas kewenangannya dibanding `DV_OWNER`
 
-# 31. Disable Data Redaction Policy
+## Account Administrator / DV_ACCTMGR
 
-```sql
-BEGIN
-  SYS.DBMS_REDACT.DISABLE_POLICY(
-    object_schema => 'LATIHAN',
-    object_name   => 'TIM_PJKI',
-    policy_name   => 'RDC_TABUNGAN_LAT3'
-  );
-END;
-/
-```
+- [ ] memahami account/profile management
+- [ ] dapat create/alter account sesuai kewenangan
+- [ ] memahami pemisahan `DV_ACCTMGR` dari `DV_OWNER`
+- [ ] tidak menggunakan account management role untuk administrasi security policy
 
-# 32. Enable Kembali Data Redaction Policy
+## Developer
 
-```sql
-BEGIN
-  SYS.DBMS_REDACT.ENABLE_POLICY(
-    object_schema => 'LATIHAN',
-    object_name   => 'TIM_PJKI',
-    policy_name   => 'RDC_TABUNGAN_LAT3'
-  );
-END;
-/
-```
-
-# 33. Menghapus Data Redaction Policy
-
-```sql
-BEGIN
-  SYS.DBMS_REDACT.DROP_POLICY(
-    object_schema => 'LATIHAN',
-    object_name   => 'TIM_PJKI',
-    policy_name   => 'RDC_TABUNGAN_LAT3'
-  );
-END;
-/
-```
+- [ ] memahami bahwa DBA privilege dan application privilege berbeda
+- [ ] hanya menerima application role
+- [ ] tidak menerima `DV_OWNER`
+- [ ] tidak menerima `DV_ADMIN`
+- [ ] dapat menguji protected object
+- [ ] dapat membedakan Realm denial dan privilege denial
+- [ ] memahami hasil Data Redaction
 
 ---
 
-# 34. Jika Ingin Tampil Literal "*****"
+# 55. Cheat Sheet Keputusan Cepat
 
-Karena `TABUNGAN = NUMBER`, Data Redaction langsung pada kolom tersebut tidak dirancang untuk mengembalikan literal karakter `*****`.
+## Saya ingin melindungi schema/table
 
-Pilihan:
+Gunakan:
 
 ```text
-A. FULL redaction langsung pada NUMBER
-B. NULLIFY langsung pada NUMBER
-C. Partial numeric redaction
-D. View yang mengubah NUMBER menjadi VARCHAR2 lalu redaction pada view
+Realm
 ```
 
-Jika harus literal bintang, pendekatan view lebih cocok daripada mengubah datatype tabel asli.
+## Saya ingin membatasi CREATE / ALTER / DROP / CONNECT
 
----
-
-# 35. LAB 19 — Mengecek Semua Realm
-
-```sql
-SELECT realm_name,
-       enabled,
-       audit_options
-FROM DVSYS.DBA_DV_REALM
-ORDER BY realm_name;
-```
-
-# 36. Mengecek Object yang Dilindungi Realm
-
-```sql
-SELECT realm_name,
-       owner,
-       object_name,
-       object_type
-FROM DVSYS.DBA_DV_REALM_OBJECT
-ORDER BY realm_name,
-         owner,
-         object_name;
-```
-
-# 37. Mengecek Realm Authorization
-
-```sql
-SELECT realm_name,
-       grantee,
-       auth_options,
-       auth_rule_set_name
-FROM DVSYS.DBA_DV_REALM_AUTH
-ORDER BY realm_name,
-         grantee;
-```
-
-# 38. Mengecek Command Rule
-
-```sql
-SELECT command,
-       object_owner,
-       object_name,
-       enabled,
-       rule_set_name
-FROM DVSYS.DBA_DV_COMMAND_RULE
-ORDER BY command,
-         object_owner,
-         object_name;
-```
-
-# 39. Mengecek Rule Set
-
-```sql
-SELECT rule_set_name,
-       enabled,
-       eval_options
-FROM DVSYS.DBA_DV_RULE_SET
-ORDER BY rule_set_name;
-```
-
-Relasi rule:
-
-```sql
-SELECT rule_set_name,
-       rule_name
-FROM DVSYS.DBA_DV_RULE_SET_RULE
-ORDER BY rule_set_name,
-         rule_name;
-```
-
-Rule:
-
-```sql
-SELECT rule_name,
-       rule_expr
-FROM DVSYS.DBA_DV_RULE
-ORDER BY rule_name;
-```
-
-# 40. Mengecek Factor
-
-```sql
-SELECT factor_name,
-       factor_type_name,
-       get_expr
-FROM DVSYS.DBA_DV_FACTOR
-ORDER BY factor_name;
-```
-
-# 41. Mengecek Policy DV
-
-```sql
-SELECT policy_name,
-       enabled,
-       description
-FROM DVSYS.DBA_DV_POLICY
-ORDER BY policy_name;
-```
-
----
-
-# 42. Simulation Mode
-
-Untuk konfigurasi baru, Oracle Database Vault menyediakan simulation mode.
-
-Tujuan:
+Gunakan:
 
 ```text
-SQL tetap berjalan
-namun violation dicatat.
+Command Rule + Rule Set
 ```
 
-Ini sebaiknya digunakan sebelum enforcement pada aplikasi production.
+## Saya ingin membatasi berdasarkan IP/jam/module
 
-Cek log:
-
-```sql
-SELECT *
-FROM DVSYS.DBA_DV_SIMULATION_LOG
-ORDER BY timestamp DESC;
-```
-
-Mental model:
+Gunakan:
 
 ```text
-SIMULATION
-    |
-    +-- SQL tidak langsung diblok
-    +-- pelanggaran dicatat
-    +-- DBA/Security Admin review
-    +-- policy diperbaiki
-    +-- baru ENABLE
+Factor + Rule + Rule Set
 ```
 
----
+## Saya ingin role hanya aktif dalam kondisi tertentu
 
-# 43. Menangani Trouble User Aplikasi / DBA
-
-Jangan menjadikan `DISABLE REALM` sebagai langkah pertama.
-
-Urutan penanganan:
+Gunakan:
 
 ```text
-1. Identifikasi user
-2. Identifikasi SQL yang gagal
-3. Cek Realm
-4. Cek Realm Authorization
-5. Cek Rule Set
-6. Cek Command Rule
-7. Jika perlu gunakan Simulation Mode
-8. Berikan temporary authorization ke named account
-9. Lakukan maintenance
-10. Hapus authorization setelah selesai
+Secure Application Role
 ```
 
----
+## Saya ingin mengelompokkan semua kontrol satu aplikasi
 
-# 44. Kenapa Jangan Sering Buka/Tutup Realm?
-
-Saat Realm disabled, scope perlindungan yang hilang biasanya lebih luas daripada kebutuhan maintenance.
-
-Risiko:
-
-- DBA lain ikut memperoleh akses;
-- user lain dapat menggunakan privilege yang sebelumnya diblok;
-- troubleshooting menjadi sulit diaudit;
-- separation of duties melemah.
-
-Lebih aman:
+Gunakan:
 
 ```text
-temporary named-user authorization
-+
-rule set
-+
-audit
+Database Vault Policy
 ```
 
----
+## Saya belum yakin policy aman untuk production
 
-# 45. Runbook Emergency Maintenance
-
-Misalnya DBA `DBA_MAINT` harus mengubah object aplikasi.
-
-## Step 1 — Jangan disable realm
-
-```sql
-SELECT realm_name,
-       owner,
-       object_name,
-       object_type
-FROM DVSYS.DBA_DV_REALM_OBJECT
-WHERE owner = '<APP_SCHEMA>';
-```
-
-## Step 2 — Tambahkan named account sementara
-
-```sql
-BEGIN
-  DVSYS.DBMS_MACADM.ADD_AUTH_TO_REALM(
-    realm_name   => '<APP_REALM>',
-    grantee      => 'DBA_MAINT',
-    auth_options => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER
-  );
-END;
-/
-```
-
-## Step 3 — Maintenance
-
-Lakukan aktivitas yang telah disetujui.
-
-## Step 4 — Hapus authorization
-
-```sql
-BEGIN
-  DVSYS.DBMS_MACADM.DELETE_AUTH_FROM_REALM(
-    realm_name => '<APP_REALM>',
-    grantee    => 'DBA_MAINT'
-  );
-END;
-/
-```
-
-## Step 5 — Verifikasi
-
-```sql
-SELECT *
-FROM DVSYS.DBA_DV_REALM_AUTH
-WHERE grantee = 'DBA_MAINT';
-```
-
----
-
-# 46. Troubleshooting Error yang Ditemui Selama Praktik
-
-## ORA-47410
+Gunakan:
 
 ```text
-ORA-47410: Insufficient realm privileges to GRANT on DV_ACCTMGR
+Simulation Mode
 ```
 
-Penyebab: user yang melakukan grant bukan jalur account-management yang diizinkan DV.
+## Saya ingin common DBA tidak membaca local PDB data
 
-Solusi: gunakan akun pemegang `DV_ACCTMGR` yang sah dan mempunyai kemampuan grant.
-
-## ORA-01924
+Pertimbangkan:
 
 ```text
-ORA-01924: Role "X" not granted or does not exist
+Operations Control
 ```
 
-Kemungkinan:
+## Saya ingin menyamarkan nilai query
 
-- typo;
-- role tidak ada;
-- role tidak dimiliki grantor dengan admin option;
-- role management dilindungi DV.
-
-Cek:
-
-```sql
-SELECT role
-FROM dba_roles
-WHERE role = 'X';
-```
-
-```sql
-SELECT grantee,
-       granted_role,
-       admin_option
-FROM dba_role_privs
-WHERE granted_role = 'X';
-```
-
-## ORA-01919
+Gunakan fitur:
 
 ```text
-ORA-01919: Role 'DV_REALM_RESOURCE' does not exist
+Data Redaction
 ```
 
-Cek:
+bukan Realm.
 
-```sql
-SELECT con_id, role
-FROM cdb_roles
-WHERE role = 'DV_REALM_RESOURCE';
-```
+---
 
-Jangan membuat replika default DV role secara manual.
+# 56. Prinsip Operasional Final
 
-## PLS-00201 DBMS_REDACT
+Pegang delapan prinsip ini:
+
+1. **Privilege bukan authorization.**
+2. **DBA tidak harus dapat membaca semua data aplikasi.**
+3. **Gunakan named account.**
+4. **Pisahkan security admin dan account admin.**
+5. **Realm adalah pagar object; Command Rule adalah pagar SQL.**
+6. **Gunakan Rule Set untuk kondisi runtime.**
+7. **Gunakan Simulation Mode sebelum enforcement besar.**
+8. **Temporary authorization lebih aman daripada membuka Realm secara global.**
+
+Mental model final:
 
 ```text
-identifier 'DBMS_REDACT' must be declared
-```
-
-Cek:
-
-```sql
-SELECT owner,
-       object_name,
-       status
-FROM dba_objects
-WHERE object_name = 'DBMS_REDACT';
-```
-
-```sql
-SELECT *
-FROM dba_tab_privs
-WHERE table_name = 'DBMS_REDACT'
-AND grantee = '<USER>';
-```
-
-## ORA-01031 pada DBMS_REDACT
-
-Checklist:
-
-```text
-[ ] EXECUTE ON SYS.DBMS_REDACT
-[ ] privilege redaction yang dipersyaratkan
-[ ] privilege object/schema yang dipersyaratkan
-[ ] Realm authorization
-[ ] Command Rule
+User
+ |
+ +-- Oracle Privilege
+ |
+ +-- Database Vault Realm Authorization
+ |
+ +-- Rule / Rule Set
+ |
+ +-- Command Rule
+ |
+ +-- Factor / Session Context
+ |
+ +-- Policy State
+ |
+ +----> ALLOW / DENY
 ```
 
 ---
 
-# 47. Query Ringkas Audit Seluruh DV
+# 57. Referensi Utama
 
-```sql
-SELECT * FROM SYS.DBA_DV_STATUS;
+Dokumen utama:
 
-SELECT realm_name, enabled
-FROM DVSYS.DBA_DV_REALM
-ORDER BY realm_name;
+- **Oracle Database Vault Administrator's Guide**
+- Release: **19c**
+- Document Number: **E96302-23**
+- Edition: **June 2024**
 
-SELECT realm_name, owner, object_name, object_type
-FROM DVSYS.DBA_DV_REALM_OBJECT
-ORDER BY realm_name, owner, object_name;
-
-SELECT realm_name, grantee, auth_options
-FROM DVSYS.DBA_DV_REALM_AUTH
-ORDER BY realm_name, grantee;
-
-SELECT command, object_owner, object_name, enabled, rule_set_name
-FROM DVSYS.DBA_DV_COMMAND_RULE
-ORDER BY command, object_owner, object_name;
-
-SELECT rule_set_name, enabled
-FROM DVSYS.DBA_DV_RULE_SET
-ORDER BY rule_set_name;
-
-SELECT factor_name
-FROM DVSYS.DBA_DV_FACTOR
-ORDER BY factor_name;
-
-SELECT policy_name, enabled
-FROM DVSYS.DBA_DV_POLICY
-ORDER BY policy_name;
-```
-
----
-
-# 48. Checklist Praktikum per Peserta
-
-## Peserta A — Security Admin / DV_OWNER
-
-- [ ] Login sebagai user `DV_OWNER`
-- [ ] Verifikasi `SHOW USER`
-- [ ] Verifikasi `SHOW CON_NAME`
-- [ ] Cek `DBA_DV_STATUS`
-- [ ] Cek seluruh role DV
-- [ ] Cek pemegang `DV_OWNER`
-- [ ] Grant/revoke `DV_ADMIN`
-- [ ] Buat Realm
-- [ ] Tambahkan object ke Realm
-- [ ] Tambahkan Realm Owner/Participant
-- [ ] Hapus Realm authorization
-- [ ] Cek Rule Set
-- [ ] Cek Command Rule
-- [ ] Cek simulation log
-
-## Peserta B — DBA / DV_ADMIN
-
-- [ ] Login sebagai `DV_ADMIN`
-- [ ] Cek Realm
-- [ ] Cek Realm object
-- [ ] Cek Realm authorization
-- [ ] Menggunakan `DBMS_MACADM` sesuai kewenangan
-- [ ] Review Rule/Rule Set
-- [ ] Review Command Rule
-- [ ] Review Factor
-- [ ] Troubleshoot blocked operation
-- [ ] Tidak menggunakan `DV_OWNER` jika `DV_ADMIN` sudah cukup
-
-## Peserta C — Account Administrator / DV_ACCTMGR
-
-- [ ] Login sebagai `DV_ACCTMGR`
-- [ ] Cek user
-- [ ] Cek profile
-- [ ] Cek expiry date
-- [ ] Create/alter account sesuai kebutuhan lab
-- [ ] Memberikan `CREATE SESSION`
-- [ ] Memahami bahwa `DV_ACCTMGR` terpisah dari `DV_OWNER`
-- [ ] Tidak mencoba mengelola policy/Realm menggunakan role account manager
-
-## Peserta D — Developer / APP_DEV_STANDARD
-
-- [ ] Login sebagai `LATIHAN3`
-- [ ] Verifikasi role
-- [ ] Cek object yang dapat diakses
-- [ ] Query `LATIHAN.TIM_PJKI`
-- [ ] Membandingkan data sebelum dan sesudah redaction
-- [ ] Memastikan `TABUNGAN` tidak terlihat asli
-- [ ] Tidak memiliki role `DV_OWNER`
-- [ ] Tidak memiliki role `DV_ADMIN`
-- [ ] Tidak memiliki `EXEMPT REDACTION POLICY`
-
----
-
-# 49. Best Practice Final
-
-1. Gunakan **named account**, bukan akun bersama.
-2. Pisahkan fungsi Security Admin, DBA Configuration, Account Admin, dan Developer.
-3. Jangan memberikan `DV_OWNER` ke developer.
-4. Jangan memberikan `DV_ADMIN` hanya agar DBA "lebih mudah".
-5. Jangan menggunakan `SYS` untuk pekerjaan rutin.
-6. Gunakan custom role untuk developer jika default role DV tidak sesuai/tersedia.
-7. Hindari privilege `ANY` untuk developer.
-8. Batasi quota tablespace.
-9. Gunakan Realm untuk melindungi object sensitif.
-10. Gunakan Realm authorization untuk kebutuhan maintenance.
-11. Gunakan Rule Set untuk pembatasan waktu/kondisi.
-12. Gunakan Simulation Mode sebelum enforcement production.
-13. Jangan membuka/menutup Realm sembarangan saat incident.
-14. Review audit/violation setelah perubahan.
-15. Hapus temporary authorization setelah maintenance.
-16. Pastikan target redaction tidak mempunyai `EXEMPT REDACTION POLICY`.
-17. Jangan memasukkan password asli ke dokumen atau script bersama.
-
----
-
-# 50. Quick Reference
-
-## Status DV
-
-```sql
-SELECT * FROM SYS.DBA_DV_STATUS;
-```
-
-## Semua role DV
-
-```sql
-SELECT role
-FROM dba_roles
-WHERE role LIKE 'DV_%'
-ORDER BY role;
-```
-
-## Pemegang DV_OWNER
-
-```sql
-SELECT grantee, admin_option, default_role
-FROM dba_role_privs
-WHERE granted_role = 'DV_OWNER';
-```
-
-## Realm
-
-```sql
-SELECT realm_name, enabled
-FROM DVSYS.DBA_DV_REALM;
-```
-
-## Realm Object
-
-```sql
-SELECT realm_name, owner, object_name, object_type
-FROM DVSYS.DBA_DV_REALM_OBJECT;
-```
-
-## Realm Authorization
-
-```sql
-SELECT realm_name, grantee, auth_options
-FROM DVSYS.DBA_DV_REALM_AUTH;
-```
-
-## Add Authorization
-
-```sql
-BEGIN
-  DVSYS.DBMS_MACADM.ADD_AUTH_TO_REALM(
-    realm_name   => '<REALM>',
-    grantee      => '<USER>',
-    auth_options => DVSYS.DBMS_MACUTL.G_REALM_AUTH_OWNER
-  );
-END;
-/
-```
-
-## Delete Authorization
-
-```sql
-BEGIN
-  DVSYS.DBMS_MACADM.DELETE_AUTH_FROM_REALM(
-    realm_name => '<REALM>',
-    grantee    => '<USER>'
-  );
-END;
-/
-```
-
-## Data Redaction FULL
-
-```sql
-BEGIN
-  SYS.DBMS_REDACT.ADD_POLICY(
-    object_schema => '<SCHEMA>',
-    object_name   => '<TABLE>',
-    policy_name   => '<POLICY>',
-    column_name   => '<COLUMN>',
-    function_type => SYS.DBMS_REDACT.FULL,
-    expression    => q'[SYS_CONTEXT('USERENV','SESSION_USER') = '<TARGET_USER>']'
-  );
-END;
-/
-```
-
----
-
-# 50A. Query Pack Operasional dari Dokumentasi SITP
-
-Bagian ini mempertahankan query operasional yang terdapat pada file dokumentasi peserta agar dapat langsung digunakan saat praktikum.
-
-## A. Cek privilege SYS
-
-```sql
-SELECT *
-FROM DBA_SYS_PRIVS
-WHERE 1=1
-AND GRANTEE = 'SYS'
---AND PRIVILEGE = 'SELECT ANY TABLE'
-;
-```
-
-## B. Cek seluruh user
-
-```sql
-SELECT *
-FROM ALL_USERS
-WHERE 1=1
--- AND USERNAME = 'LATIHAN'
-;
-```
-
-## C. Cek status dan expiry account peserta
-
-```sql
-SELECT username,
-       account_status,
-       created,
-       expiry_date
-FROM dba_users
-WHERE username LIKE 'LAT%'
-ORDER BY username
-;
-```
-
-## D. Cek audit trail
-
-```sql
-SELECT *
-FROM DBA_AUDIT_TRAIL
-WHERE 1=1
--- AND USERNAME = 'LATIHAN'
-ORDER BY TIMESTAMP DESC
-;
-```
-
-## E. Cek tabel pada schema aktif
-
-```sql
-SELECT table_name,
-       status,
-       last_analyzed
-FROM user_tables
-ORDER BY table_name;
-```
-
-## F. Cek seluruh role Database Vault pada container
-
-```sql
-SHOW CON_NAME;
-
-SELECT *
---SELECT con_id, role
-FROM cdb_roles
-WHERE role LIKE 'DV_%'
-ORDER BY con_id, role;
-```
-
-> Query pada bagian ini berasal dari dokumentasi `DB Sec Query v.1-SITP.sql`. File `DB Sec Query v.1.sql` memuat query dasar pengecekan privilege `SYS`, yang sudah tercakup pada bagian A.
-
----
-
-# 51. Referensi
-
-Sumber utama:
-
-- Oracle Database Vault Administrator's Guide 19c
-- Document Number: E96302-23
-- Release: 19c
-- June 2024
-
-Dokumentasi operasional peserta yang digunakan untuk melengkapi panduan:
+Dokumentasi operasional yang digunakan untuk melengkapi hands-on:
 
 - `DB Sec Query v.1-SITP.sql`
 - `DB Sec Query v.1.sql`
 
-Bagian yang paling relevan:
+Catatan:
 
-- Introduction to Oracle Database Vault
-- Getting Started with Oracle Database Vault
-- Configuring Realms
-- Configuring Rule Sets
-- Configuring Command Rules
-- Configuring Factors
-- Oracle Database Vault Policies
-- Simulation Mode
-- DBA Operations in an Oracle Database Vault Environment
-- Oracle Database Vault Schemas, Roles, and Accounts
-- Oracle Database Vault Realm APIs
-- Oracle Database Vault Rule Set APIs
-
-Catatan Data Redaction:
-
-- Praktik menggunakan package `SYS.DBMS_REDACT`.
-- Requirement privilege dapat berbeda mengikuti release/patch level Oracle.
-- Validasi selalu pada dokumentasi Oracle yang sesuai dengan versi database yang digunakan.
-- Dalam environment Database Vault, Realm/Command Rule dapat menambah lapisan kontrol terhadap administrasi Data Redaction.
-
----
-
-# 52. Penutup
-
-Prinsip yang perlu selalu diingat:
-
-```text
-DBA privilege != hak melihat seluruh data
-```
-
-Database Vault memisahkan administrasi database dari otorisasi terhadap data aplikasi.
-
-Model sederhana:
-
-```text
-Security Admin
-    |
-    +-- DV_OWNER
-    |
-DBA / DV Configuration Admin
-    |
-    +-- DV_ADMIN
-    |
-Account Administrator
-    |
-    +-- DV_ACCTMGR
-    |
-Developer
-    |
-    +-- APP_DEV_STANDARD
-```
-
-Kemudian data sensitif dilindungi menggunakan:
-
-```text
-Realm
-  +
-Realm Authorization
-  +
-Rule / Rule Set
-  +
-Command Rule jika dibutuhkan
-  +
-Data Redaction untuk tampilan data sensitif
-```
-
-Dengan model tersebut, setiap peserta memiliki tanggung jawab yang jelas dan tidak perlu memegang seluruh kewenangan database.
+- Bagian 1–48 terutama merangkum konsep dan terminologi Oracle Database Vault Guide.
+- Bagian Data Redaction merupakan materi tambahan dari praktik database security dan harus divalidasi terhadap dokumentasi Data Redaction yang sesuai dengan versi/patch Oracle Database yang digunakan.
+- Contoh user, Realm, role custom, dan object `LATIHAN.TIM_PJKI` adalah bagian dari environment latihan, bukan default konfigurasi Oracle.
