@@ -80,6 +80,18 @@ Pertahankan: [GANTI: bagian yang sudah benar].
 Jangan mendesain ulang elemen lain.
 ```
 
+## Referensi Visual Fondasi
+
+Gunakan visual berikut sebagai referensi cepat. Klik gambar untuk membukanya dalam ukuran penuh.
+
+| Workflow desain konten | Delapan gaya visual |
+|---|---|
+| <a href="media/image19.jpeg"><img src="media/image19.jpeg" alt="Infografis workflow desain konten dengan AI" width="320"></a> | <a href="media/image20.jpeg"><img src="media/image20.jpeg" alt="Infografis delapan gaya visual" width="320"></a> |
+| **Kata kunci kualitas gambar** | **Kode warna HEX** |
+| <a href="media/image21.jpeg"><img src="media/image21.jpeg" alt="Infografis kata kunci kualitas gambar AI" width="320"></a> | <a href="media/image22.jpeg"><img src="media/image22.jpeg" alt="Infografis daftar warna dan kode HEX" width="320"></a> |
+| **Kombinasi palet warna** | |
+| <a href="media/image23.jpeg"><img src="media/image23.jpeg" alt="Infografis kombinasi palet warna" width="320"></a> | |
+
 ## Prompt Inti ChatGPT
 
 ### P1 — Analisis dan Brief
@@ -238,6 +250,10 @@ aksi, dan elemen yang sudah benar.
 - **Flow:** buat 5 klip: reveal box, detail, on-feet, walking hero, CTA beauty shot.
 - **QC:** outsole dan stripe tidak berubah; klaim produk harus terverifikasi.
 
+| Master reference produk | Contoh storyboard 9:16 |
+|---|---|
+| <a href="media/image1.png"><img src="media/image1.png" alt="Master reference sneaker PVN Taehyung Blue" width="360"></a> | <a href="media/image2.png"><img src="media/image2.png" alt="Storyboard iklan sneaker PVN vertikal" width="220"></a> |
+
 ### 02 — Doll Catcher
 
 - **Lock:** bentuk mesin, warna, kontrol, claw, chute, hadiah, dan mekanisme.
@@ -252,12 +268,20 @@ aksi, dan elemen yang sudah benar.
 - **Flow:** satu aksi per klip: press, full squeeze, release, recovery, lineup.
 - **QC:** produk tidak meleleh, bocor, atau berubah menjadi material keras.
 
+| Master reference produk | Contoh storyboard satisfying |
+|---|---|
+| <a href="media/image3.png"><img src="media/image3.png" alt="Master reference NeeDoh Nice Cube" width="360"></a> | <a href="media/image4.png"><img src="media/image4.png" alt="Storyboard video satisfying NeeDoh Nice Cube" width="220"></a> |
+
 ### 04 — POP SAN Water Slime
 
 - **Lock:** cup, label, warna varian, jelly cube, dan skala produk.
 - **ChatGPT:** pada P1 pisahkan fakta listing, klaim penjual, dan data belum pasti.
 - **Flow:** generate varian hero, texture action, detail jelly cube, lalu lineup CTA.
 - **QC:** jangan membuat sertifikasi, keamanan, atau manfaat yang tidak terverifikasi.
+
+<p align="center"><a href="media/image5.png"><img src="media/image5.png" alt="Referensi produk POP SAN Water Slime" width="720"></a></p>
+
+*Referensi visual produk dan varian POP SAN Water Slime.*
 
 ### 05 — Iklan Produk Tanpa Model
 
@@ -273,12 +297,22 @@ aksi, dan elemen yang sudah benar.
 - **Adaptasi:** ubah komposisi ke `1600×400`; jangan sekadar crop flyer portrait.
 - **QC:** semua data acara terbaca dan sama dengan sumber resmi.
 
+<p align="center"><a href="media/image6.png"><img src="media/image6.png" alt="Contoh flyer dan storytelling event" width="420"></a></p>
+
+*Contoh visual event; data resmi dan tipografi tetap difinalkan manual.*
+
 ### 07 — Edukasi Sains Anak
 
 - **Lock:** desain, usia, pakaian, warna, skala, dan sifat setiap karakter.
 - **ChatGPT:** verifikasi konsep sains; P4 membagi hook, penjelasan, dan takeaway.
 - **Flow:** generate satu scene per klip; gunakan end frame sebagai bridge scene berikutnya.
 - **QC:** penjelasan sains benar, karakter stabil, dan visual sesuai usia.
+
+| Storyboard tiga scene | Character sheet Mimi |
+|---|---|
+| <a href="media/image7.png"><img src="media/image7.png" alt="Storyboard Mimi dan Rahasia Pelangi" width="380"></a> | <a href="media/image8.png"><img src="media/image8.png" alt="Character sheet Mimi" width="380"></a> |
+| **Character sheet Axel** | **Character sheet Tetes** |
+| <a href="media/image9.png"><img src="media/image9.png" alt="Character sheet Axel" width="380"></a> | <a href="media/image10.png"><img src="media/image10.png" alt="Character sheet Tetes" width="380"></a> |
 
 ### 08 — Edukasi Keselamatan Gempa
 
@@ -287,6 +321,10 @@ aksi, dan elemen yang sudah benar.
 - **Flow:** scene 1 tanda gempa, scene 2 merunduk–berlindung–berpegangan, scene 3 menuju area aman setelah guncangan berhenti.
 - **QC:** jangan menampilkan tindakan berbahaya, kepanikan, atau keluar saat guncangan aktif.
 
+<p align="center"><a href="media/image11.png"><img src="media/image11.png" alt="Storyboard edukasi keselamatan gempa gaya claymation" width="300"></a></p>
+
+*Contoh storyboard vertikal edukasi keselamatan gempa.*
+
 ### 09 — Berita Viral Claymation
 
 - **Lock:** fakta, sumber, angka, status verifikasi, dan identitas visual reporter.
@@ -294,12 +332,22 @@ aksi, dan elemen yang sudah benar.
 - **Flow:** hook viral, klarifikasi, lalu takeaway; teks angka ditempel di editor.
 - **QC:** hindari fitnah, angka salah, dan visual yang menyatakan klaim belum terverifikasi sebagai fakta.
 
+<p align="center"><a href="media/image12.png"><img src="media/image12.png" alt="Storyboard berita viral gaya claymation" width="300"></a></p>
+
+*Contoh storyboard berita viral: hook, klarifikasi, dan takeaway editorial.*
+
 ### 10 — Animasi Nara & Kiko
 
 - **Lock:** character sheet, aksesori, proporsi, palet, dan emotional arc.
 - **ChatGPT:** P4 membagi masalah, dukungan teman, keberanian, dan resolusi.
 - **Flow:** satu scene emosional per klip; gunakan reference karakter yang sama setiap kali.
 - **QC:** ekspresi berkembang logis dan tidak ada character drift.
+
+| Storyboard cerita | Character sheet Nara |
+|---|---|
+| <a href="media/image13.png"><img src="media/image13.png" alt="Storyboard Ketika Nara Kehilangan Suaranya" width="380"></a> | <a href="media/image14.png"><img src="media/image14.png" alt="Character sheet Nara" width="380"></a> |
+| **Character sheet Kiko** | |
+| <a href="media/image15.png"><img src="media/image15.png" alt="Character sheet Kiko" width="380"></a> | |
 
 ### 11 — Storytelling/Biografi Kartun 2D
 
@@ -314,6 +362,10 @@ aksi, dan elemen yang sudah benar.
 - **ChatGPT:** P1 menetapkan identity lock; P3 membuat front/side/back, ekspresi, dan detail.
 - **QC:** tidak ada age drift, face morphing, atau perubahan ciri identitas.
 
+<p align="center"><a href="media/image16.png"><img src="media/image16.png" alt="Contoh AI influencer character reference sheet" width="460"></a></p>
+
+*Contoh character reference sheet untuk menjaga identity lock.*
+
 ### 13 — Video Event Berseri
 
 - **Lock:** master character sheet, logo, outfit, lokasi, dan urutan scene.
@@ -321,12 +373,20 @@ aksi, dan elemen yang sudah benar.
 - **Flow:** generate scene berurutan; gunakan end frame klip sebelumnya sebagai referensi klip berikutnya bila fitur tersedia.
 - **QC:** bandingkan setiap klip dengan master sebelum melanjutkan.
 
+<p align="center"><a href="media/image17.png"><img src="media/image17.png" alt="Master character sheet untuk video event berseri" width="720"></a></p>
+
+*Master character sheet sebagai referensi identitas untuk seluruh scene.*
+
 ### 14 — Komik/Manga Event
 
 - **Lock:** identitas tokoh, data acara, hook, CTA, dan arah baca.
 - **ChatGPT:** P1 → P2 → P3; minta panel plan sebelum prompt gambar final.
 - **Finalisasi:** dialog, tanggal, lokasi, kontak, dan logo ditempel ulang di editor.
 - **QC:** wajah dikenali, panel mudah dibaca, dan data acara benar.
+
+<p align="center"><a href="media/image18.png"><img src="media/image18.png" alt="Contoh manga event satu halaman" width="420"></a></p>
+
+*Contoh manga event; hook, CTA, dan data acara harus tetap dikunci.*
 
 ## Checklist QC Universal
 
