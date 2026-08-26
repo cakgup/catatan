@@ -1,61 +1,114 @@
-# Petunjuk Manual Pemanfaatan AI untuk Desain Grafis
+# AI Design: Panduan Praktis Desain Grafis dengan AI
 
-**Versi 2.2 — Modul Praktik Berbasis Proyek End-to-End + Fondasi Konten, Prompt, Warna & Video**
+> **Versi 2.3 (2026)** — Modul praktik berbasis proyek untuk menyusun brief, menulis prompt, membuat gambar/video, dan melakukan quality control (QC).
 
-Materi fondasi dibaca sekali; setiap proyek kemudian diikuti dari input awal → analisis → prompt → storyboard/desain → video/gambar → QC → finalisasi.
+Panduan ini dirancang agar dapat langsung dipraktikkan. Setiap proyek mengikuti alur yang sama:
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>PERUBAHAN UTAMA V2.2<br />
-Fondasi konten, hook, formula prompt poster, gaya visual, warna/HEX, Canva, dan workflow video AI ditambahkan di awal. Struktur proyek end-to-end tetap dipertahankan agar peserta mengikuti satu tema dari input sampai output final.</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
+**Referensi → analisis → brief → ide/cerita → script → storyboard → generate → QC → finalisasi.**
 
-2026 • Resume prompt proyek produksi aktual + materi pelatihan desain konten, prompt poster, warna, Canva, dan videografi AI
+## Mulai Cepat
 
-# Cara Menggunakan Manual Ini
+1. Baca [fondasi universal](#bagian-a--fondasi-universal-sebelum-memulai-proyek) satu kali.
+2. Pilih proyek pada [peta proyek](#peta-proyek) sesuai output yang ingin dibuat.
+3. Siapkan aset referensi yang diminta, misalnya foto produk, karakter, logo, atau data acara.
+4. Salin prompt dari blok kode menggunakan tombol **Copy** di pojok kanan blok.
+5. Ganti semua placeholder bertanda `[GANTI: ...]` dengan data Anda.
+6. Unggah aset referensi, tempel prompt, lalu generate.
+7. Lanjutkan ke langkah berikutnya hanya setelah hasil lolos checklist QC.
 
-Baca BAGIAN A terlebih dahulu untuk memahami struktur konten, hook, formula prompt poster, gaya visual, warna, Canva, dan alur video. Setelah itu pilih proyek berdasarkan hasil akhir yang ingin dibuat peserta. Ikuti langkah secara berurutan di dalam satu proyek. Jangan berpindah ke proyek lain hanya untuk mencari tahap storyboard atau JSON video, karena setiap proyek sudah memuat alur lengkapnya sendiri.
+> [!IMPORTANT]
+> Jangan menghapus bagian **LOCK**, **NEGATIVE**, atau **QC**. Ketiganya membantu menjaga identitas karakter/produk, mencegah kesalahan visual, dan memastikan output layak dipakai.
 
-<table>
-<colgroup>
-<col style="width: 100%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p><strong>POLA YANG SELALU SAMA</strong></p>
-<p>INPUT / REFERENCE → ANALISIS / BRIEF → CREATIVE ANGLE / CERITA → SCRIPT → STORYBOARD / KEYFRAME → PROMPT VIDEO / JSON → GENERATE → QC → FINAL COMPOSITING → PUBLIKASI / ARSIP.</p></th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
+## Cara Menggunakan Prompt
 
-## Peta Cepat Proyek
+Placeholder selalu memakai format `[GANTI: keterangan]`. Contoh:
+
+```text
+Target audiens: [GANTI: remaja usia 15–18 tahun]
+Rasio: [GANTI: 4:5]
+```
+
+Menjadi:
+
+```text
+Target audiens: remaja usia 15–18 tahun
+Rasio: 4:5
+```
+
+Urutan penggunaan prompt:
+
+1. **Isi placeholder** — jangan kirim teks `[GANTI: ...]` apa adanya.
+2. **Lampirkan referensi** — beri nama yang jelas, misalnya `Image 1 = produk`, `Image 2 = logo`.
+3. **Generate satu tahap** — brief dahulu, baru storyboard; storyboard dahulu, baru video.
+4. **Periksa fakta dan visual** — AI tidak boleh menjadi sumber kebenaran untuk harga, tanggal, alamat, spesifikasi, atau logo.
+5. **Revisi terarah** — sebutkan bagian yang salah dan bagian yang harus tetap dikunci.
+
+## Template Prompt Universal — Siap Salin
+
+Gunakan template ini jika studi kasus Anda tidak sama persis dengan proyek yang tersedia.
+
+```text
+BERTINDAK SEBAGAI AI CREATIVE DIRECTOR DAN DESIGN ENGINEER PROFESIONAL.
+
+[OBJECTIVE]
+Buat [GANTI: jenis output] untuk [GANTI: tujuan bisnis/komunikasi].
+
+[REFERENCE]
+- Image 1: [GANTI: fungsi gambar, misalnya master produk/karakter].
+- Image 2: [GANTI: fungsi gambar, misalnya logo/brand].
+- Data resmi: [GANTI: fakta, spesifikasi, tanggal, harga, atau CTA yang sudah diverifikasi].
+
+[AUDIENCE]
+Target audiens: [GANTI: siapa, rentang usia, kebutuhan, dan platform].
+
+[LOCK]
+Pertahankan persis: [GANTI: wajah, warna, bentuk, proporsi, pakaian, logo, label, atau ciri produk].
+Jangan menambah fitur, klaim, teks, atau identitas yang tidak tersedia pada referensi.
+
+[STYLE]
+Gaya visual: [GANTI: cinematic/realistic/minimalist/modern/flat/elegant/professional/premium].
+Mood dan lighting: [GANTI: deskripsi].
+Palet warna: [GANTI: nama warna dan kode HEX].
+
+[COMPOSITION]
+Rasio: [GANTI: 1:1/4:5/9:16/16:9].
+Susunan elemen: [GANTI: framing, hierarchy, negative space, dan safe area].
+
+[CONTENT / ACTION]
+[GANTI: objek, pose, aksi, urutan shot, atau timeline yang harus dibuat].
+
+[TEXT / VO]
+Teks yang harus persis: "[GANTI: teks final]".
+Voice-over: "[GANTI: naskah final atau tulis 'tidak ada']".
+
+[NEGATIVE]
+No identity drift, no product deformation, no logo changes, no extra limbs,
+no malformed hands, no typo, no random text, no flicker, no watermark.
+
+[OUTPUT]
+[GANTI: resolusi, durasi, fps, format file, dan kebutuhan teknis lain].
+
+Sebelum membuat output, rangkum asumsi dan tandai data yang masih perlu dikonfirmasi.
+```
+
+## Peta Proyek
 
 | **PROYEK** | **HASIL YANG DIBUAT**                            | **RINGKASAN ALUR**                                                                     |
 |------------|--------------------------------------------------|----------------------------------------------------------------------------------------|
-| 01         | Iklan Sepatu — PVN Taehyung Blue                 | Creative brief, 10 angle, flyer, script 10 detik, storyboard 9:16, JSON video, QC.     |
-| 02         | Iklan Mainan Interaktif — Doll Catcher           | Brief → angle → script → storyboard → JSON → Google Flow → QC.                         |
-| 03         | Iklan Squishy / Sensory Toy — NeeDoh Nice Cube   | Brief → satisfying angle → script → storyboard → slow-rise video → foley → QC.         |
-| 04         | Konten Produk Marketplace — POP SAN Water Slime  | Screenshot → fakta/klaim → brief → angle foto/video → shot list → video 10 detik → QC. |
-| 05         | Iklan Produk Tanpa Model                         | Product lock → hero/detail/motion → storyboard → video 10 detik → VO → QC.             |
-| 06         | Flyer Event → Header Google Form                 | Brief acara → key visual → flyer → final text → adaptasi header 1600×400.              |
-| 07         | Video Edukasi Sains Anak — Mimi, Axel, Tetes     | Ide → script → character sheet → storyboard → video Scene 1–3 → QC.                    |
-| 08         | Video Edukasi Keselamatan — Gempa Claymation     | Pesan keselamatan → script → storyboard → JSON 3 scene → QC.                           |
-| 09         | Berita Viral Claymation — Upah Kupas Bawang      | Fact framing → script → storyboard → video 3 scene → caption → QC editorial.           |
-| 10         | Animasi Persahabatan — Nara & Kiko               | Ide → script → character sheet → storyboard → JSON 3 scene → caption.                  |
-| 11         | Storytelling / Biografi Kartun 2D                | Naskah → character sheet 2D → storyboard 9:16 → prompt video per scene → QC.           |
-| 12         | AI Influencer & Character Sheet                  | Foto referensi → identity lock → reference sheet → variasi konten → QC.                |
-| 13         | Video Event Berseri — Character Lock Google Flow | Character sheet → keyframe → scene JSON → continuity → revisi drift → QC.              |
-| 14         | Komik / Manga dari Brief Event                   | Hook → identity lock → panel story → prompt komik/manga → typography final → QC.       |
+| 01         | [Iklan Sepatu — PVN Taehyung Blue](#membuat-iklan-sepatu--pvn-taehyung-blue)                 | Creative brief, 10 angle, flyer, script 10 detik, storyboard 9:16, JSON video, QC.     |
+| 02         | [Iklan Mainan Interaktif — Doll Catcher](#membuat-iklan-mainan-interaktif--doll-catcher-1140)           | Brief → angle → script → storyboard → JSON → Google Flow → QC.                         |
+| 03         | [Iklan Squishy — NeeDoh Nice Cube](#membuat-iklan-squishy--sensory-toy--needoh-nice-cube)   | Brief → satisfying angle → script → storyboard → slow-rise video → foley → QC.         |
+| 04         | [Konten Marketplace — POP SAN Water Slime](#membuat-konten-produk-marketplace--pop-san-water-slime)  | Screenshot → fakta/klaim → brief → angle foto/video → shot list → video 10 detik → QC. |
+| 05         | [Iklan Produk Tanpa Model](#membuat-iklan-produk-10-detik-tanpa-model)                         | Product lock → hero/detail/motion → storyboard → video 10 detik → VO → QC.             |
+| 06         | [Flyer Event → Header Google Form](#membuat-flyer-event-dan-turunannya-ke-header-google-form)                 | Brief acara → key visual → flyer → final text → adaptasi header 1600×400.              |
+| 07         | [Video Edukasi Sains Anak](#membuat-video-edukasi-sains-anak--mimi-dan-rahasia-pelangi)     | Ide → script → character sheet → storyboard → video Scene 1–3 → QC.                    |
+| 08         | [Video Keselamatan — Gempa Claymation](#membuat-video-edukasi-keselamatan--gempa-bumi-claymation)     | Pesan keselamatan → script → storyboard → JSON 3 scene → QC.                           |
+| 09         | [Berita Viral Claymation](#membuat-konten-berita-viral-dengan-claymation--upah-kupas-bawang)      | Fact framing → script → storyboard → video 3 scene → caption → QC editorial.           |
+| 10         | [Animasi Persahabatan — Nara & Kiko](#membuat-animasi-persahabatan-anak--nara--kiko)               | Ide → script → character sheet → storyboard → JSON 3 scene → caption.                  |
+| 11         | [Storytelling / Biografi Kartun 2D](#membuat-video-storytelling--biografi-kartun-2d)                | Naskah → character sheet 2D → storyboard 9:16 → prompt video per scene → QC.           |
+| 12         | [AI Influencer & Character Sheet](#membuat-ai-influencer-dan-character-sheet)                  | Foto referensi → identity lock → reference sheet → variasi konten → QC.                |
+| 13         | [Video Event Berseri](#membuat-video-event-berseri-dengan-character-lock--google-flow) | Character sheet → keyframe → scene JSON → continuity → revisi drift → QC.              |
+| 14         | [Komik / Manga dari Brief Event](#membuat-komik--manga-dari-brief-event)                   | Hook → identity lock → panel story → prompt komik/manga → typography final → QC.       |
 
 # BAGIAN A — Fondasi Universal Sebelum Memulai Proyek
 
@@ -98,38 +151,23 @@ Untuk pemula, mulai dari tujuh blok berikut. Setelah kebutuhan makin kompleks, t
 
 - K. Technical Output: Rasio, durasi, fps, resolusi, orientation, safe area.
 
-Template struktur prompt modular
+### Struktur Minimum Prompt
 
-\[OBJECTIVE\]  
-Buat \[jenis output\] untuk \[tujuan\].  
-  
-\[REFERENCE\]  
-Gunakan Image 1 sebagai referensi identitas karakter.  
-Gunakan Image 2 sebagai referensi logo/brand.  
-  
-\[LOCK\]  
-Pertahankan persis: wajah, mata, hidung, warna kulit, proporsi, rambut, pakaian, logo, aksesori.  
-  
-\[STYLE\]  
-\[style visual\], \[lighting\], \[mood\].  
-  
-\[COMPOSITION\]  
-Rasio \[x:y\], \[jumlah panel/shot\], arah baca/kamera \[detail\].  
-  
-\[ACTION / TIMELINE\]  
-Shot 1 ...  
-Shot 2 ...  
-  
-\[TEXT / VO\]  
-Teks harus persis: “...”  
-V.O.: “...”  
-  
-\[NEGATIVE\]  
-No face morphing, no logo changes, no extra limbs, no typo, no flicker.
+Template lengkap tersedia pada [Template Prompt Universal](#template-prompt-universal--siap-salin). Untuk prompt singkat, minimal sertakan tujuh blok berikut:
+
+```text
+[OBJECTIVE] Apa yang harus dibuat dan untuk tujuan apa.
+[REFERENCE] Fungsi setiap gambar atau data yang dilampirkan.
+[LOCK] Identitas, bentuk, warna, logo, dan atribut yang tidak boleh berubah.
+[STYLE] Gaya visual, pencahayaan, mood, dan palet warna.
+[COMPOSITION] Rasio, framing, hierarchy, safe area, atau jumlah panel.
+[CONTENT] Aksi, timeline, teks, voice-over, dan audio.
+[NEGATIVE] Kesalahan yang harus dihindari.
+```
 
 Model generatif sering mengubah geometri logo, huruf, gradien, dan alignment. Karena itu, logo yang digenerate AI sebaiknya dianggap placeholder visual. Pada final artwork, gunakan file logo asli (PNG transparan/SVG/AI) dan tempel ulang secara manual.
 
-> **Aturan brand lock**  
+> **Aturan brand lock**
 Prompt harus menyebutkan: bentuk logo, warna, orientasi, posisi, skala, area placement, dan larangan mengubah logo. Namun QC final tetap wajib dilakukan dengan membandingkan terhadap master logo.
 
 Untuk nomor telepon, harga, tanggal, alamat, dan judul kampanye: gunakan teks pendek dalam generasi AI, tetapi lakukan compositing ulang pada final layout. Jangan menjadikan kemampuan AI merender teks sebagai sumber kebenaran.
@@ -200,11 +238,32 @@ Hook adalah kalimat pembuka yang menarik perhatian agar orang mau membaca atau m
 
 - Setelah memilih hook, jangan terus mengganti arah cerita; turunkan hook menjadi script dan visual yang konsisten.
 
-PROMPT LATIHAN
+### Prompt Latihan — Hook
 
-Buatkan 30 hook untuk konten Instagram tentang \[tema\]. Target audiens \[target\]. Gunakan gaya \[lucu/relate/emosional/profesional/Gen Z\]. Setiap hook maksimal 1–2 kalimat pendek dan harus kuat pada 3 detik pertama.
+```text
+Buatkan 30 hook untuk konten Instagram tentang [GANTI: tema].
 
-Buatkan 100 hook untuk konten “\[tema\]”. Kelompokkan menjadi: relate, pertanyaan, problem-solution, curiosity gap, emosional, dan promosi. Pilih 10 hook paling kuat dan jelaskan alasan singkatnya.
+Target audiens: [GANTI: target audiens].
+Gaya bahasa: [GANTI: lucu/relate/emosional/profesional/Gen Z].
+
+Ketentuan:
+- Setiap hook maksimal 1–2 kalimat pendek.
+- Pesan utama harus kuat dalam 3 detik pertama.
+- Jangan gunakan clickbait yang tidak sesuai isi konten.
+
+Setelah membuat 30 hook, pilih 5 yang paling kuat dan jelaskan alasannya secara singkat.
+```
+
+Untuk menghasilkan variasi yang lebih banyak:
+
+```text
+Buatkan 100 hook untuk konten "[GANTI: tema]" dengan target audiens
+[GANTI: target audiens]. Kelompokkan hasilnya menjadi: relate, pertanyaan,
+problem-solution, curiosity gap, emosional, dan promosi.
+
+Pilih 10 hook paling kuat berdasarkan kejelasan, relevansi, dan daya tarik
+pada 3 detik pertama. Jelaskan alasan singkat untuk setiap pilihan.
+```
 
 Contoh hook pada materi: “Kalau bukan sekarang, mau nunggu kapan mulai memperbaiki diri?” dan “Mungkin yang kurang dari hidupmu bukan motivasi, tapi arah.” Gunakan sebagai pola, bukan kalimat wajib untuk semua tema.
 
@@ -229,13 +288,31 @@ Formula yang digunakan dalam materi: TEMA → TUJUAN → TARGET → GAYA → OBJ
 | Rasio     | Format output       | 1:1, 4:5, 9:16, 16:9?                               |
 | Kualitas  | Karakter output     | High resolution, sharp detail, photorealistic, dll. |
 
-PROMPT KURANG BAIK
+### Perbandingan Prompt
 
+Prompt terlalu umum:
+
+```text
 Buat poster dakwah tentang shalat.
+```
 
-PROMPT LEBIH TERSTRUKTUR
+Prompt yang lebih terstruktur dan siap salin:
 
-Buat poster bertema Keutamaan Shalat Berjamaah untuk masyarakat umum. Tujuan: mengingatkan pentingnya shalat berjamaah. Gunakan gaya cinematic realistis dengan pencahayaan hangat saat matahari terbit. Tampilkan masjid dengan jamaah dalam suasana khusyuk. Dominasi warna emas, putih, dan hijau. Gunakan komposisi simetris dengan ruang kosong yang cukup untuk teks. Judul: “Jangan Tinggalkan Jamaah”. Tipografi modern yang mudah dibaca. Rasio 4:5. High resolution, sharp detail, tanpa watermark.
+```text
+Buat poster bertema "Keutamaan Shalat Berjamaah" untuk masyarakat umum.
+
+Tujuan: mengingatkan pentingnya shalat berjamaah.
+Gaya: cinematic realistis.
+Objek utama: masjid dan jamaah dalam suasana khusyuk.
+Lighting: cahaya hangat saat matahari terbit.
+Palet: emas, putih, dan hijau.
+Komposisi: simetris dengan ruang kosong yang cukup untuk teks.
+Judul yang harus persis: "Jangan Tinggalkan Jamaah".
+Tipografi: modern dan mudah dibaca.
+Rasio: 4:5.
+Kualitas: high resolution, sharp detail.
+Negative: no watermark, no random text, no malformed hands, no duplicated people.
+```
 
 Kesalahan yang perlu dihindari menurut materi: prompt terlalu pendek; tidak menentukan target; tidak menjelaskan gaya; tidak menentukan warna/ukuran/kualitas; atau memberi terlalu banyak instruksi yang saling bertentangan.
 
@@ -370,10 +447,23 @@ ALUR PRAKTIK
 
 - 7\. Export sesuai platform: misalnya 1080×1350 untuk 4:5 atau 1080×1920 untuk 9:16.
 
-FORMAT PROMPT DESAIN SEDERHANA
+### Format Prompt Desain Sederhana
 
-\[JUDUL / HOOK\] + \[UKURAN\] + \[ILUSTRASI\] + \[WARNA\] + \[POSISI TULISAN\].  
-Contoh: Buat desain dari hook di atas untuk konten Instagram 1080×1350. Gunakan ilustrasi realistic. Dominan warna \#EFF0F0 dengan aksen \#830B08. Tempatkan hook di bagian atas ilustrasi dan sisakan ruang aman untuk CTA di bagian bawah.
+Rumus: **judul/hook + ukuran + ilustrasi + warna + posisi tulisan**.
+
+```text
+Buat desain untuk konten Instagram berukuran 1080×1350 px (rasio 4:5).
+
+Hook: "[GANTI: hook final]".
+Ilustrasi: [GANTI: realistic/flat/cinematic/minimalist].
+Warna background: [GANTI: nama warna dan HEX].
+Warna aksen: [GANTI: nama warna dan HEX].
+Komposisi: tempatkan hook di bagian atas ilustrasi dan sisakan ruang aman
+untuk CTA di bagian bawah.
+CTA: "[GANTI: CTA final]".
+
+Negative: no random text, no typo, no watermark, no clutter.
+```
 
 Prinsip finalisasi: AI mempercepat proses, tetapi logo, teks kritikal, warna brand, dan quality control tetap ditangani manusia.
 
@@ -383,15 +473,38 @@ FONDASI 10
 
 Materi “Videografi Tanpa Jago” menggunakan ChatGPT untuk ide, hook, dan script, lalu Google Flow untuk mengimplementasikan prompt menjadi video AI. Workflow dasar ini menjadi pintu masuk sebelum peserta memakai JSON yang lebih detail pada proyek-proyek video di bagian berikutnya.
 
-FORMULA SCRIPT DASAR
+### Prompt Script Video — Siap Salin
 
-PERINTAH + HOOK + DURASI  
-Contoh: Buatkan script video dengan hook “Mungkin yang kurang dari hidupmu bukan motivasi, tapi arah” dengan durasi 10 detik.
+```text
+Buat script video berdurasi [GANTI: durasi] detik dengan hook:
+"[GANTI: hook final]".
 
-FORMULA VIDEO YANG LEBIH SIAP PRODUKSI
+Tujuan: [GANTI: awareness/edukasi/konversi].
+Target audiens: [GANTI: target audiens].
+Platform: [GANTI: Instagram Reels/TikTok/YouTube Shorts].
 
-TUJUAN + HOOK + DURASI + RASIO + JUMLAH SHOT + VISUAL STYLE + CAMERA + ACTION + VO/TEXT + AUDIO + NEGATIVE PROMPT.  
-Contoh: Buat video 10 detik rasio 9:16, 4 shot. Hook pada 0–2 detik. Gaya cinematic realistic. Tentukan camera movement per shot, satu kalimat VO utama, dan negative prompt untuk flicker, deformasi, typo, serta camera jitter.
+Susun output dalam tabel: waktu, fungsi beat, visual, aksi, camera,
+teks/voice-over, dan audio. Pastikan CTA muncul pada bagian akhir.
+```
+
+### Prompt Video — Siap Salin
+
+```text
+Buat video [GANTI: durasi] detik, rasio [GANTI: rasio], terdiri dari
+[GANTI: jumlah] shot.
+
+Tujuan: [GANTI: tujuan].
+Hook 0–2 detik: "[GANTI: hook]".
+Gaya visual: [GANTI: gaya].
+Camera: tentukan framing dan camera movement untuk setiap shot.
+Action: satu aksi utama yang jelas pada setiap shot.
+Teks/VO: [GANTI: teks atau voice-over final].
+Audio: [GANTI: musik, ambience, dan sound effect].
+
+Pertahankan identitas karakter/produk dari gambar referensi pada semua shot.
+Negative: no identity drift, no product deformation, no extra limbs,
+no flicker, no typo, no random text, no camera jitter, no watermark.
+```
 
 CONTOH KONFIGURASI FLOW PADA MATERI SUMBER
 
@@ -447,9 +560,11 @@ Setelah fondasi ini dikuasai, peserta memilih proyek sesuai kebutuhan: iklan sep
 
 - Infografis ringkasan “Membuat Desain Konten, Tanpa Harus Jago Desain” — tools, hook, struktur konten, prompt, Canva, finalisasi.
 
-Mulai Proyek End-to-End
+# BAGIAN B — Proyek End-to-End
 
-Mulai dari PROYEK 01 dan ikuti seluruh langkah dalam satu tema hingga output final. Fondasi di atas dipakai sebagai referensi cepat, bukan sebagai alasan untuk memecah alur proyek.
+Mulai dari Proyek 01 jika Anda baru pertama kali menggunakan panduan ini. Proyek 01 menjadi contoh paling lengkap dan menunjukkan format prompt siap salin. Setelah memahami polanya, pilih proyek lain sesuai kebutuhan dan ikuti seluruh langkah dalam satu tema hingga output final.
+
+> **Cara membaca setiap proyek:** `LANGKAH` menjelaskan urutan kerja, `PROMPT SIAP COPY` atau `CONTOH / TEMPLATE` berisi instruksi untuk AI, sedangkan `QC` berisi syarat kelulusan output.
 
 PROYEK 01
 
@@ -498,11 +613,13 @@ LANGKAH 2
 
 ## Susun Creative Brief Produk
 
-PROMPT SIAP COPY
+### Prompt Creative Brief — Siap Salin
 
-BERTINDAK SEBAGAI ANALIS PRODUK DAN CREATIVE STRATEGIST PROFESIONAL.  
-  
+```text
+BERTINDAK SEBAGAI ANALIS PRODUK DAN CREATIVE STRATEGIST PROFESIONAL.
+
 Gunakan foto PVN “Taehyung Blue” sebagai sumber visual utama. Pisahkan: (1) fakta yang terlihat, (2) asumsi kreatif, (3) hal yang perlu dikonfirmasi. Susun creative brief untuk konten gambar dan video sosial media yang mencakup: kategori, silhouette, warna, detail visual, target audiens visual, consumer insight, positioning, single-minded message, tone, visual world, product lock, shot list awal, dan batas klaim. Jangan mengarang material, kenyamanan, durability, anti-slip, endorsement, atau spesifikasi teknis yang tidak terlihat.
+```
 
 <table>
 <colgroup>
@@ -565,29 +682,31 @@ LANGKAH 4
 
 4.  Finalisasi logo, headline, CTA, harga/promo di Canva/Photoshop/Figma.
 
-PROMPT SIAP COPY
+### Prompt Key Visual — Siap Salin
 
-Buat key visual flyer iklan sneaker PVN “Taehyung Blue” untuk social media.  
-  
-PRODUCT MASTER  
-Gunakan gambar produk yang diunggah. Pertahankan persis soft blue upper, dua white side stripes, blue laces, brown gum outsole, low-profile retro silhouette, dan branding minimal.  
-  
-FORMAT  
-Rasio 4:5 portrait, premium fashion commercial. Sisakan area aman untuk headline di kiri atas dan CTA di bagian bawah.  
-  
-CONCEPT  
-“BLUE IS THE OUTFIT” — sneaker menjadi pusat visual. Gunakan denim folds / light-blue textile sebagai environment, soft directional studio lighting, subtle shadows, clean retro mood, editorial fashion composition.  
-  
-TEXT PLACEHOLDER  
-Headline: “BLUE IS THE OUTFIT”  
-Subheadline: “PVN TAEHYUNG BLUE”  
-CTA placeholder: “Temukan gayamu.”  
-  
-IMPORTANT  
-Generate clean composition. Logo dan tipografi final akan ditempel ulang manual.  
-  
-NEGATIVE  
+```text
+Buat key visual flyer iklan sneaker PVN “Taehyung Blue” untuk social media.
+
+PRODUCT MASTER
+Gunakan gambar produk yang diunggah. Pertahankan persis soft blue upper, dua white side stripes, blue laces, brown gum outsole, low-profile retro silhouette, dan branding minimal.
+
+FORMAT
+Rasio 4:5 portrait, premium fashion commercial. Sisakan area aman untuk headline di kiri atas dan CTA di bagian bawah.
+
+CONCEPT
+“BLUE IS THE OUTFIT” — sneaker menjadi pusat visual. Gunakan denim folds / light-blue textile sebagai environment, soft directional studio lighting, subtle shadows, clean retro mood, editorial fashion composition.
+
+TEXT PLACEHOLDER
+Headline: “BLUE IS THE OUTFIT”
+Subheadline: “PVN TAEHYUNG BLUE”
+CTA placeholder: “Temukan gayamu.”
+
+IMPORTANT
+Generate clean composition. Logo dan tipografi final akan ditempel ulang manual.
+
+NEGATIVE
 No shoe deformation, no extra stripes, no white outsole, no logo mutation, no random text, no clutter, no watermark.
+```
 
 LANGKAH 5
 
@@ -663,39 +782,41 @@ LANGKAH 6
 
 ## Ubah Script Menjadi Storyboard 9:16
 
-CONTOH / TEMPLATE
+### Prompt Storyboard — Siap Salin
 
-Buat storyboard production sheet untuk iklan sneaker PVN “Taehyung Blue” berdurasi 10 detik.  
-  
-FORMAT  
-- Rasio 9:16 portrait.  
-- 5 beat/scene sesuai timeline: 0–2s, 2–4s, 4–6s, 6–8s, 8–10s.  
-- Setiap beat menampilkan reference frame + ARAH KAMERA + AKSI + TEKS DI LAYAR + VO + AUDIO/SOUND.  
-- Layout harus mudah dibaca tim motion designer.  
-  
-PRODUCT LOCK — MAXIMUM  
-Gunakan produk referensi sebagai master. Pertahankan persis: soft muted blue upper, dua white side stripes, brown gum outsole, blue laces, low-profile retro silhouette, minimal PVN branding. Jangan redesign produk.  
-  
-BEAT 1 — HOOK  
-POV membuka shoebox, quick push-in. Teks: “POV: akhirnya nemu sneaker biru yang…”  
-  
-BEAT 2 — DISCOVERY  
-Tangan mengangkat sepatu; detail sweep upper → stripe → gum sole. Teks: “…ternyata gampang dipaduin 👀”. VO: “Kirain biru bakal susah dipaduin…”  
-  
-BEAT 3 — TRY ON  
-Snap transition ke on-feet dengan celana putih/cream; satu langkah maju. Teks: “Clean look ✓”. VO: “…ternyata clean banget.”  
-  
-BEAT 4 — HERO PRODUCT  
-Low-angle walking + close-up side profile. Teks: “Soft Blue. Retro Mood.” Beat drop saat side profile muncul.  
-  
-BEAT 5 — CTA  
-Hero 3/4 pair shot, light blue/denim background, slow push-in. Teks: “PVN ‘TAEHYUNG BLUE’” + “Would you wear this blue? 💙”.  
-  
-STYLE  
-Premium fashion social ad, POV/UGC aesthetic, clean, youthful, realistic product photography, soft directional lighting, denim-friendly palette.  
-  
-NEGATIVE  
+```text
+Buat storyboard production sheet untuk iklan sneaker PVN “Taehyung Blue” berdurasi 10 detik.
+
+FORMAT
+- Rasio 9:16 portrait.
+- 5 beat/scene sesuai timeline: 0–2s, 2–4s, 4–6s, 6–8s, 8–10s.
+- Setiap beat menampilkan reference frame + ARAH KAMERA + AKSI + TEKS DI LAYAR + VO + AUDIO/SOUND.
+- Layout harus mudah dibaca tim motion designer.
+
+PRODUCT LOCK — MAXIMUM
+Gunakan produk referensi sebagai master. Pertahankan persis: soft muted blue upper, dua white side stripes, brown gum outsole, blue laces, low-profile retro silhouette, minimal PVN branding. Jangan redesign produk.
+
+BEAT 1 — HOOK
+POV membuka shoebox, quick push-in. Teks: “POV: akhirnya nemu sneaker biru yang…”
+
+BEAT 2 — DISCOVERY
+Tangan mengangkat sepatu; detail sweep upper → stripe → gum sole. Teks: “…ternyata gampang dipaduin 👀”. VO: “Kirain biru bakal susah dipaduin…”
+
+BEAT 3 — TRY ON
+Snap transition ke on-feet dengan celana putih/cream; satu langkah maju. Teks: “Clean look ✓”. VO: “…ternyata clean banget.”
+
+BEAT 4 — HERO PRODUCT
+Low-angle walking + close-up side profile. Teks: “Soft Blue. Retro Mood.” Beat drop saat side profile muncul.
+
+BEAT 5 — CTA
+Hero 3/4 pair shot, light blue/denim background, slow push-in. Teks: “PVN ‘TAEHYUNG BLUE’” + “Would you wear this blue? 💙”.
+
+STYLE
+Premium fashion social ad, POV/UGC aesthetic, clean, youthful, realistic product photography, soft directional lighting, denim-friendly palette.
+
+NEGATIVE
 No product deformation, no extra stripes, no wrong outsole color, no logo mutation, no deformed hands/feet, no random text, no clutter, no watermark.
+```
 
 <img src="media/image2.png" style="width:3.46457in;height:6.15596in" />
 
@@ -707,9 +828,11 @@ LANGKAH 7
 
 Ketika gambar input berupa lembar storyboard/production sheet, model video dapat salah memahami input dan hanya menggerakkan lembar storyboard. Tambahkan instruksi eksplisit berikut pada prompt:
 
-Use the attached image as storyboard and visual-direction reference only.  
-Do NOT animate the storyboard sheet, text boxes, grids, labels, panel borders, or infographic layout.  
+```text
+Use the attached image as storyboard and visual-direction reference only.
+Do NOT animate the storyboard sheet, text boxes, grids, labels, panel borders, or infographic layout.
 Recreate the actual commercial scenes shown inside the storyboard panels as a seamless vertical advertisement.
+```
 
 - Jika platform mendukung beberapa reference: gunakan product master sebagai referensi utama dan storyboard sebagai shot reference.
 
@@ -721,106 +844,108 @@ LANGKAH 8
 
 ## Buat JSON Image-to-Video 10 Detik
 
-CONTOH / TEMPLATE
+### Template JSON Video — Siap Salin
 
-{  
-"task": "image_to_video",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"fps": 24,  
-"resolution": "1080x1920",  
-"reference_instruction": {  
-"use_attached_image_as": "storyboard and visual direction reference",  
-"important": "Do not animate the storyboard sheet, text boxes, grids, or infographic layout. Recreate the actual commercial scenes shown inside the storyboard panels as a seamless vertical sneaker advertisement.",  
-"product_consistency": "Keep exactly the same sneaker design throughout all scenes: soft muted blue upper, white side stripes, brown gum outsole, low-profile retro silhouette, blue laces, minimal PVN branding.",  
-"style": "premium social media fashion commercial, POV UGC aesthetic mixed with polished product cinematography, clean, youthful, realistic lighting and realistic product proportions"  
-},  
-"master_prompt": "Create a fast-paced 10-second vertical social media advertisement. Follow the attached storyboard from scene 1 through scene 5. Start with POV discovery, move into product details, transition into on-feet styling, then show a dynamic low-angle hero sequence and finish with a clean premium product beauty shot. Keep the sneaker identical in every shot.",  
-"scenes": \[  
-{  
-"scene": 1,  
-"time": "0.0-2.0",  
-"name": "HOOK",  
-"visual": "First-person POV. Two hands open a simple cardboard shoebox and reveal the soft blue retro sneaker.",  
-"camera": "close-up POV, subtle handheld realism, quick push-in",  
-"on_screen_text": "POV: akhirnya nemu sneaker biru yang…",  
-"audio": "modern fashion beat starts + subtle box/tissue sound"  
-},  
-{  
-"scene": 2,  
-"time": "2.0-4.0",  
-"name": "DISCOVERY",  
-"visual": "Hand lifts sneaker; rapid premium details: blue upper/laces, white side stripes, brown gum outsole.",  
-"camera": "fast controlled macro sweep",  
-"on_screen_text": "…ternyata gampang dipaduin 👀",  
-"voice_over": "Kirain biru bakal susah dipaduin…"  
-},  
-{  
-"scene": 3,  
-"time": "4.0-6.0",  
-"name": "TRY ON",  
-"visual": "Snap transition to on-feet. Loose white/cream trousers, white socks, one confident forward step.",  
-"camera": "low on-feet medium close shot",  
-"on_screen_text": "Clean look ✓",  
-"voice_over": "…ternyata clean banget."  
-},  
-{  
-"scene": 4,  
-"time": "6.0-8.0",  
-"name": "HERO PRODUCT",  
-"visual": "Low-angle walking shot, then cinematic side-profile close-up emphasizing blue upper, white stripes and gum sole.",  
-"camera": "ground-level tracking -\> close side-profile hero",  
-"on_screen_text": "Soft Blue. Retro Mood.",  
-"audio": "beat drop exactly on side-profile reveal"  
-},  
-{  
-"scene": 5,  
-"time": "8.0-10.0",  
-"name": "CTA",  
-"visual": "Premium three-quarter hero shot of the pair on a light-blue/denim-inspired background.",  
-"camera": "stable hero composition with slow push-in",  
-"on_screen_text": \["PVN 'TAEHYUNG BLUE'", "Would you wear this blue? 💙"\],  
-"audio": "music resolves cleanly on final frame"  
-}  
-\],  
-"editing": {  
-"pace": "fast, energetic and premium",  
-"transition_style": "snap transitions, match cuts, subtle speed ramps, beat-synchronized cuts",  
-"motion_blur": "natural cinematic motion blur only",  
-"color_grade": "clean cool-neutral grade with soft-blue emphasis and warm gum-sole contrast",  
-"final_frame_hold": "0.5 seconds"  
-},  
-"product_rules": \[  
-"Do not change sneaker color between scenes.",  
-"Do not change brown gum outsole.",  
-"Keep the same white side stripe design.",  
-"Keep the same sneaker proportions and silhouette.",  
-"Do not invent extra logos.",  
-"Show realistic human hands, feet and anatomy."  
-\],  
-"negative_prompt": \[  
-"storyboard sheet moving on screen",  
-"infographic animation",  
-"split-screen storyboard panels",  
-"deformed sneaker",  
-"changing shoe design",  
-"extra stripes",  
-"wrong shoe color",  
-"white outsole",  
-"mismatched pair",  
-"deformed hands",  
-"extra fingers",  
-"deformed feet",  
-"unnatural walking",  
-"floating shoe",  
-"flickering product",  
-"logo mutation",  
-"random text",  
-"misspelled text",  
-"excessive camera shake",  
-"low resolution"  
-\]  
+```json
+{
+"task": "image_to_video",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"fps": 24,
+"resolution": "1080x1920",
+"reference_instruction": {
+"use_attached_image_as": "storyboard and visual direction reference",
+"important": "Do not animate the storyboard sheet, text boxes, grids, or infographic layout. Recreate the actual commercial scenes shown inside the storyboard panels as a seamless vertical sneaker advertisement.",
+"product_consistency": "Keep exactly the same sneaker design throughout all scenes: soft muted blue upper, white side stripes, brown gum outsole, low-profile retro silhouette, blue laces, minimal PVN branding.",
+"style": "premium social media fashion commercial, POV UGC aesthetic mixed with polished product cinematography, clean, youthful, realistic lighting and realistic product proportions"
+},
+"master_prompt": "Create a fast-paced 10-second vertical social media advertisement. Follow the attached storyboard from scene 1 through scene 5. Start with POV discovery, move into product details, transition into on-feet styling, then show a dynamic low-angle hero sequence and finish with a clean premium product beauty shot. Keep the sneaker identical in every shot.",
+"scenes": [
+{
+"scene": 1,
+"time": "0.0-2.0",
+"name": "HOOK",
+"visual": "First-person POV. Two hands open a simple cardboard shoebox and reveal the soft blue retro sneaker.",
+"camera": "close-up POV, subtle handheld realism, quick push-in",
+"on_screen_text": "POV: akhirnya nemu sneaker biru yang…",
+"audio": "modern fashion beat starts + subtle box/tissue sound"
+},
+{
+"scene": 2,
+"time": "2.0-4.0",
+"name": "DISCOVERY",
+"visual": "Hand lifts sneaker; rapid premium details: blue upper/laces, white side stripes, brown gum outsole.",
+"camera": "fast controlled macro sweep",
+"on_screen_text": "…ternyata gampang dipaduin 👀",
+"voice_over": "Kirain biru bakal susah dipaduin…"
+},
+{
+"scene": 3,
+"time": "4.0-6.0",
+"name": "TRY ON",
+"visual": "Snap transition to on-feet. Loose white/cream trousers, white socks, one confident forward step.",
+"camera": "low on-feet medium close shot",
+"on_screen_text": "Clean look ✓",
+"voice_over": "…ternyata clean banget."
+},
+{
+"scene": 4,
+"time": "6.0-8.0",
+"name": "HERO PRODUCT",
+"visual": "Low-angle walking shot, then cinematic side-profile close-up emphasizing blue upper, white stripes and gum sole.",
+"camera": "ground-level tracking -> close side-profile hero",
+"on_screen_text": "Soft Blue. Retro Mood.",
+"audio": "beat drop exactly on side-profile reveal"
+},
+{
+"scene": 5,
+"time": "8.0-10.0",
+"name": "CTA",
+"visual": "Premium three-quarter hero shot of the pair on a light-blue/denim-inspired background.",
+"camera": "stable hero composition with slow push-in",
+"on_screen_text": ["PVN 'TAEHYUNG BLUE'", "Would you wear this blue? 💙"],
+"audio": "music resolves cleanly on final frame"
 }
+],
+"editing": {
+"pace": "fast, energetic and premium",
+"transition_style": "snap transitions, match cuts, subtle speed ramps, beat-synchronized cuts",
+"motion_blur": "natural cinematic motion blur only",
+"color_grade": "clean cool-neutral grade with soft-blue emphasis and warm gum-sole contrast",
+"final_frame_hold": "0.5 seconds"
+},
+"product_rules": [
+"Do not change sneaker color between scenes.",
+"Do not change brown gum outsole.",
+"Keep the same white side stripe design.",
+"Keep the same sneaker proportions and silhouette.",
+"Do not invent extra logos.",
+"Show realistic human hands, feet and anatomy."
+],
+"negative_prompt": [
+"storyboard sheet moving on screen",
+"infographic animation",
+"split-screen storyboard panels",
+"deformed sneaker",
+"changing shoe design",
+"extra stripes",
+"wrong shoe color",
+"white outsole",
+"mismatched pair",
+"deformed hands",
+"extra fingers",
+"deformed feet",
+"unnatural walking",
+"floating shoe",
+"flickering product",
+"logo mutation",
+"random text",
+"misspelled text",
+"excessive camera shake",
+"low resolution"
+]
+}
+```
 
 LANGKAH 9
 
@@ -999,36 +1124,36 @@ LANGKAH 4
 
 CONTOH / TEMPLATE
 
-Buat storyboard production sheet untuk iklan Doll Catcher 1140 berdurasi 10 detik.  
-  
-FORMAT  
-- Rasio 9:16 portrait.  
-- 5 beat: 0–2s, 2–4s, 4–7s, 7–9s, 9–10s.  
-- Setiap beat menampilkan reference frame, timecode, shot/camera, action, text overlay, voice-over, dan audio/SFX.  
-- Layout clean, pastel, mudah dibaca tim motion designer.  
-  
-PRODUCT LOCK — MAXIMUM  
-Gunakan Doll Catcher 1140 sebagai product master. Pertahankan persis: bodi biru pastel, kanopi pink-putih, ruang display transparan, kontrol hijau-kuning, claw metal tiga jari, bola pastel warna-warni, prize chute, proporsi produk, dan gaya candy-shop mini. Jangan redesign produk.  
-  
-BEAT 1 — HOOK  
-Extreme macro claw hampir menangkap bola; quick zoom-out reveal produk. Overlay: “POV: PUNYA MESIN CAPIT SENDIRI 😍”.  
-  
-BEAT 2 — PLAY  
-Close-up tangan mengoperasikan kontrol; claw bergerak menuju target. Overlay: “PILIH TARGET 🎯”.  
-  
-BEAT 3 — SUSPENSE  
-Macro claw turun, menjepit bola pink, lalu mengangkatnya. Overlay: “DAPAT NGGAK NIH? 👀”.  
-  
-BEAT 4 — WIN MOMENT  
-Bola dijatuhkan ke chute lalu diambil tangan. Overlay: “YES! DAPAT! 🎉”.  
-  
-BEAT 5 — CTA  
-Hero product 3/4 di background pastel candy-shop. Headline: “ARCADE MINI DI RUMAH!” CTA: “CEK SEKARANG 🛒”.  
-  
-STYLE  
-Premium toy commercial, cute pastel candy aesthetic, bright soft studio lighting, realistic product materials, playful social-media energy.  
-  
-NEGATIVE  
+Buat storyboard production sheet untuk iklan Doll Catcher 1140 berdurasi 10 detik.
+
+FORMAT
+- Rasio 9:16 portrait.
+- 5 beat: 0–2s, 2–4s, 4–7s, 7–9s, 9–10s.
+- Setiap beat menampilkan reference frame, timecode, shot/camera, action, text overlay, voice-over, dan audio/SFX.
+- Layout clean, pastel, mudah dibaca tim motion designer.
+
+PRODUCT LOCK — MAXIMUM
+Gunakan Doll Catcher 1140 sebagai product master. Pertahankan persis: bodi biru pastel, kanopi pink-putih, ruang display transparan, kontrol hijau-kuning, claw metal tiga jari, bola pastel warna-warni, prize chute, proporsi produk, dan gaya candy-shop mini. Jangan redesign produk.
+
+BEAT 1 — HOOK
+Extreme macro claw hampir menangkap bola; quick zoom-out reveal produk. Overlay: “POV: PUNYA MESIN CAPIT SENDIRI 😍”.
+
+BEAT 2 — PLAY
+Close-up tangan mengoperasikan kontrol; claw bergerak menuju target. Overlay: “PILIH TARGET 🎯”.
+
+BEAT 3 — SUSPENSE
+Macro claw turun, menjepit bola pink, lalu mengangkatnya. Overlay: “DAPAT NGGAK NIH? 👀”.
+
+BEAT 4 — WIN MOMENT
+Bola dijatuhkan ke chute lalu diambil tangan. Overlay: “YES! DAPAT! 🎉”.
+
+BEAT 5 — CTA
+Hero product 3/4 di background pastel candy-shop. Headline: “ARCADE MINI DI RUMAH!” CTA: “CEK SEKARANG 🛒”.
+
+STYLE
+Premium toy commercial, cute pastel candy aesthetic, bright soft studio lighting, realistic product materials, playful social-media energy.
+
+NEGATIVE
 No product deformation, no wrong colors, no extra controls, no claw mutation, no deformed hands, no unreadable text, no watermark.
 
 Contoh output storyboard iklan 10 detik — Doll Catcher 1140, 5 beat, ratio 9:16.
@@ -1067,115 +1192,115 @@ LANGKAH 6
 
 CONTOH / TEMPLATE
 
-{  
-"project": {  
-"title": "Doll Catcher 1140 - POV Arcade Mini di Rumah",  
-"type": "social_media_product_ad",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"resolution": "1080x1920",  
-"fps": 30,  
-"visual_style": "hyper-realistic commercial product video, cute pastel aesthetic, premium toy advertisement, soft cinematic lighting"  
-},  
-"reference_instruction": "Use the attached storyboard as the primary shot and sequencing reference. Do not animate the storyboard sheet itself. Recreate the actual scenes inside the panels as one seamless vertical commercial. Maintain the Doll Catcher 1140 product design throughout all shots.",  
-"product_lock": {  
-"priority": "MAXIMUM",  
-"must_preserve": \[  
-"pastel blue body",  
-"pink and white striped canopy",  
-"transparent prize chamber",  
-"green and yellow controls",  
-"same three-prong metal claw",  
-"same prize chute",  
-"same overall product proportions"  
-\]  
-},  
-"timeline": \[  
-{  
-"scene": 1,  
-"time": "0.0-2.0",  
-"purpose": "HOOK",  
-"visual": "Extreme macro shot inside the machine. The claw descends toward colorful pastel balls and almost catches a pink ball, followed by a fast smooth zoom-out revealing the complete Doll Catcher 1140.",  
-"camera": "macro close-up -\> quick smooth zoom-out",  
-"text_overlay": "POV: PUNYA MESIN CAPIT SENDIRI 😍",  
-"voice_over": "Bayangin punya arcade mini sendiri!",  
-"audio": "upbeat playful music + mechanical claw sound + soft whoosh"  
-},  
-{  
-"scene": 2,  
-"time": "2.0-4.0",  
-"purpose": "PLAY",  
-"visual": "Close-up of a hand operating the green and yellow controls. Cut to the claw moving toward the target pink ball.",  
-"camera": "tight product close-up -\> interior claw POV",  
-"text_overlay": "PILIH TARGET 🎯",  
-"voice_over": "Arahkan...",  
-"audio": "rhythmic click-click mechanical SFX"  
-},  
-{  
-"scene": 3,  
-"time": "4.0-7.0",  
-"purpose": "SUSPENSE",  
-"visual": "Cinematic macro view of the claw descending around the same glossy pink ball, closing firmly and lifting it.",  
-"camera": "extreme macro + shallow depth of field + subtle push-in",  
-"speed_effect": "subtle slow motion at the exact grip moment",  
-"text_overlay": "DAPAT NGGAK NIH? 👀",  
-"voice_over": "Capit... dan...",  
-"audio": "music briefly reduces intensity + suspense riser"  
-},  
-{  
-"scene": 4,  
-"time": "7.0-9.0",  
-"purpose": "WIN_MOMENT",  
-"visual": "The claw carries the same pink ball over the prize chute and releases it. The ball drops naturally, then a hand takes it from the prize opening.",  
-"camera": "tracking close-up -\> quick chute close-up",  
-"text_overlay": "YES! DAPAT! 🎉",  
-"voice_over": "YES! Dapat!",  
-"audio": "bright TING + celebratory pop"  
-},  
-{  
-"scene": 5,  
-"time": "9.0-10.0",  
-"purpose": "PRODUCT_HERO_CTA",  
-"visual": "Premium three-quarter hero shot of the complete Doll Catcher 1140 on a clean tabletop with a soft pastel candy-shop environment.",  
-"camera": "fast subtle cinematic push-in",  
-"headline": "ARCADE MINI DI RUMAH!",  
-"cta": "CEK SEKARANG 🛒",  
-"voice_over": "Siap coba?",  
-"audio": "upbeat music resolves with cheerful pop ending"  
-}  
-\],  
-"editing": {  
-"pace": "fast, energetic and optimized for TikTok, Reels and Shorts",  
-"average_shot_length": "0.5-1.5 seconds",  
-"transitions": "quick cuts, match cuts, subtle whip transitions and light speed ramps",  
-"retention_strategy": "open immediately with the claw almost catching a ball; do not start with a static packshot"  
-},  
-"continuity": {  
-"product": "Keep exactly the same product design, proportions, colors and controls in every scene.",  
-"claw": "Maintain identical three-prong metal claw geometry throughout the video.",  
-"target_ball": "Use the same glossy pink ball from suspense through the winning sequence.",  
-"environment": "Maintain the same pastel visual world and lighting direction throughout."  
-},  
-"negative_prompt": \[  
-"storyboard sheet animation",  
-"product shape changing between shots",  
-"incorrect product colors",  
-"extra joysticks",  
-"extra buttons",  
-"deformed hands",  
-"extra fingers",  
-"floating objects",  
-"ball passing through claw",  
-"unrealistic physics",  
-"warped claw",  
-"duplicated balls",  
-"random text",  
-"misspelled text",  
-"flickering",  
-"camera jitter",  
-"low resolution",  
-"watermark"  
-\]  
+{
+"project": {
+"title": "Doll Catcher 1140 - POV Arcade Mini di Rumah",
+"type": "social_media_product_ad",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"resolution": "1080x1920",
+"fps": 30,
+"visual_style": "hyper-realistic commercial product video, cute pastel aesthetic, premium toy advertisement, soft cinematic lighting"
+},
+"reference_instruction": "Use the attached storyboard as the primary shot and sequencing reference. Do not animate the storyboard sheet itself. Recreate the actual scenes inside the panels as one seamless vertical commercial. Maintain the Doll Catcher 1140 product design throughout all shots.",
+"product_lock": {
+"priority": "MAXIMUM",
+"must_preserve": [
+"pastel blue body",
+"pink and white striped canopy",
+"transparent prize chamber",
+"green and yellow controls",
+"same three-prong metal claw",
+"same prize chute",
+"same overall product proportions"
+]
+},
+"timeline": [
+{
+"scene": 1,
+"time": "0.0-2.0",
+"purpose": "HOOK",
+"visual": "Extreme macro shot inside the machine. The claw descends toward colorful pastel balls and almost catches a pink ball, followed by a fast smooth zoom-out revealing the complete Doll Catcher 1140.",
+"camera": "macro close-up -> quick smooth zoom-out",
+"text_overlay": "POV: PUNYA MESIN CAPIT SENDIRI 😍",
+"voice_over": "Bayangin punya arcade mini sendiri!",
+"audio": "upbeat playful music + mechanical claw sound + soft whoosh"
+},
+{
+"scene": 2,
+"time": "2.0-4.0",
+"purpose": "PLAY",
+"visual": "Close-up of a hand operating the green and yellow controls. Cut to the claw moving toward the target pink ball.",
+"camera": "tight product close-up -> interior claw POV",
+"text_overlay": "PILIH TARGET 🎯",
+"voice_over": "Arahkan...",
+"audio": "rhythmic click-click mechanical SFX"
+},
+{
+"scene": 3,
+"time": "4.0-7.0",
+"purpose": "SUSPENSE",
+"visual": "Cinematic macro view of the claw descending around the same glossy pink ball, closing firmly and lifting it.",
+"camera": "extreme macro + shallow depth of field + subtle push-in",
+"speed_effect": "subtle slow motion at the exact grip moment",
+"text_overlay": "DAPAT NGGAK NIH? 👀",
+"voice_over": "Capit... dan...",
+"audio": "music briefly reduces intensity + suspense riser"
+},
+{
+"scene": 4,
+"time": "7.0-9.0",
+"purpose": "WIN_MOMENT",
+"visual": "The claw carries the same pink ball over the prize chute and releases it. The ball drops naturally, then a hand takes it from the prize opening.",
+"camera": "tracking close-up -> quick chute close-up",
+"text_overlay": "YES! DAPAT! 🎉",
+"voice_over": "YES! Dapat!",
+"audio": "bright TING + celebratory pop"
+},
+{
+"scene": 5,
+"time": "9.0-10.0",
+"purpose": "PRODUCT_HERO_CTA",
+"visual": "Premium three-quarter hero shot of the complete Doll Catcher 1140 on a clean tabletop with a soft pastel candy-shop environment.",
+"camera": "fast subtle cinematic push-in",
+"headline": "ARCADE MINI DI RUMAH!",
+"cta": "CEK SEKARANG 🛒",
+"voice_over": "Siap coba?",
+"audio": "upbeat music resolves with cheerful pop ending"
+}
+],
+"editing": {
+"pace": "fast, energetic and optimized for TikTok, Reels and Shorts",
+"average_shot_length": "0.5-1.5 seconds",
+"transitions": "quick cuts, match cuts, subtle whip transitions and light speed ramps",
+"retention_strategy": "open immediately with the claw almost catching a ball; do not start with a static packshot"
+},
+"continuity": {
+"product": "Keep exactly the same product design, proportions, colors and controls in every scene.",
+"claw": "Maintain identical three-prong metal claw geometry throughout the video.",
+"target_ball": "Use the same glossy pink ball from suspense through the winning sequence.",
+"environment": "Maintain the same pastel visual world and lighting direction throughout."
+},
+"negative_prompt": [
+"storyboard sheet animation",
+"product shape changing between shots",
+"incorrect product colors",
+"extra joysticks",
+"extra buttons",
+"deformed hands",
+"extra fingers",
+"floating objects",
+"ball passing through claw",
+"unrealistic physics",
+"warped claw",
+"duplicated balls",
+"random text",
+"misspelled text",
+"flickering",
+"camera jitter",
+"low resolution",
+"watermark"
+]
 }
 
 LANGKAH 7
@@ -1304,43 +1429,43 @@ LANGKAH 4
 
 CONTOH / TEMPLATE
 
-Buat storyboard production sheet untuk iklan NeeDoh Nice Cube berdurasi 10 detik berdasarkan Angle “The Satisfying Squish Test”.  
-  
-FORMAT  
-- Rasio 9:16 portrait.  
-- Durasi total 10 detik.  
-- 6 beat: 0–1s, 1–2.5s, 2.5–4.5s, 4.5–7s, 7–8.5s, 8.5–10s.  
-- Setiap beat menampilkan reference frame, timecode, fungsi shot, camera/shot, action, text layer, VO, dan audio/SFX.  
-- Layout clean, colorful, mudah dibaca tim motion designer.  
-  
-PRODUCT LOCK — MAXIMUM  
-Gunakan produk referensi sebagai product master. Pertahankan bentuk cube dengan rounded corners, translucent/glossy appearance, proporsi, dan warna blue/pink/purple. Jangan mengubah cube menjadi benda cair, crystal solid, candy, atau bentuk lain.  
-  
-BEAT 1 — HOOK  
-Extreme macro cube biru; dua jari menekan sisi produk. Quick subtle push-in. Text: “SE-SATISFYING INI?”.  
-  
-BEAT 2 — PENCET  
-Macro cube pink; dua ibu jari menekan dalam. Text: “PENCET.”. VO: “Pencet...”.  
-  
-BEAT 3 — REMAS  
-Cube ungu diremas penuh dalam satu tangan. Tight close-up. Text: “REMAS.”. VO: “Remas...”.  
-  
-BEAT 4 — LEPAS  
-Kembali ke cube biru; jari melepas tekanan dan slow-rise terlihat jelas. Macro static. Text: “LEPAS.”. VO: “Lepas...”.  
-  
-BEAT 5 — PAYOFF  
-Hero macro cube pink hampir kembali sempurna, glossy highlight dan subtle sparkle. Text: “BALIK LAGI...”.  
-  
-BEAT 6 — CTA  
-Blue, Pink, Purple berjajar pada studio pastel clean. Medium close-up / top-front. Text: “BLUE 💙 PINK 🩷 PURPLE 💜” + “Kamu pilih mana?”. VO: “Pilih warna favoritmu!”.  
-  
-STYLE  
-Bright, clean, colorful, tactile, glossy, premium social-media product commercial; pastel studio background; softbox lighting + subtle backlight; shallow depth of field; realistic hands; macro product photography.  
-  
-AUDIO  
-Foley squeeze menjadi hero; musik playful modern tetapi tidak menutupi suara tactile.  
-  
-NEGATIVE  
+Buat storyboard production sheet untuk iklan NeeDoh Nice Cube berdurasi 10 detik berdasarkan Angle “The Satisfying Squish Test”.
+
+FORMAT
+- Rasio 9:16 portrait.
+- Durasi total 10 detik.
+- 6 beat: 0–1s, 1–2.5s, 2.5–4.5s, 4.5–7s, 7–8.5s, 8.5–10s.
+- Setiap beat menampilkan reference frame, timecode, fungsi shot, camera/shot, action, text layer, VO, dan audio/SFX.
+- Layout clean, colorful, mudah dibaca tim motion designer.
+
+PRODUCT LOCK — MAXIMUM
+Gunakan produk referensi sebagai product master. Pertahankan bentuk cube dengan rounded corners, translucent/glossy appearance, proporsi, dan warna blue/pink/purple. Jangan mengubah cube menjadi benda cair, crystal solid, candy, atau bentuk lain.
+
+BEAT 1 — HOOK
+Extreme macro cube biru; dua jari menekan sisi produk. Quick subtle push-in. Text: “SE-SATISFYING INI?”.
+
+BEAT 2 — PENCET
+Macro cube pink; dua ibu jari menekan dalam. Text: “PENCET.”. VO: “Pencet...”.
+
+BEAT 3 — REMAS
+Cube ungu diremas penuh dalam satu tangan. Tight close-up. Text: “REMAS.”. VO: “Remas...”.
+
+BEAT 4 — LEPAS
+Kembali ke cube biru; jari melepas tekanan dan slow-rise terlihat jelas. Macro static. Text: “LEPAS.”. VO: “Lepas...”.
+
+BEAT 5 — PAYOFF
+Hero macro cube pink hampir kembali sempurna, glossy highlight dan subtle sparkle. Text: “BALIK LAGI...”.
+
+BEAT 6 — CTA
+Blue, Pink, Purple berjajar pada studio pastel clean. Medium close-up / top-front. Text: “BLUE 💙 PINK 🩷 PURPLE 💜” + “Kamu pilih mana?”. VO: “Pilih warna favoritmu!”.
+
+STYLE
+Bright, clean, colorful, tactile, glossy, premium social-media product commercial; pastel studio background; softbox lighting + subtle backlight; shallow depth of field; realistic hands; macro product photography.
+
+AUDIO
+Foley squeeze menjadi hero; musik playful modern tetapi tidak menutupi suara tactile.
+
+NEGATIVE
 No product redesign, no melting/leaking, no hard-crystal material, no extra fingers, no malformed hands, no wrong cube colors, no random logos, no unreadable text, no watermark.
 
 <img src="media/image4.png" style="width:3.46457in;height:6.15596in" />
@@ -1369,234 +1494,234 @@ LANGKAH 6
 
 CONTOH / TEMPLATE
 
-{  
-"project": {  
-"title": "NeeDoh Nice Cube - The Satisfying Squish Test",  
-"type": "image_to_video_ad",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"resolution": "1080x1920",  
-"fps": 30,  
-"platform": \[  
-"TikTok",  
-"Instagram Reels",  
-"YouTube Shorts"  
-\]  
-},  
-"reference_image_instruction": {  
-"use_uploaded_image_as": "storyboard and visual reference",  
-"important": "Do not animate the storyboard poster itself. Recreate the final commercial video described by the storyboard panels.",  
-"product_consistency": "Keep the squishy cube appearance consistent with the storyboard: translucent glossy cube, rounded corners, soft gel-like visual body, vivid blue, pink and purple variants.",  
-"hand_consistency": "Use clean realistic adult hands with natural anatomy and consistent skin tone throughout the video."  
-},  
-"creative_direction": {  
-"style": "premium social media product commercial",  
-"mood": \[  
-"satisfying",  
-"playful",  
-"colorful",  
-"tactile",  
-"clean",  
-"energetic"  
-\],  
-"visual_style": "hyper-realistic macro product photography",  
-"background": "minimal soft pastel studio background",  
-"lighting": "large softbox lighting with subtle backlight and glossy highlights",  
-"color_palette": \[  
-"cyan blue",  
-"hot pink",  
-"purple",  
-"soft white"  
-\],  
-"editing_style": "fast hook, smooth macro cuts, satisfying slow-rise payoff, clean commercial finish",  
-"depth_of_field": "shallow depth of field with sharp focus on the squishy cube"  
-},  
-"scenes": \[  
-{  
-"scene": 1,  
-"time": "0.0-1.0",  
-"purpose": "HOOK",  
-"visual": "Extreme macro close-up of a glossy translucent blue squishy cube in its normal cube shape. Two fingers enter from left and right and begin pressing both sides inward.",  
-"camera": {  
-"shot": "extreme macro close-up",  
-"movement": "very subtle cinematic push-in",  
-"focus": "sharp focus on the cube deformation"  
-},  
-"motion": "The cube immediately starts compressing between the fingers with realistic elastic deformation.",  
-"on_screen_text": "SE-SATISFYING INI?",  
-"audio": {  
-"sfx": "soft wet squish",  
-"music": "playful upbeat beat begins immediately"  
-}  
-},  
-{  
-"scene": 2,  
-"time": "1.0-2.5",  
-"purpose": "PENCET",  
-"visual": "Cut to a translucent bright pink cube. Two thumbs press deeply into the soft cube from both sides, creating exaggerated but believable deformation.",  
-"camera": {  
-"shot": "macro close-up",  
-"movement": "slow push-in",  
-"focus": "thumb pressure and cube texture"  
-},  
-"motion": "The cube bends and bulges naturally around the fingers.",  
-"on_screen_text": "PENCET.",  
-"voice_over": "Pencet...",  
-"audio": {  
-"sfx": "clear soft squish synchronized with finger pressure"  
-}  
-},  
-{  
-"scene": 3,  
-"time": "2.5-4.5",  
-"purpose": "REMAS",  
-"visual": "A translucent purple cube is fully squeezed inside one hand. The cube becomes heavily compressed while maintaining a believable soft consistency.",  
-"camera": {  
-"shot": "tight close-up of hand and product",  
-"movement": "almost static with tiny cinematic motion",  
-"focus": "compressed cube"  
-},  
-"motion": "The hand slowly increases pressure until the cube becomes almost completely compressed.",  
-"on_screen_text": "REMAS.",  
-"voice_over": "Remas...",  
-"audio": {  
-"sfx": "deeper satisfying squish"  
-}  
-},  
-{  
-"scene": 4,  
-"time": "4.5-7.0",  
-"purpose": "LEPAS",  
-"visual": "Return to a translucent blue cube. The fingers gradually release pressure. The flattened cube starts expanding and slowly recovering its original rounded cube form.",  
-"camera": {  
-"shot": "macro static close-up",  
-"movement": "locked camera",  
-"focus": "slow-rise transformation"  
-},  
-"motion": "Show the slow-rise recovery clearly in real time. Make the elastic expansion smooth and physically believable.",  
-"speed": "slightly slower cinematic motion without looking artificially slowed",  
-"on_screen_text": "LEPAS.",  
-"voice_over": "Lepas...",  
-"audio": {  
-"sfx": "gentle release squish",  
-"music": "beat temporarily softens to emphasize the recovery"  
-}  
-},  
-{  
-"scene": 5,  
-"time": "7.0-8.5",  
-"purpose": "PAYOFF",  
-"visual": "Beautiful hero macro shot of a bright pink cube almost completely restored to its original shape. Glossy reflections travel across the translucent surface with a subtle sparkle highlight.",  
-"camera": {  
-"shot": "macro beauty close-up",  
-"movement": "slow cinematic push-in",  
-"focus": "restored cube shape and glossy texture"  
-},  
-"motion": "The final corners gently return into shape.",  
-"on_screen_text": "BALIK LAGI...",  
-"audio": {  
-"sfx": "soft glossy pop",  
-"music": "small uplifting musical rise"  
-}  
-},  
-{  
-"scene": 6,  
-"time": "8.5-10.0",  
-"purpose": "CTA",  
-"visual": "Final clean studio hero shot showing three identical squishy cubes standing side by side: blue on the left, pink in the center and purple on the right. Each cube makes one subtle playful bounce.",  
-"camera": {  
-"shot": "medium close-up front three-quarter view",  
-"movement": "very subtle push-in",  
-"focus": "all three products sharp"  
-},  
-"motion": "Blue, pink and purple cubes perform a tiny sequential bounce, then settle perfectly aligned.",  
-"on_screen_text": \[  
-"BLUE 💙",  
-"PINK 🩷",  
-"PURPLE 💜",  
-"Kamu pilih mana?"  
-\],  
-"voice_over": "Pilih warna favoritmu!",  
-"audio": {  
-"sfx": "three subtle soft pops synchronized with the cubes",  
-"music": "finish with a bright playful beat"  
-}  
-}  
-\],  
-"voice_over": {  
-"language": "Indonesian",  
-"voice_style": "young adult, cheerful, energetic, friendly, conversational",  
-"script": "Pencet... remas... lepas... terus lihat dia balik lagi. Kamu pilih warna yang mana?",  
-"delivery": "short punchy phrases synchronized with each squeeze action"  
-},  
-"sound_design": {  
-"priority": "The real squish sound is one of the hero elements of the advertisement.",  
-"music": "modern playful light electronic beat",  
-"foley": \[  
-"soft squeeze",  
-"deep squish",  
-"elastic release",  
-"subtle pop"  
-\],  
-"mixing": "Keep foley clearly audible above the background music."  
-},  
-"text_style": {  
-"font_style": "bold rounded playful sans serif",  
-"text_position": "centered within mobile safe zones",  
-"appearance": "white text with cyan, pink or purple outline depending on the scene",  
-"animation": "quick pop-in with subtle scale bounce",  
-"important": "Keep text large and readable; for production reliability, final typography can be composited in the editor."  
-},  
-"camera_rules": {  
-"orientation": "vertical portrait",  
-"product_centered": true,  
-"mobile_safe_area": true,  
-"macro_detail": true,  
-"avoid_excessive_camera_motion": true,  
-"transitions": \[  
-"clean hard cuts",  
-"macro match cuts"  
-\]  
-},  
-"quality_requirements": \[  
-"photorealistic product",  
-"realistic soft-body physics",  
-"natural hand anatomy",  
-"consistent cube size and geometry",  
-"consistent translucent glossy appearance",  
-"premium studio lighting",  
-"sharp macro detail",  
-"commercial advertising quality",  
-"smooth 30fps movement",  
-"no visual flicker"  
-\],  
-"negative_prompt": \[  
-"do not animate the storyboard sheet",  
-"no infographic visible in final video",  
-"no split screen storyboard layout",  
-"no extra fingers",  
-"no malformed hands",  
-"no fused fingers",  
-"no deformed anatomy",  
-"no melting cube",  
-"no liquid leaking",  
-"no torn product",  
-"no cracked product",  
-"no inconsistent cube shape",  
-"no unexpected color changes",  
-"no disappearing objects",  
-"no floating hands",  
-"no warped background",  
-"no camera shake",  
-"no excessive motion blur",  
-"no flickering",  
-"no duplicated products except the intentional three cubes in the final scene",  
-"no random logos",  
-"no watermark",  
-"no unreadable text",  
-"no misspelled text"  
-\],  
-"final_instruction": "Create one seamless 10-second vertical commercial. The first second must immediately stop the scroll with an extreme macro squeeze. Build visual satisfaction through press, full squeeze and slow release, then end with a clean blue-pink-purple product lineup and an interactive CTA. Prioritize believable squishy physics, glossy translucent appearance and satisfying synchronized sound."  
+{
+"project": {
+"title": "NeeDoh Nice Cube - The Satisfying Squish Test",
+"type": "image_to_video_ad",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"resolution": "1080x1920",
+"fps": 30,
+"platform": [
+"TikTok",
+"Instagram Reels",
+"YouTube Shorts"
+]
+},
+"reference_image_instruction": {
+"use_uploaded_image_as": "storyboard and visual reference",
+"important": "Do not animate the storyboard poster itself. Recreate the final commercial video described by the storyboard panels.",
+"product_consistency": "Keep the squishy cube appearance consistent with the storyboard: translucent glossy cube, rounded corners, soft gel-like visual body, vivid blue, pink and purple variants.",
+"hand_consistency": "Use clean realistic adult hands with natural anatomy and consistent skin tone throughout the video."
+},
+"creative_direction": {
+"style": "premium social media product commercial",
+"mood": [
+"satisfying",
+"playful",
+"colorful",
+"tactile",
+"clean",
+"energetic"
+],
+"visual_style": "hyper-realistic macro product photography",
+"background": "minimal soft pastel studio background",
+"lighting": "large softbox lighting with subtle backlight and glossy highlights",
+"color_palette": [
+"cyan blue",
+"hot pink",
+"purple",
+"soft white"
+],
+"editing_style": "fast hook, smooth macro cuts, satisfying slow-rise payoff, clean commercial finish",
+"depth_of_field": "shallow depth of field with sharp focus on the squishy cube"
+},
+"scenes": [
+{
+"scene": 1,
+"time": "0.0-1.0",
+"purpose": "HOOK",
+"visual": "Extreme macro close-up of a glossy translucent blue squishy cube in its normal cube shape. Two fingers enter from left and right and begin pressing both sides inward.",
+"camera": {
+"shot": "extreme macro close-up",
+"movement": "very subtle cinematic push-in",
+"focus": "sharp focus on the cube deformation"
+},
+"motion": "The cube immediately starts compressing between the fingers with realistic elastic deformation.",
+"on_screen_text": "SE-SATISFYING INI?",
+"audio": {
+"sfx": "soft wet squish",
+"music": "playful upbeat beat begins immediately"
+}
+},
+{
+"scene": 2,
+"time": "1.0-2.5",
+"purpose": "PENCET",
+"visual": "Cut to a translucent bright pink cube. Two thumbs press deeply into the soft cube from both sides, creating exaggerated but believable deformation.",
+"camera": {
+"shot": "macro close-up",
+"movement": "slow push-in",
+"focus": "thumb pressure and cube texture"
+},
+"motion": "The cube bends and bulges naturally around the fingers.",
+"on_screen_text": "PENCET.",
+"voice_over": "Pencet...",
+"audio": {
+"sfx": "clear soft squish synchronized with finger pressure"
+}
+},
+{
+"scene": 3,
+"time": "2.5-4.5",
+"purpose": "REMAS",
+"visual": "A translucent purple cube is fully squeezed inside one hand. The cube becomes heavily compressed while maintaining a believable soft consistency.",
+"camera": {
+"shot": "tight close-up of hand and product",
+"movement": "almost static with tiny cinematic motion",
+"focus": "compressed cube"
+},
+"motion": "The hand slowly increases pressure until the cube becomes almost completely compressed.",
+"on_screen_text": "REMAS.",
+"voice_over": "Remas...",
+"audio": {
+"sfx": "deeper satisfying squish"
+}
+},
+{
+"scene": 4,
+"time": "4.5-7.0",
+"purpose": "LEPAS",
+"visual": "Return to a translucent blue cube. The fingers gradually release pressure. The flattened cube starts expanding and slowly recovering its original rounded cube form.",
+"camera": {
+"shot": "macro static close-up",
+"movement": "locked camera",
+"focus": "slow-rise transformation"
+},
+"motion": "Show the slow-rise recovery clearly in real time. Make the elastic expansion smooth and physically believable.",
+"speed": "slightly slower cinematic motion without looking artificially slowed",
+"on_screen_text": "LEPAS.",
+"voice_over": "Lepas...",
+"audio": {
+"sfx": "gentle release squish",
+"music": "beat temporarily softens to emphasize the recovery"
+}
+},
+{
+"scene": 5,
+"time": "7.0-8.5",
+"purpose": "PAYOFF",
+"visual": "Beautiful hero macro shot of a bright pink cube almost completely restored to its original shape. Glossy reflections travel across the translucent surface with a subtle sparkle highlight.",
+"camera": {
+"shot": "macro beauty close-up",
+"movement": "slow cinematic push-in",
+"focus": "restored cube shape and glossy texture"
+},
+"motion": "The final corners gently return into shape.",
+"on_screen_text": "BALIK LAGI...",
+"audio": {
+"sfx": "soft glossy pop",
+"music": "small uplifting musical rise"
+}
+},
+{
+"scene": 6,
+"time": "8.5-10.0",
+"purpose": "CTA",
+"visual": "Final clean studio hero shot showing three identical squishy cubes standing side by side: blue on the left, pink in the center and purple on the right. Each cube makes one subtle playful bounce.",
+"camera": {
+"shot": "medium close-up front three-quarter view",
+"movement": "very subtle push-in",
+"focus": "all three products sharp"
+},
+"motion": "Blue, pink and purple cubes perform a tiny sequential bounce, then settle perfectly aligned.",
+"on_screen_text": [
+"BLUE 💙",
+"PINK 🩷",
+"PURPLE 💜",
+"Kamu pilih mana?"
+],
+"voice_over": "Pilih warna favoritmu!",
+"audio": {
+"sfx": "three subtle soft pops synchronized with the cubes",
+"music": "finish with a bright playful beat"
+}
+}
+],
+"voice_over": {
+"language": "Indonesian",
+"voice_style": "young adult, cheerful, energetic, friendly, conversational",
+"script": "Pencet... remas... lepas... terus lihat dia balik lagi. Kamu pilih warna yang mana?",
+"delivery": "short punchy phrases synchronized with each squeeze action"
+},
+"sound_design": {
+"priority": "The real squish sound is one of the hero elements of the advertisement.",
+"music": "modern playful light electronic beat",
+"foley": [
+"soft squeeze",
+"deep squish",
+"elastic release",
+"subtle pop"
+],
+"mixing": "Keep foley clearly audible above the background music."
+},
+"text_style": {
+"font_style": "bold rounded playful sans serif",
+"text_position": "centered within mobile safe zones",
+"appearance": "white text with cyan, pink or purple outline depending on the scene",
+"animation": "quick pop-in with subtle scale bounce",
+"important": "Keep text large and readable; for production reliability, final typography can be composited in the editor."
+},
+"camera_rules": {
+"orientation": "vertical portrait",
+"product_centered": true,
+"mobile_safe_area": true,
+"macro_detail": true,
+"avoid_excessive_camera_motion": true,
+"transitions": [
+"clean hard cuts",
+"macro match cuts"
+]
+},
+"quality_requirements": [
+"photorealistic product",
+"realistic soft-body physics",
+"natural hand anatomy",
+"consistent cube size and geometry",
+"consistent translucent glossy appearance",
+"premium studio lighting",
+"sharp macro detail",
+"commercial advertising quality",
+"smooth 30fps movement",
+"no visual flicker"
+],
+"negative_prompt": [
+"do not animate the storyboard sheet",
+"no infographic visible in final video",
+"no split screen storyboard layout",
+"no extra fingers",
+"no malformed hands",
+"no fused fingers",
+"no deformed anatomy",
+"no melting cube",
+"no liquid leaking",
+"no torn product",
+"no cracked product",
+"no inconsistent cube shape",
+"no unexpected color changes",
+"no disappearing objects",
+"no floating hands",
+"no warped background",
+"no camera shake",
+"no excessive motion blur",
+"no flickering",
+"no duplicated products except the intentional three cubes in the final scene",
+"no random logos",
+"no watermark",
+"no unreadable text",
+"no misspelled text"
+],
+"final_instruction": "Create one seamless 10-second vertical commercial. The first second must immediately stop the scroll with an extreme macro squeeze. Build visual satisfaction through press, full squeeze and slow release, then end with a clean blue-pink-purple product lineup and an interactive CTA. Prioritize believable squishy physics, glossy translucent appearance and satisfying synchronized sound."
 }
 
 LANGKAH 7
@@ -1690,48 +1815,48 @@ LANGKAH 3
 
 CONTOH / TEMPLATE
 
-BERTINDAK SEBAGAI ANALIS PRODUK DAN CREATIVE STRATEGIST PROFESIONAL.  
-  
-SOURCE  
-Gunakan screenshot/listing produk yang diunggah sebagai sumber utama. Jangan mengarang spesifikasi yang tidak terlihat atau tidak tertulis.  
-  
-TUGAS  
-Buat creative brief lengkap untuk produksi foto dan video promo produk.  
-  
-WAJIB DIPISAHKAN  
-1. FAKTA VISUAL — hanya yang benar-benar terlihat.  
-2. KLAIM LISTING — teks/claim yang tertulis pada gambar.  
-3. ASUMSI KREATIF — ide positioning/visual yang masih perlu approval.  
-4. PERLU KONFIRMASI — hal yang tidak dapat dipastikan dari gambar.  
-  
-ANALISIS  
-- nama dan kategori produk  
-- bentuk kemasan dan silhouette  
-- warna dan varian  
-- material/tekstur yang terlihat  
-- detail produk yang dapat dijadikan visual hook  
-- target audiens visual  
-- consumer insight  
-- key message  
-- USP/benefit yang aman digunakan  
-- tone & visual direction  
-  
-CREATIVE PRODUCTION  
-- 8–10 konsep foto  
-- hero shot, macro texture, interaction, variant lineup, lifestyle/tabletop  
-- background dan lighting  
-- 10–15 detik video structure  
-- shot list + camera movement  
-- hook, VO/copy, CTA  
-- deliverables 9:16, 1:1, 4:5, dan 16:9 bila diperlukan  
-  
-PRODUCT LOCK  
-Pertahankan bentuk cup, warna slime, label/branding, ukuran relatif, jelly cube, dan identitas tiap varian. Jangan mengubah logo/label menjadi bentuk baru.  
-  
-NEGATIVE / QC  
-No product deformation, no label mutation, no wrong color variant, no fake certification, no unverified safety claim, no random text, no extra product parts, no misleading scale.  
-  
-OUTPUT  
+BERTINDAK SEBAGAI ANALIS PRODUK DAN CREATIVE STRATEGIST PROFESIONAL.
+
+SOURCE
+Gunakan screenshot/listing produk yang diunggah sebagai sumber utama. Jangan mengarang spesifikasi yang tidak terlihat atau tidak tertulis.
+
+TUGAS
+Buat creative brief lengkap untuk produksi foto dan video promo produk.
+
+WAJIB DIPISAHKAN
+1. FAKTA VISUAL — hanya yang benar-benar terlihat.
+2. KLAIM LISTING — teks/claim yang tertulis pada gambar.
+3. ASUMSI KREATIF — ide positioning/visual yang masih perlu approval.
+4. PERLU KONFIRMASI — hal yang tidak dapat dipastikan dari gambar.
+
+ANALISIS
+- nama dan kategori produk
+- bentuk kemasan dan silhouette
+- warna dan varian
+- material/tekstur yang terlihat
+- detail produk yang dapat dijadikan visual hook
+- target audiens visual
+- consumer insight
+- key message
+- USP/benefit yang aman digunakan
+- tone & visual direction
+
+CREATIVE PRODUCTION
+- 8–10 konsep foto
+- hero shot, macro texture, interaction, variant lineup, lifestyle/tabletop
+- background dan lighting
+- 10–15 detik video structure
+- shot list + camera movement
+- hook, VO/copy, CTA
+- deliverables 9:16, 1:1, 4:5, dan 16:9 bila diperlukan
+
+PRODUCT LOCK
+Pertahankan bentuk cup, warna slime, label/branding, ukuran relatif, jelly cube, dan identitas tiap varian. Jangan mengubah logo/label menjadi bentuk baru.
+
+NEGATIVE / QC
+No product deformation, no label mutation, no wrong color variant, no fake certification, no unverified safety claim, no random text, no extra product parts, no misleading scale.
+
+OUTPUT
 Susun dalam format creative brief yang siap dipakai fotografer, graphic designer, dan motion designer.
 
 LANGKAH 4
@@ -1828,60 +1953,60 @@ LANGKAH 9
 
 CONTOH / TEMPLATE
 
-{  
-"title": "POP SAN Water Slime - Colorful Satisfying Promo",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"style": "premium colorful toy commercial, pastel candy palette, clean studio, glossy macro texture, playful and family-friendly",  
-"product_lock": {  
-"priority": "MAXIMUM",  
-"instruction": "Use the uploaded POP SAN product image as the product master. Preserve cup shape, lid, label placement, slime color, jelly cube appearance and relative scale.",  
-"variants": \["Happy Yellow", "Pinky Blue", "Pinky Pink", "Lovely Purple", "Charming Red", "Sweet Blue"\]  
-},  
-"timeline": \[  
-{  
-"time": "0.0-2.0s",  
-"shot": "hero lineup",  
-"camera": "quick smooth push-in",  
-"action": "Six colorful POP SAN cups appear in a clean pastel studio; one cup subtly slides forward."  
-},  
-{  
-"time": "2.0-4.5s",  
-"shot": "macro texture",  
-"camera": "macro dolly + rack focus",  
-"action": "Show translucent water slime stretching slowly while jelly cubes move naturally inside."  
-},  
-{  
-"time": "4.5-7.0s",  
-"shot": "top-down interaction",  
-"camera": "controlled top-down orbit",  
-"action": "Show satisfying poke/press movement and a small bubble only if physically plausible for the product."  
-},  
-{  
-"time": "7.0-10.0s",  
-"shot": "hero closing",  
-"camera": "smooth pull-back",  
-"action": "Return to a colorful product lineup with clean negative space for final logo and CTA."  
-}  
-\],  
-"on_screen_copy": \[  
-"Water Slime + Jelly Cube",  
-"Pilih warna favoritmu!"  
-\],  
-"negative_prompt": \[  
-"product deformation",  
-"wrong cup shape",  
-"label mutation",  
-"wrong variant color",  
-"slime turning into food or drink",  
-"extra product parts",  
-"deformed hands",  
-"unverified safety claims",  
-"random text",  
-"watermark",  
-"camera jitter",  
-"flicker"  
-\]  
+{
+"title": "POP SAN Water Slime - Colorful Satisfying Promo",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"style": "premium colorful toy commercial, pastel candy palette, clean studio, glossy macro texture, playful and family-friendly",
+"product_lock": {
+"priority": "MAXIMUM",
+"instruction": "Use the uploaded POP SAN product image as the product master. Preserve cup shape, lid, label placement, slime color, jelly cube appearance and relative scale.",
+"variants": ["Happy Yellow", "Pinky Blue", "Pinky Pink", "Lovely Purple", "Charming Red", "Sweet Blue"]
+},
+"timeline": [
+{
+"time": "0.0-2.0s",
+"shot": "hero lineup",
+"camera": "quick smooth push-in",
+"action": "Six colorful POP SAN cups appear in a clean pastel studio; one cup subtly slides forward."
+},
+{
+"time": "2.0-4.5s",
+"shot": "macro texture",
+"camera": "macro dolly + rack focus",
+"action": "Show translucent water slime stretching slowly while jelly cubes move naturally inside."
+},
+{
+"time": "4.5-7.0s",
+"shot": "top-down interaction",
+"camera": "controlled top-down orbit",
+"action": "Show satisfying poke/press movement and a small bubble only if physically plausible for the product."
+},
+{
+"time": "7.0-10.0s",
+"shot": "hero closing",
+"camera": "smooth pull-back",
+"action": "Return to a colorful product lineup with clean negative space for final logo and CTA."
+}
+],
+"on_screen_copy": [
+"Water Slime + Jelly Cube",
+"Pilih warna favoritmu!"
+],
+"negative_prompt": [
+"product deformation",
+"wrong cup shape",
+"label mutation",
+"wrong variant color",
+"slime turning into food or drink",
+"extra product parts",
+"deformed hands",
+"unverified safety claims",
+"random text",
+"watermark",
+"camera jitter",
+"flicker"
+]
 }
 
 LANGKAH 10
@@ -1956,24 +2081,24 @@ LANGKAH 2
 
 CONTOH / TEMPLATE
 
-Buat storyboard dan video iklan produk berdurasi 10 detik tanpa menampilkan model/manusia.  
-  
-REFERENCE  
-Gunakan gambar produk sebagai product master. Pertahankan bentuk, warna, material, logo, ventilasi, jahitan, tekstur, atau detail fisik lain yang terlihat.  
-  
-STRUKTUR 10 DETIK  
-0–2.5s — Hero reveal: produk muncul dengan dramatic push-in.  
-2.5–5.0s — Detail: macro/close-up material dan fitur visual.  
-5.0–7.5s — Dynamic product motion: orbit atau turntable halus.  
-7.5–10.0s — Hero closing: produk berhenti pada angle terbaik, sisakan ruang untuk logo dan CTA.  
-  
-VISUAL  
-Premium commercial product photography, controlled studio lighting, clean reflections, high contrast separation, realistic material response.  
-  
-AUDIO  
-Jika menggunakan voice-over anak laki-laki, gunakan suara ceria, jelas, singkat, dan sesuai naskah iklan; suara hanya sebagai pengisi iklan, tanpa menghadirkan anak di visual.  
-  
-NEGATIVE  
+Buat storyboard dan video iklan produk berdurasi 10 detik tanpa menampilkan model/manusia.
+
+REFERENCE
+Gunakan gambar produk sebagai product master. Pertahankan bentuk, warna, material, logo, ventilasi, jahitan, tekstur, atau detail fisik lain yang terlihat.
+
+STRUKTUR 10 DETIK
+0–2.5s — Hero reveal: produk muncul dengan dramatic push-in.
+2.5–5.0s — Detail: macro/close-up material dan fitur visual.
+5.0–7.5s — Dynamic product motion: orbit atau turntable halus.
+7.5–10.0s — Hero closing: produk berhenti pada angle terbaik, sisakan ruang untuk logo dan CTA.
+
+VISUAL
+Premium commercial product photography, controlled studio lighting, clean reflections, high contrast separation, realistic material response.
+
+AUDIO
+Jika menggunakan voice-over anak laki-laki, gunakan suara ceria, jelas, singkat, dan sesuai naskah iklan; suara hanya sebagai pengisi iklan, tanpa menghadirkan anak di visual.
+
+NEGATIVE
 No human model, no hands, no product deformation, no logo mutation, no material flicker, no floating parts, no random text, no camera shake.
 
 LANGKAH 3
@@ -1982,11 +2107,11 @@ LANGKAH 3
 
 PROMPT SIAP COPY
 
-Buat storyboard iklan produk tanpa model berdurasi 10 detik, rasio 9:16.  
-0–2.5s: HERO REVEAL — dramatic push-in.  
-2.5–5.0s: DETAIL — macro material/fitur visual yang benar-benar terlihat.  
-5.0–7.5s: PRODUCT MOTION — orbit/turntable halus dengan bentuk produk tetap stabil.  
-7.5–10.0s: HERO CLOSING — angle terbaik, negative space untuk logo/CTA.  
+Buat storyboard iklan produk tanpa model berdurasi 10 detik, rasio 9:16.
+0–2.5s: HERO REVEAL — dramatic push-in.
+2.5–5.0s: DETAIL — macro material/fitur visual yang benar-benar terlihat.
+5.0–7.5s: PRODUCT MOTION — orbit/turntable halus dengan bentuk produk tetap stabil.
+7.5–10.0s: HERO CLOSING — angle terbaik, negative space untuk logo/CTA.
 Gunakan product reference sebagai master. Jangan tampilkan manusia/tangan. No product deformation, logo mutation, floating parts, random text, camera shake.
 
 LANGKAH 4
@@ -2059,11 +2184,11 @@ LANGKAH 2
 
 PROMPT SIAP COPY
 
-Buat key visual flyer social media 9:16 untuk acara keluarga.  
-FORMASI: ayah sekitar 30 tahun, ibu sekitar 25 tahun memakai jilbab putih, dua anak sekitar 8 tahun.  
-WARDROBE: kaos merah, celana putih.  
-AKTIVITAS: lomba balap karung, suasana 17 Agustus yang ceria dan aman.  
-VISUAL: siang cerah, dekorasi merah-putih, low/front camera angle, ekspresi gembira, energetic motion, negative space untuk judul dan informasi acara.  
+Buat key visual flyer social media 9:16 untuk acara keluarga.
+FORMASI: ayah sekitar 30 tahun, ibu sekitar 25 tahun memakai jilbab putih, dua anak sekitar 8 tahun.
+WARDROBE: kaos merah, celana putih.
+AKTIVITAS: lomba balap karung, suasana 17 Agustus yang ceria dan aman.
+VISUAL: siang cerah, dekorasi merah-putih, low/front camera angle, ekspresi gembira, energetic motion, negative space untuk judul dan informasi acara.
 NEGATIVE: no extra limbs, no duplicated family members, no malformed hands, no wrong clothing colors, no random text.
 
 LANGKAH 3
@@ -2088,18 +2213,18 @@ LANGKAH 4
 
 ## Adaptasi Flyer menjadi Header Google Form 1600×400
 
-Buat header image untuk Google Form berdasarkan flyer/event reference yang diunggah.  
-  
-REFERENCE LOCK  
-Pertahankan identitas warna, ilustrasi utama, motif, dan suasana visual kampanye. Jangan menyalin semua informasi flyer ke header.  
-  
-COMPOSITION  
-Ukuran 1600 × 400 piksel. Fokus pada judul singkat + hero visual. Gunakan safe area tengah agar tidak terpotong pada berbagai ukuran layar. Background lebih sederhana daripada flyer agar tetap terbaca pada bidang horizontal sempit.  
-  
-TEXT  
-Gunakan hanya teks yang benar-benar dibutuhkan sebagai identitas acara. Data detail tetap berada pada Google Form, bukan di header.  
-  
-QC  
+Buat header image untuk Google Form berdasarkan flyer/event reference yang diunggah.
+
+REFERENCE LOCK
+Pertahankan identitas warna, ilustrasi utama, motif, dan suasana visual kampanye. Jangan menyalin semua informasi flyer ke header.
+
+COMPOSITION
+Ukuran 1600 × 400 piksel. Fokus pada judul singkat + hero visual. Gunakan safe area tengah agar tidak terpotong pada berbagai ukuran layar. Background lebih sederhana daripada flyer agar tetap terbaca pada bidang horizontal sempit.
+
+TEXT
+Gunakan hanya teks yang benar-benar dibutuhkan sebagai identitas acara. Data detail tetap berada pada Google Form, bukan di header.
+
+QC
 No stretched character, no cropped face, no distorted logo, no tiny unreadable text, no clutter.
 
 LANGKAH 5
@@ -2146,46 +2271,46 @@ LANGKAH 2
 
 ## Tulis Script 30 Detik
 
-SCENE 1 — PELANGI MUNCUL  
-Taman hijau setelah hujan. Mimi si kelinci dan Axel si rubah melihat pelangi.  
-Mimi: “Waaah, Axel! Lihat, ada pelangi cantik!”  
-Mimi: “Siapa ya yang mewarnai langit?”  
-Axel: “Ayo kita cari tahu!”  
-  
-SCENE 2 — BERTEMU TETES  
-Mimi dan Axel mendekati genangan air. Tetes, tetesan air lucu, muncul.  
-Tetes: “Halo! Pelangi muncul saat sinar matahari bertemu tetesan air seperti aku!”  
-Axel: “Jadi air dan matahari bekerja bersama?”  
-Tetes: “Betul sekali!”  
-  
-SCENE 3 — RAHASIA PELANGI  
-Cahaya matahari melewati Tetes dan terurai menjadi warna pelangi.  
-Narator: “Saat cahaya matahari melewati tetesan air, muncullah warna-warna indah pelangi.”  
-Mimi: “Asyik! Sekarang aku tahu rahasia pelangi!”  
+SCENE 1 — PELANGI MUNCUL
+Taman hijau setelah hujan. Mimi si kelinci dan Axel si rubah melihat pelangi.
+Mimi: “Waaah, Axel! Lihat, ada pelangi cantik!”
+Mimi: “Siapa ya yang mewarnai langit?”
+Axel: “Ayo kita cari tahu!”
+
+SCENE 2 — BERTEMU TETES
+Mimi dan Axel mendekati genangan air. Tetes, tetesan air lucu, muncul.
+Tetes: “Halo! Pelangi muncul saat sinar matahari bertemu tetesan air seperti aku!”
+Axel: “Jadi air dan matahari bekerja bersama?”
+Tetes: “Betul sekali!”
+
+SCENE 3 — RAHASIA PELANGI
+Cahaya matahari melewati Tetes dan terurai menjadi warna pelangi.
+Narator: “Saat cahaya matahari melewati tetesan air, muncullah warna-warna indah pelangi.”
+Mimi: “Asyik! Sekarang aku tahu rahasia pelangi!”
 Narator: “Belajar alam itu seru!”
 
 LANGKAH 3
 
 ## Buat Character Sheet
 
-Buat character sheet detail karakter anak/mascot untuk serial animasi.  
-  
-OUTPUT  
-9 angle: front, 3/4 front left, left profile, 3/4 back left, back, 3/4 back right, right profile, 3/4 front right, elevated/front view.  
-  
-CHARACTER LOCK  
-Pertahankan spesies, bentuk kepala, mata, telinga/muzzle, warna tubuh/fur, proporsi, outfit, aksesori, dan material.  
-  
-EXPRESSIONS  
-Happy, curious, surprised, laughing, thinking, worried, excited, proud.  
-  
-PROPERTIES  
-Tampilkan 4–6 properti yang mendukung cerita dan aktivitas karakter.  
-  
-STYLE  
-Premium 3D animated feature-film style, soft cinematic studio light, professional reference-sheet layout, child-friendly, ratio 16:9.  
-  
-NEGATIVE  
+Buat character sheet detail karakter anak/mascot untuk serial animasi.
+
+OUTPUT
+9 angle: front, 3/4 front left, left profile, 3/4 back left, back, 3/4 back right, right profile, 3/4 front right, elevated/front view.
+
+CHARACTER LOCK
+Pertahankan spesies, bentuk kepala, mata, telinga/muzzle, warna tubuh/fur, proporsi, outfit, aksesori, dan material.
+
+EXPRESSIONS
+Happy, curious, surprised, laughing, thinking, worried, excited, proud.
+
+PROPERTIES
+Tampilkan 4–6 properti yang mendukung cerita dan aktivitas karakter.
+
+STYLE
+Premium 3D animated feature-film style, soft cinematic studio light, professional reference-sheet layout, child-friendly, ratio 16:9.
+
+NEGATIVE
 No character drift, no outfit changes, no extra limbs, no inconsistent eye color, no random text, no watermark.
 
 Contoh output: character sheet Mimi — 9 angle, properti, ekspresi, dan color palette.
@@ -2210,24 +2335,24 @@ LANGKAH 4
 
 ## Buat Storyboard 3 Scene × 4 Panel
 
-Buat storyboard “Mimi dan Rahasia Pelangi” dari character reference yang diunggah.  
-  
-REFERENCE  
-Image 1 = Mimi; Image 2 = Axel; Image 3 = Tetes. Gunakan ketiganya sebagai identity master.  
-  
-FORMAT  
-30 detik, 3 scene × 10 detik, tiap scene 4 panel, rasio 16:9, premium 3D animated feature-film style, bright, soft, expressive.  
-  
-SCENE 1 — PELANGI MUNCUL  
-P1 wide establishing shot; P2 medium two-shot Mimi menunjuk pelangi; P3 close-up Axel berkata “Ayo kita cari tahu!”; P4 tracking shot mereka berlari.  
-  
-SCENE 2 — BERTEMU TETES  
-P1 wide shot di genangan; P2 medium shot Tetes muncul dan menjelaskan; P3 three-character shot Axel bertanya; P4 close-up Tetes menjawab.  
-  
-SCENE 3 — RAHASIA PELANGI  
-P1 close-up cahaya melewati Tetes dan terurai; P2 wide shot pelangi penuh; P3 medium shot tiga karakter merayakan penemuan; P4 hero wide shot + penutup “Belajar alam itu seru!”.  
-  
-QC  
+Buat storyboard “Mimi dan Rahasia Pelangi” dari character reference yang diunggah.
+
+REFERENCE
+Image 1 = Mimi; Image 2 = Axel; Image 3 = Tetes. Gunakan ketiganya sebagai identity master.
+
+FORMAT
+30 detik, 3 scene × 10 detik, tiap scene 4 panel, rasio 16:9, premium 3D animated feature-film style, bright, soft, expressive.
+
+SCENE 1 — PELANGI MUNCUL
+P1 wide establishing shot; P2 medium two-shot Mimi menunjuk pelangi; P3 close-up Axel berkata “Ayo kita cari tahu!”; P4 tracking shot mereka berlari.
+
+SCENE 2 — BERTEMU TETES
+P1 wide shot di genangan; P2 medium shot Tetes muncul dan menjelaskan; P3 three-character shot Axel bertanya; P4 close-up Tetes menjawab.
+
+SCENE 3 — RAHASIA PELANGI
+P1 close-up cahaya melewati Tetes dan terurai; P2 wide shot pelangi penuh; P3 medium shot tiga karakter merayakan penemuan; P4 hero wide shot + penutup “Belajar alam itu seru!”.
+
+QC
 Character lock maksimum, urutan warna pelangi benar, tidak ada extra limbs, tidak ada karakter duplikat, ekspresi jelas, continuity lingkungan konsisten.
 
 Contoh output: storyboard 30 detik — 3 scene × 4 panel dengan variasi framing dan continuity.
@@ -2240,45 +2365,45 @@ LANGKAH 5
 
 ## Buat JSON Video Scene 1–3
 
-{  
-"title": "Scene 1 - Pelangi Muncul",  
-"duration_seconds": 10,  
-"aspect_ratio": "16:9",  
-"timeline": \[  
-{"time":"0.0-2.5s","shot":"wide establishing","camera":"slow push-in from behind","action":"Mimi dan Axel melihat pelangi setelah hujan."},  
-{"time":"2.5-5.5s","shot":"medium two-shot","camera":"front 3/4","action":"Mimi menunjuk pelangi.","dialogue":"Waaah, Axel! Lihat, ada pelangi cantik! Siapa ya yang mewarnai langit?"},  
-{"time":"5.5-7.5s","shot":"medium close-up Axel","camera":"gentle push-in","dialogue":"Ayo kita cari tahu!"},  
-{"time":"7.5-10.0s","shot":"tracking wide","camera":"low side tracking","action":"Mimi dan Axel berlari melalui genangan kecil."}  
-\],  
-"negative_prompt":\["no Tetes in scene 1","no face drift","no outfit changes","no duplicate characters","no rainbow flicker","no camera shake"\]  
+{
+"title": "Scene 1 - Pelangi Muncul",
+"duration_seconds": 10,
+"aspect_ratio": "16:9",
+"timeline": [
+{"time":"0.0-2.5s","shot":"wide establishing","camera":"slow push-in from behind","action":"Mimi dan Axel melihat pelangi setelah hujan."},
+{"time":"2.5-5.5s","shot":"medium two-shot","camera":"front 3/4","action":"Mimi menunjuk pelangi.","dialogue":"Waaah, Axel! Lihat, ada pelangi cantik! Siapa ya yang mewarnai langit?"},
+{"time":"5.5-7.5s","shot":"medium close-up Axel","camera":"gentle push-in","dialogue":"Ayo kita cari tahu!"},
+{"time":"7.5-10.0s","shot":"tracking wide","camera":"low side tracking","action":"Mimi dan Axel berlari melalui genangan kecil."}
+],
+"negative_prompt":["no Tetes in scene 1","no face drift","no outfit changes","no duplicate characters","no rainbow flicker","no camera shake"]
 }
 
-{  
-"title": "Scene 2 - Bertemu Tetes",  
-"duration_seconds": 10,  
-"aspect_ratio": "16:9",  
-"timeline": \[  
-{"time":"0.0-2.5s","shot":"wide","camera":"slow dolly-in","action":"Mimi dan Axel mendekati genangan; Tetes muncul dengan ripple kecil."},  
-{"time":"2.5-5.5s","shot":"medium Tetes","camera":"gentle push-in","dialogue":"Halo! Pelangi muncul saat sinar matahari bertemu tetesan air seperti aku!"},  
-{"time":"5.5-8.0s","shot":"three-character medium","camera":"smooth arc","dialogue":"Axel: Jadi air dan matahari bekerja bersama?"},  
-{"time":"8.0-10.0s","shot":"close-up Tetes","camera":"small push-in","dialogue":"Betul sekali!","action":"muncul refleksi warna kecil di permukaan air."}  
-\],  
-"material_note":"Tetes translucent light-blue, soft internal refraction, subtle water jiggle, stable droplet silhouette.",  
-"negative_prompt":\["no melting Tetes","no opaque Tetes","no full rainbow yet","no character flicker","no extra limbs"\]  
+{
+"title": "Scene 2 - Bertemu Tetes",
+"duration_seconds": 10,
+"aspect_ratio": "16:9",
+"timeline": [
+{"time":"0.0-2.5s","shot":"wide","camera":"slow dolly-in","action":"Mimi dan Axel mendekati genangan; Tetes muncul dengan ripple kecil."},
+{"time":"2.5-5.5s","shot":"medium Tetes","camera":"gentle push-in","dialogue":"Halo! Pelangi muncul saat sinar matahari bertemu tetesan air seperti aku!"},
+{"time":"5.5-8.0s","shot":"three-character medium","camera":"smooth arc","dialogue":"Axel: Jadi air dan matahari bekerja bersama?"},
+{"time":"8.0-10.0s","shot":"close-up Tetes","camera":"small push-in","dialogue":"Betul sekali!","action":"muncul refleksi warna kecil di permukaan air."}
+],
+"material_note":"Tetes translucent light-blue, soft internal refraction, subtle water jiggle, stable droplet silhouette.",
+"negative_prompt":["no melting Tetes","no opaque Tetes","no full rainbow yet","no character flicker","no extra limbs"]
 }
 
-{  
-"title": "Scene 3 - Rahasia Pelangi",  
-"duration_seconds": 10,  
-"aspect_ratio": "16:9",  
-"timeline": \[  
-{"time":"0.0-2.5s","shot":"close-up Tetes","camera":"slow push-in","action":"Sinar matahari melewati tubuh Tetes dan terurai menjadi spektrum warna.","narration":"Saat cahaya matahari melewati tetesan air, muncullah warna-warna indah pelangi."},  
-{"time":"2.5-5.0s","shot":"wide","camera":"pull-back + tilt up","action":"Spektrum berkembang menjadi pelangi penuh di langit."},  
-{"time":"5.0-7.5s","shot":"medium three-character","camera":"gentle arc","dialogue":"Mimi: Asyik! Sekarang aku tahu rahasia pelangi!"},  
-{"time":"7.5-10.0s","shot":"hero wide","camera":"slow crane-back","action":"Mimi, Axel, Tetes merayakan di bawah pelangi.","narration":"Belajar alam itu seru!"}  
-\],  
-"science_lock":"Urutan warna pelangi harus konsisten dan mudah dipahami secara visual.",  
-"negative_prompt":\["no incorrect rainbow order","no duplicate rainbow","no character drift","no text overlay","no watermark"\]  
+{
+"title": "Scene 3 - Rahasia Pelangi",
+"duration_seconds": 10,
+"aspect_ratio": "16:9",
+"timeline": [
+{"time":"0.0-2.5s","shot":"close-up Tetes","camera":"slow push-in","action":"Sinar matahari melewati tubuh Tetes dan terurai menjadi spektrum warna.","narration":"Saat cahaya matahari melewati tetesan air, muncullah warna-warna indah pelangi."},
+{"time":"2.5-5.0s","shot":"wide","camera":"pull-back + tilt up","action":"Spektrum berkembang menjadi pelangi penuh di langit."},
+{"time":"5.0-7.5s","shot":"medium three-character","camera":"gentle arc","dialogue":"Mimi: Asyik! Sekarang aku tahu rahasia pelangi!"},
+{"time":"7.5-10.0s","shot":"hero wide","camera":"slow crane-back","action":"Mimi, Axel, Tetes merayakan di bawah pelangi.","narration":"Belajar alam itu seru!"}
+],
+"science_lock":"Urutan warna pelangi harus konsisten dan mudah dipahami secara visual.",
+"negative_prompt":["no incorrect rainbow order","no duplicate rainbow","no character drift","no text overlay","no watermark"]
 }
 
 LANGKAH 6
@@ -2325,23 +2450,23 @@ LANGKAH 2
 
 CONTOH / TEMPLATE
 
-FORMAT  
-Durasi total 30 detik; 3 scene × 10 detik; rasio 9:16; gaya handcrafted claymation stop-motion; target edukasi keluarga/anak.  
-  
-SCENE 1 — GEMPA TERJADI (0–10 detik)  
-Visual: Ibu membaca buku di sofa, anak bermain di lantai. Lampu gantung mulai bergoyang, air di gelas bergetar, benda kecil bergerak. Anak panik dan hendak berlari; ibu memberi gestur berhenti dan menenangkan.  
-Narasi: “Kalau gempa terjadi, jangan panik dan jangan langsung berlari!”  
-Teks layar: “GEMPA! Tetap Tenang.”  
-  
-SCENE 2 — DROP, COVER, HOLD ON (10–20 detik)  
-Visual: Ibu dan anak merunduk, bergerak ke bawah meja yang kokoh, melindungi kepala dan leher, lalu memegang kaki meja.  
-Narasi: “Segera lakukan: merunduk, berlindung, dan berpegangan!”  
-Teks layar: “1. MERUNDUK” → “2. BERLINDUNG” → “3. BERPEGANGAN”.  
-  
-SCENE 3 — SETELAH GEMPA BERHENTI (20–30 detik)  
-Visual: Guncangan berhenti. Ibu mengecek situasi, lalu membimbing anak keluar dengan tertib menuju area terbuka. Mereka berdiri jauh dari bangunan, tiang listrik, dan pohon besar.  
-Narasi: “Setelah gempa berhenti, keluar dengan tertib menuju tempat terbuka dan tetap waspada terhadap gempa susulan.”  
-Teks layar: “Tetap tenang. Lindungi diri. Menuju tempat aman.”  
+FORMAT
+Durasi total 30 detik; 3 scene × 10 detik; rasio 9:16; gaya handcrafted claymation stop-motion; target edukasi keluarga/anak.
+
+SCENE 1 — GEMPA TERJADI (0–10 detik)
+Visual: Ibu membaca buku di sofa, anak bermain di lantai. Lampu gantung mulai bergoyang, air di gelas bergetar, benda kecil bergerak. Anak panik dan hendak berlari; ibu memberi gestur berhenti dan menenangkan.
+Narasi: “Kalau gempa terjadi, jangan panik dan jangan langsung berlari!”
+Teks layar: “GEMPA! Tetap Tenang.”
+
+SCENE 2 — DROP, COVER, HOLD ON (10–20 detik)
+Visual: Ibu dan anak merunduk, bergerak ke bawah meja yang kokoh, melindungi kepala dan leher, lalu memegang kaki meja.
+Narasi: “Segera lakukan: merunduk, berlindung, dan berpegangan!”
+Teks layar: “1. MERUNDUK” → “2. BERLINDUNG” → “3. BERPEGANGAN”.
+
+SCENE 3 — SETELAH GEMPA BERHENTI (20–30 detik)
+Visual: Guncangan berhenti. Ibu mengecek situasi, lalu membimbing anak keluar dengan tertib menuju area terbuka. Mereka berdiri jauh dari bangunan, tiang listrik, dan pohon besar.
+Narasi: “Setelah gempa berhenti, keluar dengan tertib menuju tempat terbuka dan tetap waspada terhadap gempa susulan.”
+Teks layar: “Tetap tenang. Lindungi diri. Menuju tempat aman.”
 Ending: Anak memberi jempol; visual ditahan singkat sebagai frame penutup.
 
 LANGKAH 3
@@ -2350,38 +2475,38 @@ LANGKAH 3
 
 CONTOH / TEMPLATE
 
-Buat storyboard produksi untuk video edukasi gempa bumi berdurasi 30 detik dengan gaya handcrafted claymation stop-motion.  
-  
-FORMAT  
-- Rasio 9:16 portrait.  
-- 3 scene × 10 detik.  
-- 2 shot utama per scene (total 6 shot) agar mudah diproduksi.  
-- Tampilkan timecode, jenis shot, catatan produksi, narasi, dan teks layar.  
-  
-CHARACTER LOCK  
-Ibu: karakter clay yang sama di seluruh panel, hijab mauve-ungu, atasan peach lengan panjang, rok beige, ekspresi protektif dan tenang.  
-Anak: anak laki-laki clay yang sama, rambut hitam sedikit berantakan, kaos kuning, celana pendek biru, ekspresi besar dan mudah dibaca.  
-Jangan mengubah wajah, warna pakaian, proporsi, atau style karakter antar-panel.  
-  
-SCENE 1 — GEMPA TERJADI  
-Shot 1 (0–5s): wide establishing ruang keluarga. Anak bermain, ibu membaca. Lampu, air di gelas, dan benda kecil mulai bergetar.  
-Shot 2 (5–10s): medium shot. Anak panik dan hendak berlari; ibu mengangkat telapak tangan untuk menenangkan dan menunjuk menjauh dari lemari. Teks: “GEMPA! Tetap Tenang.”  
-Narasi: “Kalau gempa terjadi, jangan panik dan jangan langsung berlari!”  
-  
-SCENE 2 — DROP, COVER, HOLD ON  
-Shot 3 (10–15s): medium shot. Ibu dan anak merunduk dan melindungi kepala/leher. Teks: “1. MERUNDUK”.  
-Shot 4 (15–20s): low angle di bawah meja. Mereka berlindung di bawah meja kokoh dan memegang kaki meja. Teks: “2. BERLINDUNG” dan “3. BERPEGANGAN”.  
-Narasi: “Segera lakukan: merunduk, berlindung, dan berpegangan!”  
-  
-SCENE 3 — SETELAH GEMPA BERHENTI  
-Shot 5 (20–25s): medium shot. Guncangan telah berhenti; ibu mengecek sekitar lalu membimbing anak ke pintu.  
-Shot 6 (25–30s): wide outdoor hero shot. Ibu dan anak berada di area terbuka; anak memberi jempol. Tambahkan checklist: “Jauhi bangunan”, “Jauhi tiang listrik”, “Jauhi pohon besar”.  
-Narasi: “Setelah gempa berhenti, keluar dengan tertib menuju tempat terbuka dan tetap waspada terhadap gempa susulan.”  
-  
-STYLE  
-Warm handcrafted miniature clay set, visible plasticine texture, subtle fingerprints, soft cinematic lighting, child-friendly, educational, clear silhouettes, authentic stop-motion feel.  
-  
-NEGATIVE  
+Buat storyboard produksi untuk video edukasi gempa bumi berdurasi 30 detik dengan gaya handcrafted claymation stop-motion.
+
+FORMAT
+- Rasio 9:16 portrait.
+- 3 scene × 10 detik.
+- 2 shot utama per scene (total 6 shot) agar mudah diproduksi.
+- Tampilkan timecode, jenis shot, catatan produksi, narasi, dan teks layar.
+
+CHARACTER LOCK
+Ibu: karakter clay yang sama di seluruh panel, hijab mauve-ungu, atasan peach lengan panjang, rok beige, ekspresi protektif dan tenang.
+Anak: anak laki-laki clay yang sama, rambut hitam sedikit berantakan, kaos kuning, celana pendek biru, ekspresi besar dan mudah dibaca.
+Jangan mengubah wajah, warna pakaian, proporsi, atau style karakter antar-panel.
+
+SCENE 1 — GEMPA TERJADI
+Shot 1 (0–5s): wide establishing ruang keluarga. Anak bermain, ibu membaca. Lampu, air di gelas, dan benda kecil mulai bergetar.
+Shot 2 (5–10s): medium shot. Anak panik dan hendak berlari; ibu mengangkat telapak tangan untuk menenangkan dan menunjuk menjauh dari lemari. Teks: “GEMPA! Tetap Tenang.”
+Narasi: “Kalau gempa terjadi, jangan panik dan jangan langsung berlari!”
+
+SCENE 2 — DROP, COVER, HOLD ON
+Shot 3 (10–15s): medium shot. Ibu dan anak merunduk dan melindungi kepala/leher. Teks: “1. MERUNDUK”.
+Shot 4 (15–20s): low angle di bawah meja. Mereka berlindung di bawah meja kokoh dan memegang kaki meja. Teks: “2. BERLINDUNG” dan “3. BERPEGANGAN”.
+Narasi: “Segera lakukan: merunduk, berlindung, dan berpegangan!”
+
+SCENE 3 — SETELAH GEMPA BERHENTI
+Shot 5 (20–25s): medium shot. Guncangan telah berhenti; ibu mengecek sekitar lalu membimbing anak ke pintu.
+Shot 6 (25–30s): wide outdoor hero shot. Ibu dan anak berada di area terbuka; anak memberi jempol. Tambahkan checklist: “Jauhi bangunan”, “Jauhi tiang listrik”, “Jauhi pohon besar”.
+Narasi: “Setelah gempa berhenti, keluar dengan tertib menuju tempat terbuka dan tetap waspada terhadap gempa susulan.”
+
+STYLE
+Warm handcrafted miniature clay set, visible plasticine texture, subtle fingerprints, soft cinematic lighting, child-friendly, educational, clear silhouettes, authentic stop-motion feel.
+
+NEGATIVE
 No photorealistic humans, no 2D cartoon, no character drift, no wardrobe changes, no extra limbs, no severe destruction, no injuries, no fire, no horror mood, no excessive camera shake, no unreadable text.
 
 Contoh output storyboard produksi:
@@ -2410,28 +2535,28 @@ LANGKAH 4
 
 CONTOH / TEMPLATE
 
-{  
-"scene": 1,  
-"title": "Gempa Terjadi",  
-"duration": "10 seconds",  
-"aspect_ratio": "9:16",  
-"reference_image": "Use the attached storyboard as the primary visual reference. Preserve the exact claymation characters, clothing, room layout, props, colors, textures and lighting.",  
-"visual_style": {  
-"style": "high-quality cinematic claymation stop-motion",  
-"materials": "handmade plasticine clay, visible clay texture, subtle fingerprints, miniature set",  
-"lighting": "warm soft indoor lighting",  
-"mood": "educational, slightly tense, safe and reassuring"  
-},  
-"timeline": \[  
-{"time":"0-2s","shot":"wide establishing","camera":"subtle push-in","action":"Child plays on the floor while mother reads on the sofa; room is peaceful."},  
-{"time":"2-5s","shot":"wide to medium-wide","camera":"slow controlled push-in","action":"Lamp swings, water ripples in the glass, wall picture tilts slightly, books and props tremble; child pauses and mother notices the earthquake."},  
-{"time":"5-7.5s","shot":"medium","camera":"smooth cut closer","action":"Child looks frightened and starts to move as if he wants to run; shaking becomes slightly stronger."},  
-{"time":"7.5-10s","shot":"medium two-shot","camera":"stable","action":"Mother raises one open palm to stop and calm the child, then points away from the tall shelf; child stops and listens.","on_screen_text":"GEMPA! TETAP TENANG."}  
-\],  
-"voice_over": {"language":"Indonesian","script":"Kalau gempa terjadi, jangan panik dan jangan langsung berlari!"},  
-"sound_design": \["soft room ambience","subtle low earthquake rumble","gentle furniture rattling","glass vibration","small object rattles"\],  
-"negative_prompt": \["photorealistic humans","2D cartoon","character redesign","extra characters","severe destruction","injuries","fire","horror atmosphere","excessive camera shake","warped faces","deformed hands","unreadable text"\],  
-"ending_frame": "Mother stands protectively beside the child while the room still gently shakes, ready to transition into Drop, Cover, Hold On."  
+{
+"scene": 1,
+"title": "Gempa Terjadi",
+"duration": "10 seconds",
+"aspect_ratio": "9:16",
+"reference_image": "Use the attached storyboard as the primary visual reference. Preserve the exact claymation characters, clothing, room layout, props, colors, textures and lighting.",
+"visual_style": {
+"style": "high-quality cinematic claymation stop-motion",
+"materials": "handmade plasticine clay, visible clay texture, subtle fingerprints, miniature set",
+"lighting": "warm soft indoor lighting",
+"mood": "educational, slightly tense, safe and reassuring"
+},
+"timeline": [
+{"time":"0-2s","shot":"wide establishing","camera":"subtle push-in","action":"Child plays on the floor while mother reads on the sofa; room is peaceful."},
+{"time":"2-5s","shot":"wide to medium-wide","camera":"slow controlled push-in","action":"Lamp swings, water ripples in the glass, wall picture tilts slightly, books and props tremble; child pauses and mother notices the earthquake."},
+{"time":"5-7.5s","shot":"medium","camera":"smooth cut closer","action":"Child looks frightened and starts to move as if he wants to run; shaking becomes slightly stronger."},
+{"time":"7.5-10s","shot":"medium two-shot","camera":"stable","action":"Mother raises one open palm to stop and calm the child, then points away from the tall shelf; child stops and listens.","on_screen_text":"GEMPA! TETAP TENANG."}
+],
+"voice_over": {"language":"Indonesian","script":"Kalau gempa terjadi, jangan panik dan jangan langsung berlari!"},
+"sound_design": ["soft room ambience","subtle low earthquake rumble","gentle furniture rattling","glass vibration","small object rattles"],
+"negative_prompt": ["photorealistic humans","2D cartoon","character redesign","extra characters","severe destruction","injuries","fire","horror atmosphere","excessive camera shake","warped faces","deformed hands","unreadable text"],
+"ending_frame": "Mother stands protectively beside the child while the room still gently shakes, ready to transition into Drop, Cover, Hold On."
 }
 
 LANGKAH 5
@@ -2440,22 +2565,22 @@ LANGKAH 5
 
 CONTOH / TEMPLATE
 
-{  
-"scene": 2,  
-"title": "Drop, Cover, Hold On",  
-"duration": "10 seconds",  
-"aspect_ratio": "9:16",  
-"reference_image": "Use the attached storyboard as visual master. Maintain the exact mother, child, furniture, clothing and handcrafted clay style from Scene 1.",  
-"timeline": \[  
-{"time":"0-2.5s","shot":"medium","camera":"stable subtle push-in","action":"Mother guides child downward beside the sturdy table. Both crouch and protect head and neck.","on_screen_text":"1. MERUNDUK"},  
-{"time":"2.5-5s","shot":"medium-low angle","camera":"slightly lower angle","action":"Mother gestures under the sturdy table; both crawl underneath while staying low.","on_screen_text":"2. BERLINDUNG"},  
-{"time":"5-7.5s","shot":"low-angle under table","camera":"table-level","action":"Both are fully under the table. Mother reaches for one table leg; child stays low with head protected."},  
-{"time":"7.5-10s","shot":"low-angle two-shot","camera":"locked","action":"Mother and child each hold a table leg and remain protected while the room gently vibrates.","on_screen_text":"3. BERPEGANGAN"}  
-\],  
-"voice_over": {"language":"Indonesian","script":"Segera lakukan: merunduk, berlindung, dan berpegangan!"},  
-"camera_direction": \["lower the camera as the characters move toward the floor","use low angle beneath the table","avoid excessive camera shake"\],  
-"negative_prompt": \["standing during main shaking","running outside during active shaking","unsafe hiding position","character drift","extra limbs","severe destruction","horror mood","frame flicker","unreadable text"\],  
-"ending_frame": "Mother and child remain safely beneath the sturdy table, holding the table legs with heads protected."  
+{
+"scene": 2,
+"title": "Drop, Cover, Hold On",
+"duration": "10 seconds",
+"aspect_ratio": "9:16",
+"reference_image": "Use the attached storyboard as visual master. Maintain the exact mother, child, furniture, clothing and handcrafted clay style from Scene 1.",
+"timeline": [
+{"time":"0-2.5s","shot":"medium","camera":"stable subtle push-in","action":"Mother guides child downward beside the sturdy table. Both crouch and protect head and neck.","on_screen_text":"1. MERUNDUK"},
+{"time":"2.5-5s","shot":"medium-low angle","camera":"slightly lower angle","action":"Mother gestures under the sturdy table; both crawl underneath while staying low.","on_screen_text":"2. BERLINDUNG"},
+{"time":"5-7.5s","shot":"low-angle under table","camera":"table-level","action":"Both are fully under the table. Mother reaches for one table leg; child stays low with head protected."},
+{"time":"7.5-10s","shot":"low-angle two-shot","camera":"locked","action":"Mother and child each hold a table leg and remain protected while the room gently vibrates.","on_screen_text":"3. BERPEGANGAN"}
+],
+"voice_over": {"language":"Indonesian","script":"Segera lakukan: merunduk, berlindung, dan berpegangan!"},
+"camera_direction": ["lower the camera as the characters move toward the floor","use low angle beneath the table","avoid excessive camera shake"],
+"negative_prompt": ["standing during main shaking","running outside during active shaking","unsafe hiding position","character drift","extra limbs","severe destruction","horror mood","frame flicker","unreadable text"],
+"ending_frame": "Mother and child remain safely beneath the sturdy table, holding the table legs with heads protected."
 }
 
 LANGKAH 6
@@ -2464,23 +2589,23 @@ LANGKAH 6
 
 CONTOH / TEMPLATE
 
-{  
-"scene": 3,  
-"title": "Setelah Gempa Berhenti",  
-"duration": "10 seconds",  
-"aspect_ratio": "9:16",  
-"reference_image": "Use the attached storyboard as visual master. Preserve the same characters, clothing, room design and claymation style from previous scenes.",  
-"timeline": \[  
-{"time":"0-2.5s","shot":"medium indoor","camera":"stable slight push-in","action":"The shaking has stopped. Mother and child carefully come out from under the table and check the room."},  
-{"time":"2.5-5s","shot":"medium toward doorway","camera":"gentle pan/reframe","action":"Mother calmly guides the child toward the open door in an orderly manner.","on_screen_text":"Setelah gempa berhenti..."},  
-{"time":"5-7.5s","shot":"outdoor wide-medium","camera":"smooth cut to exterior","action":"They arrive in a safe open area away from buildings, utility poles and large trees."},  
-{"time":"7.5-10s","shot":"wide hero shot","camera":"stable","action":"Mother stands beside child; child smiles and gives thumbs up. Show safety checklist.","on_screen_text":"Tetap tenang. Lindungi diri. Menuju tempat aman."}  
-\],  
-"checklist_sign": \["Jauhi bangunan","Jauhi tiang listrik","Jauhi pohon besar"\],  
-"voice_over": {"language":"Indonesian","script":"Setelah gempa berhenti, keluar dengan tertib menuju tempat terbuka dan tetap waspada terhadap gempa susulan."},  
-"sound_design": \["earthquake rumble fades out","soft indoor ambience","gentle footsteps","light outdoor breeze","calm birds"\],  
-"negative_prompt": \["leaving before shaking stops","unsafe position near buildings","severe destruction","injuries","panic running","dark scary ending","character drift","extra limbs","unreadable text"\],  
-"ending_frame": "Bright open safe area; mother stands calmly beside smiling child giving a thumbs up, with readable safety checklist."  
+{
+"scene": 3,
+"title": "Setelah Gempa Berhenti",
+"duration": "10 seconds",
+"aspect_ratio": "9:16",
+"reference_image": "Use the attached storyboard as visual master. Preserve the same characters, clothing, room design and claymation style from previous scenes.",
+"timeline": [
+{"time":"0-2.5s","shot":"medium indoor","camera":"stable slight push-in","action":"The shaking has stopped. Mother and child carefully come out from under the table and check the room."},
+{"time":"2.5-5s","shot":"medium toward doorway","camera":"gentle pan/reframe","action":"Mother calmly guides the child toward the open door in an orderly manner.","on_screen_text":"Setelah gempa berhenti..."},
+{"time":"5-7.5s","shot":"outdoor wide-medium","camera":"smooth cut to exterior","action":"They arrive in a safe open area away from buildings, utility poles and large trees."},
+{"time":"7.5-10s","shot":"wide hero shot","camera":"stable","action":"Mother stands beside child; child smiles and gives thumbs up. Show safety checklist.","on_screen_text":"Tetap tenang. Lindungi diri. Menuju tempat aman."}
+],
+"checklist_sign": ["Jauhi bangunan","Jauhi tiang listrik","Jauhi pohon besar"],
+"voice_over": {"language":"Indonesian","script":"Setelah gempa berhenti, keluar dengan tertib menuju tempat terbuka dan tetap waspada terhadap gempa susulan."},
+"sound_design": ["earthquake rumble fades out","soft indoor ambience","gentle footsteps","light outdoor breeze","calm birds"],
+"negative_prompt": ["leaving before shaking stops","unsafe position near buildings","severe destruction","injuries","panic running","dark scary ending","character drift","extra limbs","unreadable text"],
+"ending_frame": "Bright open safe area; mother stands calmly beside smiling child giving a thumbs up, with readable safety checklist."
 }
 
 LANGKAH 7
@@ -2539,65 +2664,65 @@ LANGKAH 2
 
 ## Tulis Script Hook → Klarifikasi → Takeaway
 
-FORMAT  
-Durasi total 30 detik; 3 scene × 10 detik; rasio 9:16; gaya handcrafted claymation; tone komedi-informatif.  
-  
-SCENE 1 — “LOWONGAN IMPIAN?” (0–10 detik)  
-Visual: Karakter utama melihat HP di pasar claymation. Di layar muncul “KUPAS BAWANG 1 KG = Rp700.000?!”. Ia kaget, langsung memakai apron, mengambil keranjang, lalu berlari membawa bawang. Warga ikut antre membawa karung bawang.  
-Dialog: “TUJUH RATUS RIBU SEKILO?!”  
-V.O.: “Jagat media sosial mendadak heboh! Upah kupas bawang disebut sampai tujuh ratus ribu rupiah per kilogram!”  
-Teks: “NETIZEN: DAFTARNYA DI MANA?!”  
-  
-SCENE 2 — “TERNYATA...” (10–20 detik)  
-Visual: Record scratch, semua freeze. Reporter clay muncul membawa kertas klarifikasi. Bawang bertransisi menjadi tumpukan kain majun dan mesin jahit. Papan informasi membandingkan “Rp700.000” dengan “Rp700/kg kain majun”.  
-Dialog karakter: “Lho... bukan tujuh ratus RIBU?”  
-Reporter: “Bukan...”  
-V.O.: “Tapi setelah ramai dibahas, muncul klarifikasi. Pekerjaannya disebut bukan mengupas bawang, melainkan menjahit kain majun dengan upah sekitar tujuh ratus rupiah per kilogram.”  
-  
-SCENE 3 — “JANGAN CUMA BACA YANG VIRAL” (20–30 detik)  
-Visual: Karakter menatap kalkulator dan 1 kg bawang. Angka Rp700.000 pecah menjadi tulisan “CEK KONTEKS!”. Karakter menatap kamera sambil memberi pesan cek fakta. Karakter lain bertanya, “Terus... lowongannya jadi nggak ada?” Semua menjawab, “NGGAK ADAAA!”  
-V.O.: “Sebelum buru-buru percaya sama informasi yang viral, cek fakta dan konteksnya dulu. Karena satu angka yang keliru bisa bikin satu Indonesia siap kupas bawang!”  
+FORMAT
+Durasi total 30 detik; 3 scene × 10 detik; rasio 9:16; gaya handcrafted claymation; tone komedi-informatif.
+
+SCENE 1 — “LOWONGAN IMPIAN?” (0–10 detik)
+Visual: Karakter utama melihat HP di pasar claymation. Di layar muncul “KUPAS BAWANG 1 KG = Rp700.000?!”. Ia kaget, langsung memakai apron, mengambil keranjang, lalu berlari membawa bawang. Warga ikut antre membawa karung bawang.
+Dialog: “TUJUH RATUS RIBU SEKILO?!”
+V.O.: “Jagat media sosial mendadak heboh! Upah kupas bawang disebut sampai tujuh ratus ribu rupiah per kilogram!”
+Teks: “NETIZEN: DAFTARNYA DI MANA?!”
+
+SCENE 2 — “TERNYATA...” (10–20 detik)
+Visual: Record scratch, semua freeze. Reporter clay muncul membawa kertas klarifikasi. Bawang bertransisi menjadi tumpukan kain majun dan mesin jahit. Papan informasi membandingkan “Rp700.000” dengan “Rp700/kg kain majun”.
+Dialog karakter: “Lho... bukan tujuh ratus RIBU?”
+Reporter: “Bukan...”
+V.O.: “Tapi setelah ramai dibahas, muncul klarifikasi. Pekerjaannya disebut bukan mengupas bawang, melainkan menjahit kain majun dengan upah sekitar tujuh ratus rupiah per kilogram.”
+
+SCENE 3 — “JANGAN CUMA BACA YANG VIRAL” (20–30 detik)
+Visual: Karakter menatap kalkulator dan 1 kg bawang. Angka Rp700.000 pecah menjadi tulisan “CEK KONTEKS!”. Karakter menatap kamera sambil memberi pesan cek fakta. Karakter lain bertanya, “Terus... lowongannya jadi nggak ada?” Semua menjawab, “NGGAK ADAAA!”
+V.O.: “Sebelum buru-buru percaya sama informasi yang viral, cek fakta dan konteksnya dulu. Karena satu angka yang keliru bisa bikin satu Indonesia siap kupas bawang!”
 Ending text: “VIRAL BOLEH, CEK FAKTA JANGAN LUPA!”
 
 LANGKAH 3
 
 ## Buat Storyboard 12 Panel
 
-Buat storyboard siap produksi untuk video claymation berita viral “Upah Kupas Bawang” berdurasi 30 detik.  
-  
-FORMAT  
-- Rasio 9:16 portrait.  
-- 3 scene × 10 detik.  
-- Setiap scene terdiri dari 4 panel/shot, total 12 panel.  
-- Gaya handcrafted claymation stop-motion, ekspresi besar, hangat, lucu, detail plastisin terlihat.  
-- Setiap panel wajib memiliki nomor, catatan produksi, shot, action/dialogue, dan bridge ke panel berikutnya.  
-  
-CHARACTER LOCK  
-Karakter utama: laki-laki clay, rambut hitam keriting, mata besar ekspresif, kemeja hijau; identitas, wajah, proporsi, warna pakaian, dan clay texture harus sama di seluruh panel.  
-Reporter: laki-laki clay berkacamata dengan vest berita dan mikrofon; desain harus konsisten pada Scene 2–3.  
-  
-SCENE 1 — LOWONGAN IMPIAN?  
-P1 close-up karakter melihat HP bertuliskan “KUPAS BAWANG 1 KG = Rp700.000?!”.  
-P2 medium shot karakter semangat memakai apron dan bergegas.  
-P3 wide shot berlari membawa keranjang bawang besar di pasar.  
-P4 wide group shot warga ikut antre dengan karung bawang; teks “NETIZEN: DAFTARNYA DI MANA?!”.  
-  
-SCENE 2 — TERNYATA...  
-P5 wide freeze frame + papan “EH... TUNGGU DULU!”.  
-P6 medium reporter membawa gulungan kertas klarifikasi.  
-P7 medium explanatory shot: bawang berubah menjadi kain majun; pekerja menjahit.  
-P8 medium infographic: “Rp700.000” diberi X, “Rp700/kg kain majun” diberi centang.  
-  
-SCENE 3 — JANGAN CUMA BACA YANG VIRAL  
-P9 medium karakter bingung dengan kalkulator dan keranjang 1 KG.  
-P10 close-up transformasi angka menjadi “CEK KONTEKS!”.  
-P11 medium hero shot: karakter mengangkat bawang dan mengajak cek fakta.  
-P12 wide group ending: “Terus... lowongannya jadi nggak ada?” → “NGGAK ADAAA!”.  
-  
-NEGATIVE  
-No photorealistic human, no 2D cartoon, no character drift, no extra limbs, no text gibberish, no wardrobe change, no flicker, no random background, no duplicate main character.  
-  
-OUTPUT  
+Buat storyboard siap produksi untuk video claymation berita viral “Upah Kupas Bawang” berdurasi 30 detik.
+
+FORMAT
+- Rasio 9:16 portrait.
+- 3 scene × 10 detik.
+- Setiap scene terdiri dari 4 panel/shot, total 12 panel.
+- Gaya handcrafted claymation stop-motion, ekspresi besar, hangat, lucu, detail plastisin terlihat.
+- Setiap panel wajib memiliki nomor, catatan produksi, shot, action/dialogue, dan bridge ke panel berikutnya.
+
+CHARACTER LOCK
+Karakter utama: laki-laki clay, rambut hitam keriting, mata besar ekspresif, kemeja hijau; identitas, wajah, proporsi, warna pakaian, dan clay texture harus sama di seluruh panel.
+Reporter: laki-laki clay berkacamata dengan vest berita dan mikrofon; desain harus konsisten pada Scene 2–3.
+
+SCENE 1 — LOWONGAN IMPIAN?
+P1 close-up karakter melihat HP bertuliskan “KUPAS BAWANG 1 KG = Rp700.000?!”.
+P2 medium shot karakter semangat memakai apron dan bergegas.
+P3 wide shot berlari membawa keranjang bawang besar di pasar.
+P4 wide group shot warga ikut antre dengan karung bawang; teks “NETIZEN: DAFTARNYA DI MANA?!”.
+
+SCENE 2 — TERNYATA...
+P5 wide freeze frame + papan “EH... TUNGGU DULU!”.
+P6 medium reporter membawa gulungan kertas klarifikasi.
+P7 medium explanatory shot: bawang berubah menjadi kain majun; pekerja menjahit.
+P8 medium infographic: “Rp700.000” diberi X, “Rp700/kg kain majun” diberi centang.
+
+SCENE 3 — JANGAN CUMA BACA YANG VIRAL
+P9 medium karakter bingung dengan kalkulator dan keranjang 1 KG.
+P10 close-up transformasi angka menjadi “CEK KONTEKS!”.
+P11 medium hero shot: karakter mengangkat bawang dan mengajak cek fakta.
+P12 wide group ending: “Terus... lowongannya jadi nggak ada?” → “NGGAK ADAAA!”.
+
+NEGATIVE
+No photorealistic human, no 2D cartoon, no character drift, no extra limbs, no text gibberish, no wardrobe change, no flicker, no random background, no duplicate main character.
+
+OUTPUT
 Storyboard production sheet yang mudah dipakai motion designer: 12 panel, informasi shot/action jelas, warna scene berbeda, dan technical notes 1080×1920, 25 fps, 30 detik.
 
 <img src="media/image12.png" style="width:3.54331in;height:6.29587in" />
@@ -2608,193 +2733,193 @@ LANGKAH 4
 
 ## Buat JSON Scene 1
 
-{  
-"title": "Scene 1 - Lowongan Impian",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"resolution": "1080x1920",  
-"fps": 25,  
-"reference_lock": {  
-"source": "uploaded storyboard Scene 1 panels 1-4",  
-"priority": "MAXIMUM",  
-"instruction": "Keep the same male clay character: curly black hair, large expressive eyes, green shirt, body proportions and handcrafted clay texture in every shot."  
-},  
-"visual_style": "cinematic handcrafted claymation stop-motion, warm miniature Indonesian market, tactile plasticine, playful comedy",  
-"timeline": \[  
-{  
-"time": "0.0-2.5s",  
-"shot": "close-up",  
-"camera": "slow push-in",  
-"action": "Character reads smartphone, eyes widen and jaw drops.",  
-"screen_text": "KUPAS BAWANG 1 KG = Rp700.000?!",  
-"dialogue": "TUJUH RATUS RIBU SEKILO?!"  
-},  
-{  
-"time": "2.5-5.0s",  
-"shot": "medium",  
-"camera": "fast tracking",  
-"action": "He quickly puts on a blue apron, grabs a woven basket and runs excitedly."  
-},  
-{  
-"time": "5.0-7.5s",  
-"shot": "wide tracking",  
-"camera": "track backward",  
-"action": "He runs through the market carrying a huge basket of red-purple onions; vendors react in surprise."  
-},  
-{  
-"time": "7.5-10.0s",  
-"shot": "wide group",  
-"camera": "quick pull-back",  
-"action": "A crowd appears carrying onion sacks as if applying for the job.",  
-"overlay_text": "NETIZEN: DAFTARNYA DI MANA?!"  
-}  
-\],  
-"voice_over": "Jagat media sosial mendadak heboh! Upah kupas bawang disebut sampai tujuh ratus ribu rupiah per kilogram!",  
-"negative_prompt": \[  
-"character drift",  
-"face morphing",  
-"wrong green shirt",  
-"extra limbs",  
-"random text",  
-"misspelled Indonesian text",  
-"camera flicker",  
-"lighting flicker"  
-\]  
+{
+"title": "Scene 1 - Lowongan Impian",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"resolution": "1080x1920",
+"fps": 25,
+"reference_lock": {
+"source": "uploaded storyboard Scene 1 panels 1-4",
+"priority": "MAXIMUM",
+"instruction": "Keep the same male clay character: curly black hair, large expressive eyes, green shirt, body proportions and handcrafted clay texture in every shot."
+},
+"visual_style": "cinematic handcrafted claymation stop-motion, warm miniature Indonesian market, tactile plasticine, playful comedy",
+"timeline": [
+{
+"time": "0.0-2.5s",
+"shot": "close-up",
+"camera": "slow push-in",
+"action": "Character reads smartphone, eyes widen and jaw drops.",
+"screen_text": "KUPAS BAWANG 1 KG = Rp700.000?!",
+"dialogue": "TUJUH RATUS RIBU SEKILO?!"
+},
+{
+"time": "2.5-5.0s",
+"shot": "medium",
+"camera": "fast tracking",
+"action": "He quickly puts on a blue apron, grabs a woven basket and runs excitedly."
+},
+{
+"time": "5.0-7.5s",
+"shot": "wide tracking",
+"camera": "track backward",
+"action": "He runs through the market carrying a huge basket of red-purple onions; vendors react in surprise."
+},
+{
+"time": "7.5-10.0s",
+"shot": "wide group",
+"camera": "quick pull-back",
+"action": "A crowd appears carrying onion sacks as if applying for the job.",
+"overlay_text": "NETIZEN: DAFTARNYA DI MANA?!"
+}
+],
+"voice_over": "Jagat media sosial mendadak heboh! Upah kupas bawang disebut sampai tujuh ratus ribu rupiah per kilogram!",
+"negative_prompt": [
+"character drift",
+"face morphing",
+"wrong green shirt",
+"extra limbs",
+"random text",
+"misspelled Indonesian text",
+"camera flicker",
+"lighting flicker"
+]
 }
 
 LANGKAH 5
 
 ## Buat JSON Scene 2
 
-{  
-"title": "Scene 2 - Ternyata...",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"resolution": "1080x1920",  
-"fps": 25,  
-"reference_lock": {  
-"source": "uploaded storyboard Scene 2 panels 5-8",  
-"priority": "MAXIMUM",  
-"instruction": "Continue directly from Scene 1; preserve the exact main character, reporter design, market palette and clay material."  
-},  
-"visual_style": "premium handcrafted claymation stop-motion, comedic clarification, warm cinematic miniature lighting",  
-"timeline": \[  
-{  
-"time": "0.0-2.2s",  
-"shot": "wide freeze-frame",  
-"camera": "slight push-in",  
-"action": "Everything freezes; a clay sign pops up.",  
-"on_screen_text": "EH... TUNGGU DULU!",  
-"sfx": "record scratch"  
-},  
-{  
-"time": "2.2-4.5s",  
-"shot": "medium",  
-"camera": "whip-pan",  
-"action": "Reporter with glasses and NEWS microphone enters and unrolls a clarification paper; question marks appear."  
-},  
-{  
-"time": "4.5-7.2s",  
-"shot": "medium explanatory",  
-"camera": "smooth transition",  
-"action": "Onions transform into folded kain majun; reveal a sewing workspace and worker sewing cloth.",  
-"on_screen_text": "KAIN MAJUN"  
-},  
-{  
-"time": "7.2-10.0s",  
-"shot": "medium infographic",  
-"camera": "subtle push-in",  
-"action": "Reporter points to board: Rp700.000 with red X, Rp700/kg kain majun with green check.",  
-"dialogue": "Karakter: Lho... bukan tujuh ratus ribu? Reporter: Bukan..."  
-}  
-\],  
-"voice_over": "Tapi setelah ramai dibahas, muncul klarifikasi. Pekerjaannya disebut bukan mengupas bawang, melainkan menjahit kain majun dengan upah sekitar tujuh ratus rupiah per kilogram.",  
-"negative_prompt": \[  
-"character drift",  
-"reporter redesign",  
-"photorealistic human",  
-"unreadable numbers",  
-"random text",  
-"extra limbs",  
-"background warping",  
-"flicker"  
-\]  
+{
+"title": "Scene 2 - Ternyata...",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"resolution": "1080x1920",
+"fps": 25,
+"reference_lock": {
+"source": "uploaded storyboard Scene 2 panels 5-8",
+"priority": "MAXIMUM",
+"instruction": "Continue directly from Scene 1; preserve the exact main character, reporter design, market palette and clay material."
+},
+"visual_style": "premium handcrafted claymation stop-motion, comedic clarification, warm cinematic miniature lighting",
+"timeline": [
+{
+"time": "0.0-2.2s",
+"shot": "wide freeze-frame",
+"camera": "slight push-in",
+"action": "Everything freezes; a clay sign pops up.",
+"on_screen_text": "EH... TUNGGU DULU!",
+"sfx": "record scratch"
+},
+{
+"time": "2.2-4.5s",
+"shot": "medium",
+"camera": "whip-pan",
+"action": "Reporter with glasses and NEWS microphone enters and unrolls a clarification paper; question marks appear."
+},
+{
+"time": "4.5-7.2s",
+"shot": "medium explanatory",
+"camera": "smooth transition",
+"action": "Onions transform into folded kain majun; reveal a sewing workspace and worker sewing cloth.",
+"on_screen_text": "KAIN MAJUN"
+},
+{
+"time": "7.2-10.0s",
+"shot": "medium infographic",
+"camera": "subtle push-in",
+"action": "Reporter points to board: Rp700.000 with red X, Rp700/kg kain majun with green check.",
+"dialogue": "Karakter: Lho... bukan tujuh ratus ribu? Reporter: Bukan..."
+}
+],
+"voice_over": "Tapi setelah ramai dibahas, muncul klarifikasi. Pekerjaannya disebut bukan mengupas bawang, melainkan menjahit kain majun dengan upah sekitar tujuh ratus rupiah per kilogram.",
+"negative_prompt": [
+"character drift",
+"reporter redesign",
+"photorealistic human",
+"unreadable numbers",
+"random text",
+"extra limbs",
+"background warping",
+"flicker"
+]
 }
 
 LANGKAH 6
 
 ## Buat JSON Scene 3
 
-{  
-"title": "Scene 3 - Jangan Cuma Baca yang Viral",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"resolution": "1080x1920",  
-"fps": 25,  
-"reference_lock": {  
-"source": "uploaded storyboard Scene 3 panels 9-12",  
-"priority": "MAXIMUM",  
-"instruction": "Preserve the exact same main character, reporter, market crowd, onions and handcrafted clay visual language from Scenes 1-2."  
-},  
-"visual_style": "premium handcrafted claymation stop-motion, funny educational fact-checking ending",  
-"timeline": \[  
-{  
-"time": "0.0-2.4s",  
-"shot": "medium",  
-"camera": "slow push-in",  
-"action": "Character looks doubtful at a 1 KG onion basket and calculator showing Rp700.000?.",  
-"background_text": "VIRAL ITU BELUM TENTU BENAR!"  
-},  
-{  
-"time": "2.4-4.5s",  
-"shot": "extreme close-up",  
-"camera": "fast punch-in",  
-"action": "The calculator value cracks into clay fragments and reforms as bold text.",  
-"on_screen_text": "CEK KONTEKS!"  
-},  
-{  
-"time": "4.5-7.4s",  
-"shot": "medium hero",  
-"camera": "smooth pull-back",  
-"action": "Character faces camera holding an onion and raises one finger.",  
-"dialogue": "Sebelum percaya, cek fakta dulu, yuk!"  
-},  
-{  
-"time": "7.4-10.0s",  
-"shot": "wide ensemble",  
-"camera": "quick pull-back",  
-"action": "Supporting character asks about the job; crowd answers together and laughs.",  
-"dialogue": "Terus... lowongannya jadi nggak ada? — NGGAK ADAAA!",  
-"ending_text": "VIRAL BOLEH, CEK FAKTA JANGAN LUPA!"  
-}  
-\],  
-"voice_over": "Sebelum buru-buru percaya sama informasi yang viral, cek fakta dan konteksnya dulu. Karena satu angka yang keliru bisa bikin satu Indonesia siap kupas bawang!",  
-"negative_prompt": \[  
-"character drift",  
-"face morphing",  
-"duplicate main character",  
-"extra limbs",  
-"incorrect calculator numbers",  
-"unreadable text",  
-"random subtitles",  
-"camera flicker",  
-"lighting flicker"  
-\]  
+{
+"title": "Scene 3 - Jangan Cuma Baca yang Viral",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"resolution": "1080x1920",
+"fps": 25,
+"reference_lock": {
+"source": "uploaded storyboard Scene 3 panels 9-12",
+"priority": "MAXIMUM",
+"instruction": "Preserve the exact same main character, reporter, market crowd, onions and handcrafted clay visual language from Scenes 1-2."
+},
+"visual_style": "premium handcrafted claymation stop-motion, funny educational fact-checking ending",
+"timeline": [
+{
+"time": "0.0-2.4s",
+"shot": "medium",
+"camera": "slow push-in",
+"action": "Character looks doubtful at a 1 KG onion basket and calculator showing Rp700.000?.",
+"background_text": "VIRAL ITU BELUM TENTU BENAR!"
+},
+{
+"time": "2.4-4.5s",
+"shot": "extreme close-up",
+"camera": "fast punch-in",
+"action": "The calculator value cracks into clay fragments and reforms as bold text.",
+"on_screen_text": "CEK KONTEKS!"
+},
+{
+"time": "4.5-7.4s",
+"shot": "medium hero",
+"camera": "smooth pull-back",
+"action": "Character faces camera holding an onion and raises one finger.",
+"dialogue": "Sebelum percaya, cek fakta dulu, yuk!"
+},
+{
+"time": "7.4-10.0s",
+"shot": "wide ensemble",
+"camera": "quick pull-back",
+"action": "Supporting character asks about the job; crowd answers together and laughs.",
+"dialogue": "Terus... lowongannya jadi nggak ada? — NGGAK ADAAA!",
+"ending_text": "VIRAL BOLEH, CEK FAKTA JANGAN LUPA!"
+}
+],
+"voice_over": "Sebelum buru-buru percaya sama informasi yang viral, cek fakta dan konteksnya dulu. Karena satu angka yang keliru bisa bikin satu Indonesia siap kupas bawang!",
+"negative_prompt": [
+"character drift",
+"face morphing",
+"duplicate main character",
+"extra limbs",
+"incorrect calculator numbers",
+"unreadable text",
+"random subtitles",
+"camera flicker",
+"lighting flicker"
+]
 }
 
 LANGKAH 7
 
 ## Siapkan Caption Distribusi
 
-Viral katanya kupas bawang 1 kg bisa dapat Rp700 ribu?! 😱🧅  
-  
-Eits… jangan buru-buru pindah profesi dulu 😆  
-Ternyata ada konteks yang perlu diluruskan.  
-  
-Pelajaran hari ini: viral boleh, tapi cek fakta dan konteks jangan lupa! 🔍✨  
-  
-Kalau benar Rp700 ribu/kg, siapa yang langsung daftar kupas bawang? 😂  
-  
+Viral katanya kupas bawang 1 kg bisa dapat Rp700 ribu?! 😱🧅
+
+Eits… jangan buru-buru pindah profesi dulu 😆
+Ternyata ada konteks yang perlu diluruskan.
+
+Pelajaran hari ini: viral boleh, tapi cek fakta dan konteks jangan lupa! 🔍✨
+
+Kalau benar Rp700 ribu/kg, siapa yang langsung daftar kupas bawang? 😂
+
 \#Claymation \#AnimasiIndonesia \#BeritaViral \#ViralTikTok \#CekFakta \#KupasBawang \#FYPIndonesia \#AnimasiLucu \#StopMotion
 
 <table>
@@ -2877,73 +3002,73 @@ LANGKAH 3
 
 ## Tulis Script 3 Scene
 
-FORMAT  
-Durasi total 30 detik; 3 scene × 10 detik; rasio 16:9; target usia 5–8 tahun; premium stylized 3D family animation.  
-  
-SCENE 1 — NARA KEHILANGAN KEPERCAYAAN DIRI (0–10 detik)  
-Lokasi: panggung latihan kecil di taman hutan.  
-Visual: Nara bernyanyi dengan gembira. Saat mencoba nada tinggi, suaranya fals. Dua burung kecil tertawa ringan. Nara berhenti, sayapnya turun, matanya berkaca-kaca, lalu terbang ke dahan dan menyendiri.  
-Nara: “Laaa… laaa… la—!”  
-Narator: “Nara suka bernyanyi… sampai suatu hari ia takut suaranya tidak cukup bagus.”  
-  
-SCENE 2 — KIKO MENGUATKAN NARA (10–20 detik)  
-Lokasi: di bawah pohon besar saat sore hari.  
-Visual: Kiko datang membawa bunga, melihat Nara murung, lalu mengajaknya mencoba lagi tanpa memaksa.  
-Kiko: “Nara… mau coba bernyanyi sekali lagi?”  
-Nara: “Aku takut salah lagi.”  
-Kiko: “Tidak apa-apa kalau salah. Aku akan mendengarkan.”  
-Nara mulai menyanyi pelan: “Laaa…”  
-Kiko: “Bagus! Coba lagi!”  
-  
-SCENE 3 — NARA BERANI BERNYANYI (20–30 detik)  
-Lokasi: Festival Pelangi pada malam hari.  
-Visual: Nara gugup di panggung. Kiko berada di penonton dan mengangkat dua jempol. Nara menarik napas, bernyanyi lebih percaya diri, lalu penonton bertepuk tangan.  
-Kiko: “Kamu bisa, Nara!”  
-Nara: “Laaa… la-la-laaa!”  
-Nara: “Terima kasih, Kiko!”  
-Kiko: “Selalu!”  
+FORMAT
+Durasi total 30 detik; 3 scene × 10 detik; rasio 16:9; target usia 5–8 tahun; premium stylized 3D family animation.
+
+SCENE 1 — NARA KEHILANGAN KEPERCAYAAN DIRI (0–10 detik)
+Lokasi: panggung latihan kecil di taman hutan.
+Visual: Nara bernyanyi dengan gembira. Saat mencoba nada tinggi, suaranya fals. Dua burung kecil tertawa ringan. Nara berhenti, sayapnya turun, matanya berkaca-kaca, lalu terbang ke dahan dan menyendiri.
+Nara: “Laaa… laaa… la—!”
+Narator: “Nara suka bernyanyi… sampai suatu hari ia takut suaranya tidak cukup bagus.”
+
+SCENE 2 — KIKO MENGUATKAN NARA (10–20 detik)
+Lokasi: di bawah pohon besar saat sore hari.
+Visual: Kiko datang membawa bunga, melihat Nara murung, lalu mengajaknya mencoba lagi tanpa memaksa.
+Kiko: “Nara… mau coba bernyanyi sekali lagi?”
+Nara: “Aku takut salah lagi.”
+Kiko: “Tidak apa-apa kalau salah. Aku akan mendengarkan.”
+Nara mulai menyanyi pelan: “Laaa…”
+Kiko: “Bagus! Coba lagi!”
+
+SCENE 3 — NARA BERANI BERNYANYI (20–30 detik)
+Lokasi: Festival Pelangi pada malam hari.
+Visual: Nara gugup di panggung. Kiko berada di penonton dan mengangkat dua jempol. Nara menarik napas, bernyanyi lebih percaya diri, lalu penonton bertepuk tangan.
+Kiko: “Kamu bisa, Nara!”
+Nara: “Laaa… la-la-laaa!”
+Nara: “Terima kasih, Kiko!”
+Kiko: “Selalu!”
 Ending message: “Sahabat membuat kita lebih berani.”
 
 LANGKAH 4
 
 ## Buat Character Sheet Nara
 
-Buat character sheet detail Nara, seekor burung kenari kecil yang lucu dan suka bernyanyi, untuk serial animasi anak usia 5–8 tahun.  
-  
-CHARACTER DESIGN  
-- spesies: young canary / burung kenari muda  
-- tubuh kecil, bulat, fluffy, child-friendly  
-- bulu utama kuning cerah  
-- bulu sayap, jambul, dan ekor berlapis warna coral, pink, orange, yellow, mint, dan teal  
-- mata cokelat besar, ekspresif, bulu mata lembut  
-- paruh kecil warna orange  
-- aksesori konsisten: pita leher teal, liontin not musik emas, flower festival badge  
-- properti utama: microphone berbentuk bunga warna pink dengan gagang emas  
-  
-9 ANGLE  
-1. front  
-2. front 3/4 left  
-3. left side  
-4. back 3/4 left  
-5. back  
-6. back 3/4 right  
-7. right side  
-8. front 3/4 right  
-9. dynamic singing pose  
-  
-DETAIL PROPERTIES  
-Flower microphone, music-note charm, festival ribbon badge, feet/claws close-up, beak close-up, wing feather close-up, tail feather pattern, color/material reference.  
-  
-EXPRESSIONS  
-Happy singing, shy/nervous, sad, determined, surprised, laughing/joyful.  
-  
-STYLE & OUTPUT  
-Premium stylized 3D animated feature-film character sheet, soft detailed feathers, warm clean studio light, professional infographic layout, child-friendly, high resolution, ratio 16:9.  
-  
-CHARACTER LOCK  
-Keep Nara exactly the same in every angle: face shape, eye shape/color, crest, beak, body proportion, feather palette, accessories, badge, and microphone.  
-  
-NEGATIVE  
+Buat character sheet detail Nara, seekor burung kenari kecil yang lucu dan suka bernyanyi, untuk serial animasi anak usia 5–8 tahun.
+
+CHARACTER DESIGN
+- spesies: young canary / burung kenari muda
+- tubuh kecil, bulat, fluffy, child-friendly
+- bulu utama kuning cerah
+- bulu sayap, jambul, dan ekor berlapis warna coral, pink, orange, yellow, mint, dan teal
+- mata cokelat besar, ekspresif, bulu mata lembut
+- paruh kecil warna orange
+- aksesori konsisten: pita leher teal, liontin not musik emas, flower festival badge
+- properti utama: microphone berbentuk bunga warna pink dengan gagang emas
+
+9 ANGLE
+1. front
+2. front 3/4 left
+3. left side
+4. back 3/4 left
+5. back
+6. back 3/4 right
+7. right side
+8. front 3/4 right
+9. dynamic singing pose
+
+DETAIL PROPERTIES
+Flower microphone, music-note charm, festival ribbon badge, feet/claws close-up, beak close-up, wing feather close-up, tail feather pattern, color/material reference.
+
+EXPRESSIONS
+Happy singing, shy/nervous, sad, determined, surprised, laughing/joyful.
+
+STYLE & OUTPUT
+Premium stylized 3D animated feature-film character sheet, soft detailed feathers, warm clean studio light, professional infographic layout, child-friendly, high resolution, ratio 16:9.
+
+CHARACTER LOCK
+Keep Nara exactly the same in every angle: face shape, eye shape/color, crest, beak, body proportion, feather palette, accessories, badge, and microphone.
+
+NEGATIVE
 No character drift, no extra wings/legs, no photorealistic bird anatomy, no color changes, no accessory changes, no deformed beak, no random text, no watermark.
 
 Contoh output: character sheet Nara — 9 angle, detail properti, pola bulu, dan ekspresi.
@@ -2970,41 +3095,41 @@ LANGKAH 5
 
 ## Buat Character Sheet Kiko
 
-Buat character sheet detail Kiko, anak beruang yang tidak pandai bernyanyi tetapi sangat suportif, hangat, dan selalu menyemangati Nara.  
-  
-CHARACTER DESIGN  
-- spesies: cute young bear cub  
-- tubuh kecil, chubby, rounded, child-friendly  
-- plush medium-brown fur dengan muzzle dan belly beige  
-- mata cokelat besar, pipi kemerahan, hidung kecil cokelat gelap  
-- telinga bulat dan jambul rambut kecil  
-- aksesori konsisten: teal neckerchief dan friendship badge berbentuk bintang  
-- properti pendukung: bouquet bunga pink/kuning sebagai simbol dukungan  
-  
-9 ANGLE  
-1. front  
-2. front 3/4 left  
-3. left side  
-4. back 3/4 left  
-5. back  
-6. back 3/4 right  
-7. right side  
-8. front 3/4 right  
-9. dynamic cheering pose  
-  
-DETAIL PROPERTIES  
-Flower gift, friendship badge, neckerchief/scarf, paws/claws, nose close-up, tail/fur close-up.  
-  
-EXPRESSIONS  
-Supportive smile, shy/embarrassed, worried for friend, determined, surprised, laughing/cheering.  
-  
-STYLE & OUTPUT  
-Premium stylized 3D animated feature-film character sheet, plush detailed fur, warm clean studio lighting, professional infographic layout, ratio 16:9.  
-  
-CHARACTER LOCK  
-Keep Kiko exactly identical across all angles: head/body proportion, fur color, muzzle, eyes, nose, ear shape, hair tuft, teal neckerchief, and friendship badge.  
-  
-NEGATIVE  
+Buat character sheet detail Kiko, anak beruang yang tidak pandai bernyanyi tetapi sangat suportif, hangat, dan selalu menyemangati Nara.
+
+CHARACTER DESIGN
+- spesies: cute young bear cub
+- tubuh kecil, chubby, rounded, child-friendly
+- plush medium-brown fur dengan muzzle dan belly beige
+- mata cokelat besar, pipi kemerahan, hidung kecil cokelat gelap
+- telinga bulat dan jambul rambut kecil
+- aksesori konsisten: teal neckerchief dan friendship badge berbentuk bintang
+- properti pendukung: bouquet bunga pink/kuning sebagai simbol dukungan
+
+9 ANGLE
+1. front
+2. front 3/4 left
+3. left side
+4. back 3/4 left
+5. back
+6. back 3/4 right
+7. right side
+8. front 3/4 right
+9. dynamic cheering pose
+
+DETAIL PROPERTIES
+Flower gift, friendship badge, neckerchief/scarf, paws/claws, nose close-up, tail/fur close-up.
+
+EXPRESSIONS
+Supportive smile, shy/embarrassed, worried for friend, determined, surprised, laughing/cheering.
+
+STYLE & OUTPUT
+Premium stylized 3D animated feature-film character sheet, plush detailed fur, warm clean studio lighting, professional infographic layout, ratio 16:9.
+
+CHARACTER LOCK
+Keep Kiko exactly identical across all angles: head/body proportion, fur color, muzzle, eyes, nose, ear shape, hair tuft, teal neckerchief, and friendship badge.
+
+NEGATIVE
 No character drift, no fur-color shift, no wardrobe change, no extra limbs, no deformed paws, no aggressive expression, no photorealistic bear anatomy, no random text, no watermark.
 
 Contoh output: character sheet Kiko — 9 angle, properti dukungan, detail fur, dan ekspresi.
@@ -3031,38 +3156,38 @@ LANGKAH 6
 
 ## Buat Storyboard 12 Panel
 
-Buat storyboard “Ketika Nara Kehilangan Suaranya” berdasarkan script approved.  
-  
-REFERENCE  
-Image 1 = character sheet Nara.  
-Image 2 = character sheet Kiko.  
-Gunakan keduanya sebagai identity master.  
-  
-FORMAT  
-Durasi 30 detik; 3 scene × 10 detik; setiap scene 4 panel; total 12 panel; rasio 16:9; premium stylized 3D family animation; warm, expressive, cinematic, child-friendly.  
-  
-SCENE 1 — NARA KEHILANGAN KEPERCAYAAN DIRI  
-P1 wide/medium: Nara latihan bernyanyi di panggung hutan.  
-P2 medium close-up: nada Nara fals; dua burung kecil tertawa ringan.  
-P3 close-up emosional: Nara malu dan sedih.  
-P4 wide: Nara memilih menyendiri di dahan pohon.  
-  
-SCENE 2 — KIKO MENGUATKAN NARA  
-P5 wide: Kiko datang menghampiri Nara di bawah pohon.  
-P6 medium two-shot: Kiko bertanya “Mau coba lagi?”; Nara menjawab “Aku takut salah lagi.”  
-P7 close-up Kiko: “Tidak apa-apa kalau salah. Aku akan mendengarkan.”  
-P8 medium two-shot: Nara mencoba bernyanyi lagi; Kiko memberi semangat.  
-  
-SCENE 3 — NARA BERANI TAMPIL  
-P9 wide establishing: Festival Pelangi malam hari.  
-P10 over-shoulder: Kiko di penonton memberi dua jempol dan berkata “Kamu bisa, Nara!”  
-P11 hero performance: Nara membuka sayap dan bernyanyi dengan berani.  
-P12 warm two-shot: Nara dan Kiko tersenyum; pesan akhir “Sahabat membuat kita lebih berani.”  
-  
-CONTINUITY LOCK  
-Nara dan Kiko harus sama dengan character sheet pada semua panel. Jaga aksesori, warna, body scale, arah pandang, lighting world, serta lokasi yang konsisten.  
-  
-NEGATIVE  
+Buat storyboard “Ketika Nara Kehilangan Suaranya” berdasarkan script approved.
+
+REFERENCE
+Image 1 = character sheet Nara.
+Image 2 = character sheet Kiko.
+Gunakan keduanya sebagai identity master.
+
+FORMAT
+Durasi 30 detik; 3 scene × 10 detik; setiap scene 4 panel; total 12 panel; rasio 16:9; premium stylized 3D family animation; warm, expressive, cinematic, child-friendly.
+
+SCENE 1 — NARA KEHILANGAN KEPERCAYAAN DIRI
+P1 wide/medium: Nara latihan bernyanyi di panggung hutan.
+P2 medium close-up: nada Nara fals; dua burung kecil tertawa ringan.
+P3 close-up emosional: Nara malu dan sedih.
+P4 wide: Nara memilih menyendiri di dahan pohon.
+
+SCENE 2 — KIKO MENGUATKAN NARA
+P5 wide: Kiko datang menghampiri Nara di bawah pohon.
+P6 medium two-shot: Kiko bertanya “Mau coba lagi?”; Nara menjawab “Aku takut salah lagi.”
+P7 close-up Kiko: “Tidak apa-apa kalau salah. Aku akan mendengarkan.”
+P8 medium two-shot: Nara mencoba bernyanyi lagi; Kiko memberi semangat.
+
+SCENE 3 — NARA BERANI TAMPIL
+P9 wide establishing: Festival Pelangi malam hari.
+P10 over-shoulder: Kiko di penonton memberi dua jempol dan berkata “Kamu bisa, Nara!”
+P11 hero performance: Nara membuka sayap dan bernyanyi dengan berani.
+P12 warm two-shot: Nara dan Kiko tersenyum; pesan akhir “Sahabat membuat kita lebih berani.”
+
+CONTINUITY LOCK
+Nara dan Kiko harus sama dengan character sheet pada semua panel. Jaga aksesori, warna, body scale, arah pandang, lighting world, serta lokasi yang konsisten.
+
+NEGATIVE
 No character redesign, no duplicate Nara/Kiko, no extra limbs/wings, no inconsistent accessories, no scary expressions, no bullying visual, no text gibberish, no watermark.
 
 Contoh output: storyboard 30 detik — 3 scene × 4 panel, lengkap dengan emotional arc dan continuity.
@@ -3089,190 +3214,190 @@ LANGKAH 7
 
 ## Buat JSON Scene 1
 
-{  
-"title": "Ketika Nara Kehilangan Suaranya - Scene 1",  
-"scene": 1,  
-"duration_seconds": 10,  
-"aspect_ratio": "16:9",  
-"fps": 24,  
-"style": "premium stylized 3D family animation, cinematic feature-film quality, soft detailed feathers, warm forest lighting",  
-"reference_lock": "Use storyboard panels 1-4 as shot reference and Nara character sheet as strict identity master. Preserve face, eye shape, crest, rainbow feather palette, teal ribbon, music-note pendant, flower badge and flower microphone.",  
-"timeline": \[  
-{  
-"time": "0.0-2.5s",  
-"shot": "wide to medium-wide",  
-"camera": "gentle dolly-in",  
-"action": "Nara sings happily on a small wooden forest stage, swaying and opening her wings slightly.",  
-"voice": "Nara sings: 'Laaa... la-la-laaa...'"  
-},  
-{  
-"time": "2.5-5.0s",  
-"shot": "medium close-up",  
-"camera": "subtle push-in + rack focus",  
-"action": "Nara attempts a high note that becomes slightly off-key; two little birds in the background giggle softly.",  
-"dialogue": "Birds: 'Hihihi!'"  
-},  
-{  
-"time": "5.0-7.5s",  
-"shot": "emotional close-up",  
-"camera": "slow dolly-in",  
-"action": "Nara lowers the microphone; eyes become watery, wings droop, expression shifts from confident to embarrassed and sad."  
-},  
-{  
-"time": "7.5-10.0s",  
-"shot": "wide cinematic",  
-"camera": "smooth tracking then slow pull-back",  
-"action": "Nara flies to a nearby branch and sits alone with head lowered.",  
-"narration": "Nara suka bernyanyi... sampai suatu hari ia takut suaranya tidak cukup bagus."  
-}  
-\],  
-"audio": "playful orchestral opening -\> awkward soft pause -\> gentle emotional piano and strings",  
-"negative_prompt": \[  
-"character redesign",  
-"Nara color change",  
-"accessory change",  
-"duplicate Nara",  
-"extra wings",  
-"deformed beak",  
-"scary bullying",  
-"text overlay",  
-"watermark",  
-"camera shake",  
-"flicker",  
-"temporal morphing"  
-\],  
-"ending_frame": "Nara sits alone on the branch in warm golden forest light, ready for Kiko to approach in Scene 2."  
+{
+"title": "Ketika Nara Kehilangan Suaranya - Scene 1",
+"scene": 1,
+"duration_seconds": 10,
+"aspect_ratio": "16:9",
+"fps": 24,
+"style": "premium stylized 3D family animation, cinematic feature-film quality, soft detailed feathers, warm forest lighting",
+"reference_lock": "Use storyboard panels 1-4 as shot reference and Nara character sheet as strict identity master. Preserve face, eye shape, crest, rainbow feather palette, teal ribbon, music-note pendant, flower badge and flower microphone.",
+"timeline": [
+{
+"time": "0.0-2.5s",
+"shot": "wide to medium-wide",
+"camera": "gentle dolly-in",
+"action": "Nara sings happily on a small wooden forest stage, swaying and opening her wings slightly.",
+"voice": "Nara sings: 'Laaa... la-la-laaa...'"
+},
+{
+"time": "2.5-5.0s",
+"shot": "medium close-up",
+"camera": "subtle push-in + rack focus",
+"action": "Nara attempts a high note that becomes slightly off-key; two little birds in the background giggle softly.",
+"dialogue": "Birds: 'Hihihi!'"
+},
+{
+"time": "5.0-7.5s",
+"shot": "emotional close-up",
+"camera": "slow dolly-in",
+"action": "Nara lowers the microphone; eyes become watery, wings droop, expression shifts from confident to embarrassed and sad."
+},
+{
+"time": "7.5-10.0s",
+"shot": "wide cinematic",
+"camera": "smooth tracking then slow pull-back",
+"action": "Nara flies to a nearby branch and sits alone with head lowered.",
+"narration": "Nara suka bernyanyi... sampai suatu hari ia takut suaranya tidak cukup bagus."
+}
+],
+"audio": "playful orchestral opening -> awkward soft pause -> gentle emotional piano and strings",
+"negative_prompt": [
+"character redesign",
+"Nara color change",
+"accessory change",
+"duplicate Nara",
+"extra wings",
+"deformed beak",
+"scary bullying",
+"text overlay",
+"watermark",
+"camera shake",
+"flicker",
+"temporal morphing"
+],
+"ending_frame": "Nara sits alone on the branch in warm golden forest light, ready for Kiko to approach in Scene 2."
 }
 
 LANGKAH 8
 
 ## Buat JSON Scene 2
 
-{  
-"title": "Ketika Nara Kehilangan Suaranya - Scene 2",  
-"scene": 2,  
-"duration_seconds": 10,  
-"aspect_ratio": "16:9",  
-"fps": 24,  
-"style": "premium stylized 3D family animation, warm late-afternoon light, emotionally gentle and hopeful",  
-"reference_lock": "Use storyboard panels 5-8 plus Nara and Kiko character sheets. Keep both characters exactly consistent in face, body proportion, feather/fur color and accessories.",  
-"timeline": \[  
-{  
-"time": "0.0-2.2s",  
-"shot": "wide establishing",  
-"camera": "slow dolly-in",  
-"action": "Nara sits sadly on a low branch. Kiko walks in below carrying a small bouquet and looks up with concern."  
-},  
-{  
-"time": "2.2-4.7s",  
-"shot": "medium two-shot",  
-"camera": "gentle upward framing",  
-"action": "Kiko invites Nara to try again; Nara hugs the microphone close and hesitates.",  
-"dialogue": "Kiko: 'Nara... mau coba bernyanyi sekali lagi?' Nara: 'Aku takut salah lagi.'"  
-},  
-{  
-"time": "4.7-7.2s",  
-"shot": "medium close-up Kiko",  
-"camera": "slow emotional push-in",  
-"action": "Kiko places one paw on his chest and reassures Nara.",  
-"dialogue": "Kiko: 'Tidak apa-apa kalau salah. Aku akan mendengarkan.'"  
-},  
-{  
-"time": "7.2-10.0s",  
-"shot": "medium two-shot",  
-"camera": "slow arc + push-in",  
-"action": "Nara breathes and sings one soft note. Kiko waits until she finishes, then claps gently.",  
-"dialogue": "Nara: 'Laaa...' Kiko: 'Bagus! Coba lagi!'"  
-}  
-\],  
-"performance": "Nara progresses from withdrawn -\> hesitant eye contact -\> careful attempt -\> small smile. Kiko remains patient, open and never forces her.",  
-"negative_prompt": \[  
-"character drift",  
-"fur or feather color shift",  
-"extra limbs",  
-"wrong accessories",  
-"aggressive behavior",  
-"exaggerated crying",  
-"random background characters",  
-"speech bubbles",  
-"subtitles",  
-"watermark",  
-"flicker"  
-\],  
-"ending_frame": "Nara gives Kiko a small grateful smile after successfully singing a note; warm light becomes slightly brighter."  
+{
+"title": "Ketika Nara Kehilangan Suaranya - Scene 2",
+"scene": 2,
+"duration_seconds": 10,
+"aspect_ratio": "16:9",
+"fps": 24,
+"style": "premium stylized 3D family animation, warm late-afternoon light, emotionally gentle and hopeful",
+"reference_lock": "Use storyboard panels 5-8 plus Nara and Kiko character sheets. Keep both characters exactly consistent in face, body proportion, feather/fur color and accessories.",
+"timeline": [
+{
+"time": "0.0-2.2s",
+"shot": "wide establishing",
+"camera": "slow dolly-in",
+"action": "Nara sits sadly on a low branch. Kiko walks in below carrying a small bouquet and looks up with concern."
+},
+{
+"time": "2.2-4.7s",
+"shot": "medium two-shot",
+"camera": "gentle upward framing",
+"action": "Kiko invites Nara to try again; Nara hugs the microphone close and hesitates.",
+"dialogue": "Kiko: 'Nara... mau coba bernyanyi sekali lagi?' Nara: 'Aku takut salah lagi.'"
+},
+{
+"time": "4.7-7.2s",
+"shot": "medium close-up Kiko",
+"camera": "slow emotional push-in",
+"action": "Kiko places one paw on his chest and reassures Nara.",
+"dialogue": "Kiko: 'Tidak apa-apa kalau salah. Aku akan mendengarkan.'"
+},
+{
+"time": "7.2-10.0s",
+"shot": "medium two-shot",
+"camera": "slow arc + push-in",
+"action": "Nara breathes and sings one soft note. Kiko waits until she finishes, then claps gently.",
+"dialogue": "Nara: 'Laaa...' Kiko: 'Bagus! Coba lagi!'"
+}
+],
+"performance": "Nara progresses from withdrawn -> hesitant eye contact -> careful attempt -> small smile. Kiko remains patient, open and never forces her.",
+"negative_prompt": [
+"character drift",
+"fur or feather color shift",
+"extra limbs",
+"wrong accessories",
+"aggressive behavior",
+"exaggerated crying",
+"random background characters",
+"speech bubbles",
+"subtitles",
+"watermark",
+"flicker"
+],
+"ending_frame": "Nara gives Kiko a small grateful smile after successfully singing a note; warm light becomes slightly brighter."
 }
 
 LANGKAH 9
 
 ## Buat JSON Scene 3
 
-{  
-"title": "Ketika Nara Kehilangan Suaranya - Scene 3",  
-"scene": 3,  
-"duration_seconds": 10,  
-"aspect_ratio": "16:9",  
-"fps": 24,  
-"style": "premium stylized 3D family animation, magical Festival Pelangi at night, warm lanterns and rainbow lighting",  
-"reference_lock": "Use storyboard panels 9-12 plus approved Nara and Kiko character sheets. Keep all signature features and accessories unchanged.",  
-"timeline": \[  
-{  
-"time": "0.0-2.3s",  
-"shot": "wide establishing",  
-"camera": "slow crane-down + dolly-in",  
-"action": "Festival Pelangi glows at night. Nara stands alone at center stage, nervous but determined."  
-},  
-{  
-"time": "2.3-4.5s",  
-"shot": "over-the-shoulder from Nara",  
-"camera": "rack focus to Kiko",  
-"action": "Kiko in the front audience raises both thumbs and smiles.",  
-"dialogue": "Kiko: 'Kamu bisa, Nara!'"  
-},  
-{  
-"time": "4.5-7.8s",  
-"shot": "hero medium-wide",  
-"camera": "smooth push-in + gentle arc",  
-"action": "Nara takes a breath, opens her colorful wings and sings with growing confidence; audience begins clapping.",  
-"dialogue": "Nara: 'Laaa... la-la-laaa!'"  
-},  
-{  
-"time": "7.8-10.0s",  
-"shot": "warm emotional two-shot",  
-"camera": "gentle dolly-in",  
-"action": "Nara smiles gratefully at Kiko; Kiko claps proudly under warm festival bokeh.",  
-"dialogue": "Nara: 'Terima kasih, Kiko!' Kiko: 'Selalu!'"  
-}  
-\],  
-"audio": "magical orchestral anticipation -\> hopeful rise -\> uplifting performance -\> warm emotional resolution",  
-"negative_prompt": \[  
-"character redesign",  
-"wrong feather or fur colors",  
-"duplicate Nara/Kiko",  
-"extra limbs or wings",  
-"photorealistic anatomy",  
-"scary audience",  
-"chaotic crowd",  
-"random text",  
-"subtitles",  
-"watermark",  
-"camera shake",  
-"flicker"  
-\],  
-"ending_frame": "Nara and Kiko exchange a warm happy look while the audience applauds; hold briefly for end title."  
+{
+"title": "Ketika Nara Kehilangan Suaranya - Scene 3",
+"scene": 3,
+"duration_seconds": 10,
+"aspect_ratio": "16:9",
+"fps": 24,
+"style": "premium stylized 3D family animation, magical Festival Pelangi at night, warm lanterns and rainbow lighting",
+"reference_lock": "Use storyboard panels 9-12 plus approved Nara and Kiko character sheets. Keep all signature features and accessories unchanged.",
+"timeline": [
+{
+"time": "0.0-2.3s",
+"shot": "wide establishing",
+"camera": "slow crane-down + dolly-in",
+"action": "Festival Pelangi glows at night. Nara stands alone at center stage, nervous but determined."
+},
+{
+"time": "2.3-4.5s",
+"shot": "over-the-shoulder from Nara",
+"camera": "rack focus to Kiko",
+"action": "Kiko in the front audience raises both thumbs and smiles.",
+"dialogue": "Kiko: 'Kamu bisa, Nara!'"
+},
+{
+"time": "4.5-7.8s",
+"shot": "hero medium-wide",
+"camera": "smooth push-in + gentle arc",
+"action": "Nara takes a breath, opens her colorful wings and sings with growing confidence; audience begins clapping.",
+"dialogue": "Nara: 'Laaa... la-la-laaa!'"
+},
+{
+"time": "7.8-10.0s",
+"shot": "warm emotional two-shot",
+"camera": "gentle dolly-in",
+"action": "Nara smiles gratefully at Kiko; Kiko claps proudly under warm festival bokeh.",
+"dialogue": "Nara: 'Terima kasih, Kiko!' Kiko: 'Selalu!'"
+}
+],
+"audio": "magical orchestral anticipation -> hopeful rise -> uplifting performance -> warm emotional resolution",
+"negative_prompt": [
+"character redesign",
+"wrong feather or fur colors",
+"duplicate Nara/Kiko",
+"extra limbs or wings",
+"photorealistic anatomy",
+"scary audience",
+"chaotic crowd",
+"random text",
+"subtitles",
+"watermark",
+"camera shake",
+"flicker"
+],
+"ending_frame": "Nara and Kiko exchange a warm happy look while the audience applauds; hold briefly for end title."
 }
 
 LANGKAH 10
 
 ## Buat Caption Distribusi
 
-Kadang kita cuma butuh satu sahabat yang bilang, “Kamu bisa.” 🥹💛  
-  
-Nara sempat kehilangan keberanian untuk bernyanyi setelah melakukan kesalahan. Tapi Kiko tetap ada di sampingnya, mendengarkan, menyemangati, dan membantu Nara berani mencoba lagi. 🐥🐻✨  
-  
-Karena sahabat yang baik bukan yang menertawakan kesalahan kita, tapi yang membantu kita bangkit dan percaya pada diri sendiri. 🌈🎶  
-  
-Kalau kamu punya sahabat seperti Kiko, tag dia di komentar! 💕👇  
-  
+Kadang kita cuma butuh satu sahabat yang bilang, “Kamu bisa.” 🥹💛
+
+Nara sempat kehilangan keberanian untuk bernyanyi setelah melakukan kesalahan. Tapi Kiko tetap ada di sampingnya, mendengarkan, menyemangati, dan membantu Nara berani mencoba lagi. 🐥🐻✨
+
+Karena sahabat yang baik bukan yang menertawakan kesalahan kita, tapi yang membantu kita bangkit dan percaya pada diri sendiri. 🌈🎶
+
+Kalau kamu punya sahabat seperti Kiko, tag dia di komentar! 💕👇
+
 \#AnimasiAnak \#CeritaAnak \#Persahabatan \#SahabatBaik \#BelajarBersama \#CeritaMoral \#Animasi3D \#KidsAnimation \#CeritaInspiratif \#NaraDanKiko \#DongengAnak \#KontenAnak
 
 LANGKAH 11
@@ -3333,27 +3458,27 @@ LANGKAH 2
 
 CONTOH / TEMPLATE
 
-Buat character sheet kartun 2D untuk karakter yang akan digunakan dalam storyboard animasi.  
-  
-REFERENCE  
-Gunakan foto/gambar referensi sebagai sumber identitas utama. Jika tokoh merupakan figur sejarah atau atlet, pertahankan ciri visual yang relevan dengan periode cerita tanpa mengubahnya menjadi potret fotorealistis.  
-  
-OUTPUT  
-- front view  
-- side view  
-- 3/4 view  
-- back view  
-- full-body neutral pose  
-- ekspresi: tenang, gugup, fokus, berani, bahagia, terkejut  
-- pose aksi yang sesuai cerita  
-  
-STYLE  
-Professional 2D animation character design, clean line art, flat-to-soft cel shading, expressive eyes, readable silhouette, production-ready turnaround sheet.  
-  
-CHARACTER LOCK  
-Keep the same face shape, hairstyle, skin tone, height impression, body proportions, costume language, and signature features in every pose.  
-  
-NEGATIVE  
+Buat character sheet kartun 2D untuk karakter yang akan digunakan dalam storyboard animasi.
+
+REFERENCE
+Gunakan foto/gambar referensi sebagai sumber identitas utama. Jika tokoh merupakan figur sejarah atau atlet, pertahankan ciri visual yang relevan dengan periode cerita tanpa mengubahnya menjadi potret fotorealistis.
+
+OUTPUT
+- front view
+- side view
+- 3/4 view
+- back view
+- full-body neutral pose
+- ekspresi: tenang, gugup, fokus, berani, bahagia, terkejut
+- pose aksi yang sesuai cerita
+
+STYLE
+Professional 2D animation character design, clean line art, flat-to-soft cel shading, expressive eyes, readable silhouette, production-ready turnaround sheet.
+
+CHARACTER LOCK
+Keep the same face shape, hairstyle, skin tone, height impression, body proportions, costume language, and signature features in every pose.
+
+NEGATIVE
 No photorealism, no 3D render, no face drift, no inconsistent age, no costume mutation, no extra limbs, no random text.
 
 LANGKAH 3
@@ -3362,29 +3487,29 @@ LANGKAH 3
 
 CONTOH / TEMPLATE
 
-Buat storyboard animasi kartun 2D dari naskah yang telah disetujui.  
-  
-FORMAT  
-3 scene, setiap scene terdiri dari 4 panel, rasio 9:16. Setiap scene dirancang untuk durasi sekitar 10 detik.  
-  
-REFERENCE  
-Image 1 = karakter utama.  
-Image 2 = karakter pendamping/orang tua/pelatih.  
-Gunakan character sheet sebagai identity master.  
-  
-PANEL LOGIC  
-Panel 1 = establishing / situasi.  
-Panel 2 = reaksi emosional.  
-Panel 3 = aksi atau dialog inti.  
-Panel 4 = bridge menuju scene berikutnya.  
-  
-VISUAL  
-Professional 2D animation storyboard, cinematic composition, clear silhouette, expressive acting, varied shot size: wide, medium, close-up, low angle, over-shoulder.  
-  
-CONTINUITY LOCK  
-Wajah, usia, pakaian, warna, lokasi, arah gerak, dan posisi properti harus logis dari panel ke panel.  
-  
-NEGATIVE  
+Buat storyboard animasi kartun 2D dari naskah yang telah disetujui.
+
+FORMAT
+3 scene, setiap scene terdiri dari 4 panel, rasio 9:16. Setiap scene dirancang untuk durasi sekitar 10 detik.
+
+REFERENCE
+Image 1 = karakter utama.
+Image 2 = karakter pendamping/orang tua/pelatih.
+Gunakan character sheet sebagai identity master.
+
+PANEL LOGIC
+Panel 1 = establishing / situasi.
+Panel 2 = reaksi emosional.
+Panel 3 = aksi atau dialog inti.
+Panel 4 = bridge menuju scene berikutnya.
+
+VISUAL
+Professional 2D animation storyboard, cinematic composition, clear silhouette, expressive acting, varied shot size: wide, medium, close-up, low angle, over-shoulder.
+
+CONTINUITY LOCK
+Wajah, usia, pakaian, warna, lokasi, arah gerak, dan posisi properti harus logis dari panel ke panel.
+
+NEGATIVE
 No character drift, no duplicated character, no inconsistent wardrobe, no random background change, no extra limbs, no unreadable composition.
 
 LANGKAH 4
@@ -3393,57 +3518,57 @@ LANGKAH 4
 
 CONTOH / TEMPLATE
 
-{  
-"title": "\[Scene\]",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"visual_style": "professional 2D cartoon animation, clean line art, cinematic cel shading",  
-"reference_lock": {  
-"priority": "MAXIMUM",  
-"instruction": "Use the attached storyboard and character sheet as the visual master. Keep face, age, hairstyle, outfit and body proportions consistent."  
-},  
-"timeline": \[  
-{  
-"time": "0.0-2.5s",  
-"shot": "wide establishing",  
-"camera": "slow push-in",  
-"action": "Establish the location and emotional situation."  
-},  
-{  
-"time": "2.5-5.0s",  
-"shot": "medium close-up",  
-"camera": "gentle dolly-in",  
-"action": "Character reacts naturally; subtle blink and breathing."  
-},  
-{  
-"time": "5.0-7.5s",  
-"shot": "close-up / action",  
-"camera": "controlled tracking",  
-"action": "Main dialogue or decisive action."  
-},  
-{  
-"time": "7.5-10.0s",  
-"shot": "hero / transition",  
-"camera": "smooth pull-back",  
-"action": "End with a visual bridge to the next scene."  
-}  
-\],  
-"animation_notes": \[  
-"natural blink",  
-"subtle breathing",  
-"clean hand motion",  
-"stable line art",  
-"consistent character proportions"  
-\],  
-"negative_prompt": \[  
-"face morphing",  
-"age change",  
-"costume change",  
-"extra limbs",  
-"frame flicker",  
-"warped line art",  
-"camera jitter"  
-\]  
+{
+"title": "[Scene]",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"visual_style": "professional 2D cartoon animation, clean line art, cinematic cel shading",
+"reference_lock": {
+"priority": "MAXIMUM",
+"instruction": "Use the attached storyboard and character sheet as the visual master. Keep face, age, hairstyle, outfit and body proportions consistent."
+},
+"timeline": [
+{
+"time": "0.0-2.5s",
+"shot": "wide establishing",
+"camera": "slow push-in",
+"action": "Establish the location and emotional situation."
+},
+{
+"time": "2.5-5.0s",
+"shot": "medium close-up",
+"camera": "gentle dolly-in",
+"action": "Character reacts naturally; subtle blink and breathing."
+},
+{
+"time": "5.0-7.5s",
+"shot": "close-up / action",
+"camera": "controlled tracking",
+"action": "Main dialogue or decisive action."
+},
+{
+"time": "7.5-10.0s",
+"shot": "hero / transition",
+"camera": "smooth pull-back",
+"action": "End with a visual bridge to the next scene."
+}
+],
+"animation_notes": [
+"natural blink",
+"subtle breathing",
+"clean hand motion",
+"stable line art",
+"consistent character proportions"
+],
+"negative_prompt": [
+"face morphing",
+"age change",
+"costume change",
+"extra limbs",
+"frame flicker",
+"warped line art",
+"camera jitter"
+]
 }
 
 LANGKAH 5
@@ -3476,22 +3601,22 @@ LANGKAH 1
 
 ## Tentukan Reference dan Identity Lock
 
-TUJUAN  
-Buat AI Influencer \[pria/wanita\] dari gambar referensi dengan gaya hiper-realistis untuk Instagram dan TikTok.  
-  
-IDENTITY LOCK  
-Pertahankan struktur wajah, bentuk mata, hidung, bibir, rahang, warna kulit, gaya rambut, proporsi kepala dan tubuh. Tambahkan tekstur kulit alami, pori-pori, sedikit asimetri, dan ketidaksempurnaan kecil yang realistis tanpa mengubah identitas.  
-  
-TAHAP 1 — CHARACTER REFERENCE SHEET  
-Front view, side view, 3/4 view, neutral expression, neutral lighting. Gunakan pencahayaan studio netral untuk mengunci identitas.  
-  
-TAHAP 2 — VARIASI KONTEN  
-Buat turunan dengan variasi camera angle, pose, outfit, lighting, lokasi, aktivitas, dan lingkungan.  
-  
-STYLE  
-Hyper-realistic, premium, modern, elegant, aspirational lifestyle, detailed hair strands, realistic skin shading, cinematic photography.  
-  
-NEGATIVE  
+TUJUAN
+Buat AI Influencer [pria/wanita] dari gambar referensi dengan gaya hiper-realistis untuk Instagram dan TikTok.
+
+IDENTITY LOCK
+Pertahankan struktur wajah, bentuk mata, hidung, bibir, rahang, warna kulit, gaya rambut, proporsi kepala dan tubuh. Tambahkan tekstur kulit alami, pori-pori, sedikit asimetri, dan ketidaksempurnaan kecil yang realistis tanpa mengubah identitas.
+
+TAHAP 1 — CHARACTER REFERENCE SHEET
+Front view, side view, 3/4 view, neutral expression, neutral lighting. Gunakan pencahayaan studio netral untuk mengunci identitas.
+
+TAHAP 2 — VARIASI KONTEN
+Buat turunan dengan variasi camera angle, pose, outfit, lighting, lokasi, aktivitas, dan lingkungan.
+
+STYLE
+Hyper-realistic, premium, modern, elegant, aspirational lifestyle, detailed hair strands, realistic skin shading, cinematic photography.
+
+NEGATIVE
 No face morphing, no age change, no eye-color shift, no distorted anatomy, no plastic skin, no inconsistent hairstyle, no random accessories.
 
 <table>
@@ -3514,48 +3639,48 @@ LANGKAH 2
 
 CONTOH / TEMPLATE
 
-TUJUAN  
-Buat seorang AI Influencer anak Islami dari gambar referensi dengan gaya hiper-realistis untuk Instagram dan TikTok.  
-  
-REFERENCE  
-Gunakan foto anak yang diunggah sebagai identity master. Pertahankan kemiripan wajah dan usia visual. Jangan mengubah karakter menjadi orang dewasa.  
-  
-IDENTITY LOCK — MAXIMUM  
-Pertahankan secara konsisten:  
-- struktur wajah dan bentuk rahang  
-- bentuk mata, alis, hidung, dan bibir  
-- warna kulit dan proporsi tubuh  
-- bentuk rambut dan garis rambut  
-- ciri khas ekspresi  
-- usia visual anak  
-  
-REALISM  
-Gunakan tekstur kulit alami yang sesuai usia, detail rambut realistis, sedikit asimetri wajah, pencahayaan fotografis natural, dan anatomi tubuh yang proporsional. Hindari skin texture yang terlalu dewasa atau efek beauty filter berlebihan.  
-  
-TAHAP 1 — CHARACTER REFERENCE SHEET  
-Tampilkan:  
-1. tampak depan  
-2. tampak samping  
-3. sudut 3/4  
-4. ekspresi netral  
-5. pencahayaan netral  
-6. full-body neutral pose  
-7. beberapa ekspresi ringan: senyum, serius, percaya diri, tertawa  
-  
-TAHAP 2 — VARIASI KONTEN  
-Buat variasi yang tetap sesuai usia:  
-- outfit casual sopan  
-- baju koko / busana Islami  
-- aktivitas membaca Al-Qur'an atau buku  
-- olahraga ringan  
-- kegiatan outdoor  
-- membuat konten edukatif  
-- lingkungan masjid, taman, rumah, sekolah, atau ruang kreatif yang wajar  
-  
-STYLE  
-Hyper-realistic, premium, modern, elegant, aspirational but age-appropriate, natural photography, cinematic lighting.  
-  
-NEGATIVE  
+TUJUAN
+Buat seorang AI Influencer anak Islami dari gambar referensi dengan gaya hiper-realistis untuk Instagram dan TikTok.
+
+REFERENCE
+Gunakan foto anak yang diunggah sebagai identity master. Pertahankan kemiripan wajah dan usia visual. Jangan mengubah karakter menjadi orang dewasa.
+
+IDENTITY LOCK — MAXIMUM
+Pertahankan secara konsisten:
+- struktur wajah dan bentuk rahang
+- bentuk mata, alis, hidung, dan bibir
+- warna kulit dan proporsi tubuh
+- bentuk rambut dan garis rambut
+- ciri khas ekspresi
+- usia visual anak
+
+REALISM
+Gunakan tekstur kulit alami yang sesuai usia, detail rambut realistis, sedikit asimetri wajah, pencahayaan fotografis natural, dan anatomi tubuh yang proporsional. Hindari skin texture yang terlalu dewasa atau efek beauty filter berlebihan.
+
+TAHAP 1 — CHARACTER REFERENCE SHEET
+Tampilkan:
+1. tampak depan
+2. tampak samping
+3. sudut 3/4
+4. ekspresi netral
+5. pencahayaan netral
+6. full-body neutral pose
+7. beberapa ekspresi ringan: senyum, serius, percaya diri, tertawa
+
+TAHAP 2 — VARIASI KONTEN
+Buat variasi yang tetap sesuai usia:
+- outfit casual sopan
+- baju koko / busana Islami
+- aktivitas membaca Al-Qur'an atau buku
+- olahraga ringan
+- kegiatan outdoor
+- membuat konten edukatif
+- lingkungan masjid, taman, rumah, sekolah, atau ruang kreatif yang wajar
+
+STYLE
+Hyper-realistic, premium, modern, elegant, aspirational but age-appropriate, natural photography, cinematic lighting.
+
+NEGATIVE
 No age progression, no adult styling, no face morphing, no body exaggeration, no sexualized pose or wardrobe, no heavy makeup, no distorted anatomy, no extra fingers, no inconsistent hairstyle, no random accessories, no watermark.
 
 Contoh output character reference sheet:
@@ -3658,84 +3783,84 @@ LANGKAH 2
 
 ## Buat Master JSON Character Lock
 
-{  
-"project": {  
-"title": "Kemah Bakti untuk Negeri 2026",  
-"scene": "\[1/2/3\]",  
-"duration_seconds": 10,  
-"aspect_ratio": "9:16",  
-"style": "premium stylized 3D animation, cinematic, warm, detailed, family-friendly",  
-"language": "Indonesian"  
-},  
-"references": {  
-"primary_character_image": "karakter rohiyat.png",  
-"character_sheet_image": "karaktersheet rohiyat.png",  
-"storyboard_image": "STORYBOARD"  
-},  
-"character_lock": {  
-"enabled": true,  
-"priority": "MAXIMUM",  
-"identity_reference": "Use karakter rohiyat.png and karaktersheet rohiyat.png as strict identity references for the main character across every shot.",  
-"must_preserve": \[  
-"same facial structure",  
-"same eye shape and eye color",  
-"same nose and mouth proportions",  
-"same hairstyle",  
-"same skin tone",  
-"same body proportions",  
-"same outfit and accessories"  
-\],  
-"forbidden": \[  
-"face morphing",  
-"age change",  
-"hairstyle change",  
-"body proportion drift",  
-"wardrobe redesign",  
-"random accessories"  
-\]  
-},  
-"storyboard_lock": {  
-"instruction": "Use the storyboard only for shot composition, action, camera direction and environment. Never let storyboard panel variation override the character identity reference."  
-},  
-"timeline": \[  
-{  
-"time": "0.0-2.5s",  
-"shot": "\[shot 1\]",  
-"camera": "\[movement\]",  
-"action": "\[action based on approved storyboard\]"  
-},  
-{  
-"time": "2.5-5.0s",  
-"shot": "\[shot 2\]",  
-"camera": "\[movement\]",  
-"action": "\[action\]"  
-},  
-{  
-"time": "5.0-7.5s",  
-"shot": "\[shot 3\]",  
-"camera": "\[movement\]",  
-"action": "\[action\]"  
-},  
-{  
-"time": "7.5-10.0s",  
-"shot": "\[shot 4 / bridge\]",  
-"camera": "\[movement\]",  
-"action": "\[ending that bridges to next scene\]"  
-}  
-\],  
-"negative_prompt": \[  
-"character redesign",  
-"face drift",  
-"face morphing",  
-"wrong hairstyle",  
-"wrong clothing",  
-"extra limbs",  
-"deformed hands",  
-"duplicate main character",  
-"camera jitter",  
-"lighting flicker",  
-"random text"  
-\]  
+{
+"project": {
+"title": "Kemah Bakti untuk Negeri 2026",
+"scene": "[1/2/3]",
+"duration_seconds": 10,
+"aspect_ratio": "9:16",
+"style": "premium stylized 3D animation, cinematic, warm, detailed, family-friendly",
+"language": "Indonesian"
+},
+"references": {
+"primary_character_image": "karakter rohiyat.png",
+"character_sheet_image": "karaktersheet rohiyat.png",
+"storyboard_image": "STORYBOARD"
+},
+"character_lock": {
+"enabled": true,
+"priority": "MAXIMUM",
+"identity_reference": "Use karakter rohiyat.png and karaktersheet rohiyat.png as strict identity references for the main character across every shot.",
+"must_preserve": [
+"same facial structure",
+"same eye shape and eye color",
+"same nose and mouth proportions",
+"same hairstyle",
+"same skin tone",
+"same body proportions",
+"same outfit and accessories"
+],
+"forbidden": [
+"face morphing",
+"age change",
+"hairstyle change",
+"body proportion drift",
+"wardrobe redesign",
+"random accessories"
+]
+},
+"storyboard_lock": {
+"instruction": "Use the storyboard only for shot composition, action, camera direction and environment. Never let storyboard panel variation override the character identity reference."
+},
+"timeline": [
+{
+"time": "0.0-2.5s",
+"shot": "[shot 1]",
+"camera": "[movement]",
+"action": "[action based on approved storyboard]"
+},
+{
+"time": "2.5-5.0s",
+"shot": "[shot 2]",
+"camera": "[movement]",
+"action": "[action]"
+},
+{
+"time": "5.0-7.5s",
+"shot": "[shot 3]",
+"camera": "[movement]",
+"action": "[action]"
+},
+{
+"time": "7.5-10.0s",
+"shot": "[shot 4 / bridge]",
+"camera": "[movement]",
+"action": "[ending that bridges to next scene]"
+}
+],
+"negative_prompt": [
+"character redesign",
+"face drift",
+"face morphing",
+"wrong hairstyle",
+"wrong clothing",
+"extra limbs",
+"deformed hands",
+"duplicate main character",
+"camera jitter",
+"lighting flicker",
+"random text"
+]
 }
 
 LANGKAH 3
@@ -3760,29 +3885,29 @@ LANGKAH 4
 
 ## Perbaiki Character Drift Tanpa Merusak Scene
 
-PERBAIKAN TERBATAS — CHARACTER IDENTITY ONLY.  
-  
-SOURCE  
-Gunakan video/keyframe terakhir dan character sheet Rohiyat sebagai master.  
-  
-MASALAH  
-Wajah karakter berubah dibanding character sheet pada \[shot/timecode\].  
-  
-PERBAIKI HANYA  
-- struktur wajah  
-- bentuk mata/alis/hidung/bibir  
-- hairstyle  
-- proporsi kepala dan tubuh jika drift  
-  
-PERTAHANKAN PERSIS  
-- kamera dan framing  
-- gerakan yang sudah benar  
-- outfit dan aksesori  
-- lighting dan environment  
-- props dan background  
-- durasi serta timing  
-  
-NEGATIVE  
+PERBAIKAN TERBATAS — CHARACTER IDENTITY ONLY.
+
+SOURCE
+Gunakan video/keyframe terakhir dan character sheet Rohiyat sebagai master.
+
+MASALAH
+Wajah karakter berubah dibanding character sheet pada [shot/timecode].
+
+PERBAIKI HANYA
+- struktur wajah
+- bentuk mata/alis/hidung/bibir
+- hairstyle
+- proporsi kepala dan tubuh jika drift
+
+PERTAHANKAN PERSIS
+- kamera dan framing
+- gerakan yang sudah benar
+- outfit dan aksesori
+- lighting dan environment
+- props dan background
+- durasi serta timing
+
+NEGATIVE
 Do not redesign. Do not beautify into a different person. No age change, no hairstyle change, no new accessories, no outfit change, no scene recomposition.
 
 LANGKAH 5
@@ -3853,22 +3978,22 @@ LANGKAH 3
 
 ## Generate Komik Semi-Realistis
 
-BERTINDAK SEBAGAI KOMIKUS PROFESIONAL.  
-Buat satu halaman komik poster semi-realistis portrait berdasarkan “Kemah Bhakti Untuk Negeri 2026”. Gunakan foto manusia yang diunggah sebagai referensi utama tokoh. Pertahankan bentuk wajah, kacamata, warna kulit, hidung, senyum, rahang, rambut/kumis, proporsi tubuh, topi, pakaian, tas, dan aksesori secara konsisten.  
-  
-FORMAT  
-Inspirational Storytelling, 7 panel, arah baca kiri ke kanan lalu atas ke bawah, rasio 2:3 portrait, minimum 2048×3072, 300 DPI. Headline besar di atas dan CTA kuat di bawah.  
-  
-ALUR  
-P1 hero opening di campsite: “Siap beraksi untuk negeri!”  
-P2 direct invitation: “Yuk, ikut Kemah Bhakti Untuk Negeri 2026!”  
-P3 tanggal/lokasi: Jumat–Ahad, 2–4 Oktober 2026; Bumi Kepanduan Sentul, Bojong Koneng, Babakan Madang, Sentul–Bogor.  
-P4 triptych aksi Camping, Training, Tracking.  
-P5 biaya: Putra Rp200.000; Putri Rp150.000.  
-P6 persiapan: “Siapkan kondisi fisik, perlengkapan pribadi, dan semangat terbaik.”  
-P7 closing hero shot dengan bendera Indonesia; “Berbakti, Berkarya, Menginspirasi untuk Negeri!”; informasi pendaftaran Coach Budianto 0812-8054-0854, Coach Ated 0812-8766-8157, Coach Fahmi 0852-1807-0870; CTA “Satu Tekad, Satu Bhakti, untuk Indonesia! Ayo daftar sekarang.”  
-  
-STYLE  
+BERTINDAK SEBAGAI KOMIKUS PROFESIONAL.
+Buat satu halaman komik poster semi-realistis portrait berdasarkan “Kemah Bhakti Untuk Negeri 2026”. Gunakan foto manusia yang diunggah sebagai referensi utama tokoh. Pertahankan bentuk wajah, kacamata, warna kulit, hidung, senyum, rahang, rambut/kumis, proporsi tubuh, topi, pakaian, tas, dan aksesori secara konsisten.
+
+FORMAT
+Inspirational Storytelling, 7 panel, arah baca kiri ke kanan lalu atas ke bawah, rasio 2:3 portrait, minimum 2048×3072, 300 DPI. Headline besar di atas dan CTA kuat di bawah.
+
+ALUR
+P1 hero opening di campsite: “Siap beraksi untuk negeri!”
+P2 direct invitation: “Yuk, ikut Kemah Bhakti Untuk Negeri 2026!”
+P3 tanggal/lokasi: Jumat–Ahad, 2–4 Oktober 2026; Bumi Kepanduan Sentul, Bojong Koneng, Babakan Madang, Sentul–Bogor.
+P4 triptych aksi Camping, Training, Tracking.
+P5 biaya: Putra Rp200.000; Putri Rp150.000.
+P6 persiapan: “Siapkan kondisi fisik, perlengkapan pribadi, dan semangat terbaik.”
+P7 closing hero shot dengan bendera Indonesia; “Berbakti, Berkarya, Menginspirasi untuk Negeri!”; informasi pendaftaran Coach Budianto 0812-8054-0854, Coach Ated 0812-8766-8157, Coach Fahmi 0852-1807-0870; CTA “Satu Tekad, Satu Bhakti, untuk Indonesia! Ayo daftar sekarang.”
+
+STYLE
 Premium semi-realistic digital comic: modern webtoon + editorial illustration + social-media comic + premium digital painting. Cinematic warm lighting, detailed campsite, expressive face, dynamic perspective, global illumination, ambient occlusion, soft shadow, depth of field. Balon dialog seluruhnya di dalam panel; semua teks jelas; tidak typo; tidak watermark; tidak ada extra limbs atau perubahan identitas.
 
 OUTPUT CONTOH
@@ -3883,26 +4008,26 @@ LANGKAH 4
 
 ## Generate Manga Jepang Modern
 
-BERTINDAK SEBAGAI KOMIKUS MANGA JEPANG PROFESIONAL.  
-  
-HOOK — COPY EXACTLY, JANGAN DIUBAH:  
-Kemah Bhakti untuk Negeri 2026  
-Proda Kota Bekasi  
-  
-Gunakan foto referensi yang diunggah sebagai master identity tokoh utama. Walaupun dirender sebagai manga, pertahankan bentuk wajah, kacamata, rahang, hidung, senyum, kumis/janggut, topi, pakaian, tas, tinggi, dan proporsi agar tetap dikenali di semua panel.  
-  
-OUTPUT  
-Satu halaman manga Jepang modern, 6 panel dinamis, arah baca kiri ke kanan, rasio 2:3 portrait, minimum 2048×3072, 300 DPI. Shonen/seinen modern, black-and-white ink, sharp line art, professional screentone, dramatic shadows, detailed background, dynamic composition, speed lines, impact frame, dust/smoke effect secukupnya.  
-  
-STORY ARC  
-P1 hook/pembuka: low-angle hero shot di area kemah, headline hook persis.  
-P2 masalah: Gen Z ingin bergerak tetapi belum tahu mulai dari mana; “Kita butuh ruang untuk tumbuh bareng.”  
-P3 konflik: medan/latihan terasa berat, keraguan meningkat, tokoh tetap maju.  
-P4 pemahaman: event adalah ruang berbakti dan berkembang; tampilkan Jumat–Ahad, 2–4 Oktober 2026 dan lokasi Bumi Kepanduan Sentul, Bojong Koneng, Babakan Madang, Sentul–Bogor.  
-P5 solusi: montage Camping, Training, Tracking; biaya Putra Rp200.000, Putri Rp150.000.  
-P6 ending/CTA: hero shot dengan bendera Indonesia; “Berbakti, Berkarya, Menginspirasi untuk Negeri!”; Coach Budianto 0812-8054-0854, Coach Ated 0812-8766-8157, Coach Fahmi 0852-1807-0870; CTA “Satu Tekad, Satu Bhakti, untuk Indonesia! Ayo daftar sekarang.”  
-  
-QC  
+BERTINDAK SEBAGAI KOMIKUS MANGA JEPANG PROFESIONAL.
+
+HOOK — COPY EXACTLY, JANGAN DIUBAH:
+Kemah Bhakti untuk Negeri 2026
+Proda Kota Bekasi
+
+Gunakan foto referensi yang diunggah sebagai master identity tokoh utama. Walaupun dirender sebagai manga, pertahankan bentuk wajah, kacamata, rahang, hidung, senyum, kumis/janggut, topi, pakaian, tas, tinggi, dan proporsi agar tetap dikenali di semua panel.
+
+OUTPUT
+Satu halaman manga Jepang modern, 6 panel dinamis, arah baca kiri ke kanan, rasio 2:3 portrait, minimum 2048×3072, 300 DPI. Shonen/seinen modern, black-and-white ink, sharp line art, professional screentone, dramatic shadows, detailed background, dynamic composition, speed lines, impact frame, dust/smoke effect secukupnya.
+
+STORY ARC
+P1 hook/pembuka: low-angle hero shot di area kemah, headline hook persis.
+P2 masalah: Gen Z ingin bergerak tetapi belum tahu mulai dari mana; “Kita butuh ruang untuk tumbuh bareng.”
+P3 konflik: medan/latihan terasa berat, keraguan meningkat, tokoh tetap maju.
+P4 pemahaman: event adalah ruang berbakti dan berkembang; tampilkan Jumat–Ahad, 2–4 Oktober 2026 dan lokasi Bumi Kepanduan Sentul, Bojong Koneng, Babakan Madang, Sentul–Bogor.
+P5 solusi: montage Camping, Training, Tracking; biaya Putra Rp200.000, Putri Rp150.000.
+P6 ending/CTA: hero shot dengan bendera Indonesia; “Berbakti, Berkarya, Menginspirasi untuk Negeri!”; Coach Budianto 0812-8054-0854, Coach Ated 0812-8766-8157, Coach Fahmi 0852-1807-0870; CTA “Satu Tekad, Satu Bhakti, untuk Indonesia! Ayo daftar sekarang.”
+
+QC
 Balon dialog proporsional dan di dalam panel. Font manga jelas. Tidak ada typo, teks terpotong, wajah berubah, objek cacat, extra limbs, karakter bertambah tanpa alasan, watermark, atau style drift.
 
 OUTPUT CONTOH
@@ -3931,82 +4056,96 @@ LANGKAH 5
 
 # BAGIAN C — QC Universal, Revisi, dan Arsip
 
-- Wajah/karakter sama di semua panel?
+## Checklist QC Universal
 
-- Proporsi tubuh konsisten?
+- [ ] Wajah/karakter sama di semua panel?
 
-- Tangan, jari, telinga, kaki tidak cacat?
+- [ ] Proporsi tubuh konsisten?
 
-- Pakaian, tas, topi, kacamata konsisten?
+- [ ] Tangan, jari, telinga, kaki tidak cacat?
 
-- Logo tidak berubah bentuk/warna?
+- [ ] Pakaian, tas, topi, kacamata konsisten?
 
-- Lighting dan rendering berada di dunia visual yang sama?
+- [ ] Logo tidak berubah bentuk/warna?
 
-- Background tidak tiba-tiba berubah?
+- [ ] Lighting dan rendering berada di dunia visual yang sama?
 
-- Gerakan antar shot logis?
+- [ ] Background tidak tiba-tiba berubah?
 
-- Hook/judul persis?
+- [ ] Gerakan antar shot logis?
 
-- Tanggal benar?
+- [ ] Hook/judul persis?
 
-- Lokasi benar?
+- [ ] Tanggal benar?
 
-- Harga benar?
+- [ ] Lokasi benar?
 
-- Nama dan nomor kontak benar?
+- [ ] Harga benar?
 
-- Tidak ada typo?
+- [ ] Nama dan nomor kontak benar?
 
-- V.O. mengucapkan angka dengan benar?
+- [ ] Tidak ada typo?
 
-- CTA sesuai brief?
+- [ ] V.O. mengucapkan angka dengan benar?
 
-- Rasio sesuai platform?
+- [ ] CTA sesuai brief?
 
-- Resolusi cukup?
+- [ ] Rasio sesuai platform?
 
-- Orientasi benar?
+- [ ] Resolusi cukup?
 
-- Text safe area aman?
+- [ ] Orientasi benar?
 
-- Durasi tiap scene tepat?
+- [ ] Text safe area aman?
 
-- Frame tidak flicker/jitter?
+- [ ] Durasi tiap scene tepat?
 
-- Audio tidak menutupi VO?
+- [ ] Frame tidak flicker/jitter?
 
-- File naming dan versi benar?
+- [ ] Audio tidak menutupi VO?
 
-PERBAIKAN TERBATAS — jangan ubah bagian lain.  
-Masalah: \[jelaskan satu error spesifik\].  
-Perbaiki hanya: \[elemen\].  
-Pertahankan persis: \[wajah/karakter/logo/outfit/background/composition yang sudah benar\].  
-Do not redesign the character. Do not change approved elements.
+- [ ] File naming dan versi benar?
+
+## Prompt Revisi Terbatas — Siap Salin
+
+Gunakan satu prompt untuk satu masalah agar AI tidak mengubah bagian yang sudah benar.
+
+```text
+PERBAIKAN TERBATAS — jangan ubah bagian lain.
+
+Masalah yang terlihat: [GANTI: satu error spesifik dan lokasinya].
+Perbaiki hanya: [GANTI: elemen yang salah].
+Pertahankan persis: [GANTI: wajah/karakter/logo/outfit/background/komposisi
+yang sudah benar].
+
+Do not redesign the character or product. Do not change approved elements.
+Tampilkan ringkasan perubahan sebelum melakukan generate ulang.
+```
 
 ## Struktur Folder dan Naming Convention
 
-Contoh struktur folder
+Contoh struktur folder:
 
-PROJECT_NAME/  
-├── 00_BRIEF/  
-├── 01_REFERENCE/  
-│ ├── CHARACTER/  
-│ ├── LOGO/  
-│ ├── WARDROBE/  
-│ └── LOCATION/  
-├── 02_CHARACTER_SHEET/  
-├── 03_STORYBOARD/  
-├── 04_PROMPTS/  
-│ ├── MASTER/  
-│ ├── IMAGE/  
-│ ├── VIDEO/  
-│ └── COMIC/  
-├── 05_GENERATIONS/  
-├── 06_APPROVED/  
-├── 07_FINAL_ARTWORK/  
+```text
+PROJECT_NAME/
+├── 00_BRIEF/
+├── 01_REFERENCE/
+│   ├── CHARACTER/
+│   ├── LOGO/
+│   ├── WARDROBE/
+│   └── LOCATION/
+├── 02_CHARACTER_SHEET/
+├── 03_STORYBOARD/
+├── 04_PROMPTS/
+│   ├── MASTER/
+│   ├── IMAGE/
+│   ├── VIDEO/
+│   └── COMIC/
+├── 05_GENERATIONS/
+├── 06_APPROVED/
+├── 07_FINAL_ARTWORK/
 └── 08_ARCHIVE/
+```
 
 Contoh file: KBN26_SC02_VIDEO_PROMPT_v04.json, KBN26_CHAR_COACH_MASTER_v03.png, KBN26_STORYBOARD_30S_v07.png.
 
