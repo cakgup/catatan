@@ -187,21 +187,133 @@ Tujuan: menemukan halaman login, file sensitif, dokumen publik, directory listin
 
 ### GitHub Dork
 
+**GitHub Dorking** adalah teknik pengumpulan informasi melalui pencarian lanjutan GitHub untuk menemukan informasi sensitif yang tidak sengaja dipublikasikan, seperti password, API key, token akses, kredensial basis data, dan konfigurasi internal.
+
+Teknik ini merupakan bagian dari **passive reconnaissance**, bukan eksploitasi itu sendiri. Dalam riset keamanan, penetration testing, dan bug bounty, hasilnya membantu mengidentifikasi kebocoran akibat kelalaian pengembang.
+
+#### Sintaks Dasar Pencarian
+
+Sintaks berikut digunakan pada **GitHub Code Search**:
+
+| Sintaks | Fungsi | Contoh |
+|---|---|---|
+| `repo:` | Membatasi satu repositori | `repo:organisasi-lab/aplikasi-lab` |
+| `org:` | Membatasi organisasi | `org:organisasi-lab` |
+| `path:` | Memfilter nama atau lokasi berkas | `path:.env`, `path:src/config` |
+| `path:*.json` | Memfilter ekstensi | `path:*.json` |
+| `language:` | Memfilter bahasa | `language:Python` |
+| `content:` | Mencari hanya dalam isi berkas | `content:"api_key"` |
+| `"..."` | Mencari teks persis | `"spring.datasource.password"` |
+| `AND`, `OR`, `NOT` | Menggabungkan kondisi | `("gh_token" OR "github_token")` |
+| `/.../` | Mencari dengan regex | `/SECRET[_-]?KEY/` |
+
+Materi lama dapat menggunakan `filename:.env` dan `extension:json`. Contoh di bawah memakai `path:` sesuai [dokumentasi GitHub Code Search](https://docs.github.com/en/search-github/github-code-search/understanding-github-code-search-syntax). `path:.env` juga dapat mencocokkan nama seperti `.env.example`.
+
+#### Contoh Penggunaan Dork
+
+Ganti `organisasi-lab/aplikasi-lab` dengan repositori milik sendiri atau yang telah memberikan izin pengujian. Ganti `organisasi-lab` dengan organisasi dalam scope, dan `example.test` dengan domain yang diizinkan. Nama perusahaan atau domain hanyalah kata kunci; kemunculannya tidak membuktikan kepemilikan repositori maupun izin mengujinya.
+
+**1. Berkas konfigurasi dan variabel lingkungan**
+
 ```text
-"example.test" password
-org:example secret
-filename:.env
-"example" api_key
+repo:organisasi-lab/aplikasi-lab path:.env
+repo:organisasi-lab/aplikasi-lab path:config.json "password"
+repo:organisasi-lab/aplikasi-lab path:application.properties "spring.datasource.password"
+org:organisasi-lab "example.test" "password"
 ```
 
-Cari kemungkinan kebocoran:
+Berkas konfigurasi dapat memuat string koneksi basis data, password, secret aplikasi, dan endpoint internal.
 
-- API key;
-- token;
-- credential;
-- endpoint internal;
-- file konfigurasi;
-- source code lama.
+**2. API key dan token akses**
+
+```text
+repo:organisasi-lab/aplikasi-lab "api_key"
+repo:organisasi-lab/aplikasi-lab "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY"
+repo:organisasi-lab/aplikasi-lab ("gh_token" OR "github_token")
+```
+
+Nama variabel membantu menemukan kandidat secret. Hasil pencarian belum membuktikan bahwa nilainya merupakan kredensial aktif.
+
+**3. Kredensial basis data**
+
+```text
+repo:organisasi-lab/aplikasi-lab "jdbc:mysql" "password"
+repo:organisasi-lab/aplikasi-lab "mongodb://" "password"
+repo:organisasi-lab/aplikasi-lab "postgresql://" "username"
+```
+
+Cari indikasi kredensial yang ditulis langsung di dalam kode atau string koneksi. Kata `password` atau `username` dapat mempersempit hasil, tetapi juga melewatkan string koneksi yang tidak memuat kata tersebut.
+
+**4. Secret pada bahasa pemrograman tertentu**
+
+```text
+repo:organisasi-lab/aplikasi-lab language:Python "SECRET_KEY" path:settings.py
+repo:organisasi-lab/aplikasi-lab language:JavaScript "process.env"
+```
+
+`process.env` menunjukkan pembacaan variabel lingkungan; keberadaannya saja bukan kebocoran. Periksa konteks untuk membedakan nilai hardcoded, placeholder, data contoh, dan referensi ke penyimpanan secret.
+
+**5. Kunci privat SSH**
+
+```text
+repo:organisasi-lab/aplikasi-lab path:id_rsa
+repo:organisasi-lab/aplikasi-lab path:id_dsa
+```
+
+Nama berkas hanya petunjuk dan dapat pula mencocokkan berkas kunci publik seperti `id_rsa.pub`. Jika menemukan kunci privat yang terekspos, jangan mencoba menggunakannya; laporkan melalui kanal resmi organisasi atau program bug bounty.
+
+#### Teknik dan Peralatan Lanjutan
+
+**Ekspresi reguler:** gunakan pola fleksibel untuk variasi penamaan secret dalam repositori berizin.
+
+```text
+repo:organisasi-lab/aplikasi-lab /SECRET[_-]?KEY/
+```
+
+**Penyaringan waktu:** gunakan `pushed:` dan `created:` pada pencarian **Repositories**, kemudian cari kode dengan `repo:`.
+
+```text
+org:organisasi-lab pushed:>2024-01-01
+org:organisasi-lab created:>2024-01-01
+```
+
+`pushed:` menyaring waktu push terakhir repositori; `created:` menyaring tanggal pembuatannya. Keduanya bukan filter waktu perubahan berkas pada Code Search. Lihat [dokumentasi pencarian repositori GitHub](https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories).
+
+**Pemindaian otomatis dan pemantauan:**
+
+| Alat/kontrol | Peran dalam audit defensif |
+|---|---|
+| Gitleaks | Mendeteksi secret pada berkas dan riwayat Git |
+| TruffleHog | Membantu mendeteksi secret dan kredensial; hindari mode verifikasi kredensial dalam alur audit ini |
+| GitDorker | Membantu mengotomatisasi pencarian menggunakan kumpulan dork |
+| GShark | Membantu pemantauan potensi kebocoran informasi sensitif |
+| Pemindaian pada commit dan CI/CD | Memeriksa perubahan kode sebelum secret ikut dipublikasikan |
+
+Batasi konfigurasi alat pada aset yang diizinkan. Pemeriksaan kode yang tampil di hasil pencarian perlu dilengkapi audit riwayat commit pada repositori berizin, karena secret dapat tetap tersimpan pada versi lama.
+
+#### Tindakan Penanganan Kebocoran
+
+Jika ditemukan kredensial yang terekspos, pemilik aset perlu:
+
+1. **Segera mencabut atau merotasi kredensial** yang bocor.
+2. Memeriksa log penggunaan untuk mendeteksi kemungkinan penyalahgunaan.
+3. Menghapus secret dari berkas aktif dan membersihkan riwayat Git bila diperlukan, dengan koordinasi pengelola repositori.
+4. Memindahkan secret ke secret manager atau memasoknya melalui variabel lingkungan saat runtime; jangan ikut melakukan commit terhadap berkas `.env` berisi secret.
+5. Mengaktifkan pemindaian secret pada proses commit dan pipeline CI/CD.
+6. Mendokumentasikan insiden, tindakan perbaikan, dan hasil pemeriksaan ulang sesuai prosedur organisasi.
+
+> **Menghapus secret dari commit terbaru saja tidak cukup.** Nilainya dapat tetap tersimpan dalam riwayat Git atau salinan repositori. Pembersihan riwayat tidak menggantikan pencabutan atau rotasi kredensial.
+
+#### Etika dan Dokumentasi Temuan
+
+- Lakukan audit hanya terhadap aset milik sendiri atau yang telah memberikan izin; repositori publik tidak otomatis memberikan izin penggunaan kredensialnya.
+- Patuhi scope program bug bounty atau surat otorisasi pengujian.
+- Jangan mencoba menggunakan, memvalidasi ke layanan, atau mengeksploitasi kredensial yang ditemukan.
+- Jangan mengunduh atau menyimpan salinan secret, menyebarkannya, memperjualbelikannya, atau memublikasikannya.
+- Catat bukti minimum berupa URL repositori, path berkas, referensi commit, jenis secret, dan konteks temuan; samarkan nilai sensitif pada laporan atau screenshot.
+- Laporkan melalui kanal resmi dengan prinsip **responsible disclosure**, dan hentikan aktivitas yang melampaui scope atau berpotensi mengakses data tanpa izin.
+
+Tujuan GitHub Dorking adalah membantu organisasi menemukan dan memperbaiki kebocoran sebelum disalahgunakan.
 
 ### Wayback Machine
 
