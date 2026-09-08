@@ -1,4 +1,4 @@
-# 📚 Bank Soal DJPb — Paket 1–9
+# 📚 Bank Soal DJPb — Paket 1–9 (Revisi Terverifikasi)
 
 > **Mode belajar:** setiap soal disertai **jawaban langsung** dan **pembahasan singkat**.  
 > Pilihan jawaban ditampilkan satu per baris agar nyaman dibaca di desktop maupun ponsel.
@@ -24,498 +24,470 @@
 3. Gunakan **Pembahasan singkat** untuk mengingat konsep atau angka kunci.
 4. Tandai soal yang masih salah untuk diulang pada sesi berikutnya.
 
-> **Sumber penyusunan:** rangkuman/clue peserta ujian sebelumnya dan modul pembelajaran DJPb yang digunakan dalam penyusunan bank soal.
+> **Sumber penyusunan:** rangkuman/clue peserta ujian sebelumnya dan modul pembelajaran DJPb yang diunggah. Paket 1 telah disusun ulang mengikuti urutan clue asli. Jawaban pada Paket 1–9 ditelaah kembali; butir yang tidak didukung secara jelas oleh modul dirumuskan ulang agar tidak menimbulkan kunci spekulatif.
 
 ---
 
 <a id="paket-1"></a>
-## Paket 1 — Campuran Clue Peserta
+## Paket 1 — Campuran Clue Peserta (Revisi Terverifikasi)
 
-> **30 soal** • Pilihan ganda • Jawaban langsung • Pembahasan singkat
+> **30 soal** • Disusun ulang mengikuti urutan clue peserta • Jawaban langsung • Pembahasan singkat
+>
+> **Catatan revisi:** soal yang sebelumnya tidak mengikuti clue asli telah diganti. Untuk clue yang masih ambigu, soal dirumuskan hanya pada bagian yang dapat diverifikasi dari modul DJPb yang diunggah.
 
 ---
 
 ### Soal 1
 
-**Kegiatan berikut yang tidak dapat dibiayai dari alokasi dana penunjang DAK Fisik adalah:**
+**Manakah kegiatan Pemerintah Daerah yang dapat didanai dari alokasi dana penunjang DAK Fisik?**
 
-- **A.** Desain perencanaan kegiatan kontraktual
-- **B.** Jasa konsultan pengawas kegiatan kontraktual
-- **C.** Honorarium pejabat pengadaan barang/jasa
-- **D.** Pembayaran dividen BUMD
+- **A.** Biaya tender dan desain perencanaan untuk kegiatan kontraktual
+- **B.** Pembayaran dividen BUMD
+- **C.** Penyertaan modal Pemerintah Daerah kepada BUMD
+- **D.** Pembayaran cicilan pokok utang daerah
 
-> ✅ **Jawaban:** **D. Pembayaran dividen BUMD**
-
+> ✅ **Jawaban:** **A. Biaya tender dan desain perencanaan untuk kegiatan kontraktual**
 >
-> 💡 **Pembahasan singkat:** Dana penunjang DAK Fisik digunakan untuk kegiatan yang mendukung langsung pelaksanaan DAK Fisik, bukan untuk pembagian dividen BUMD.
+> 💡 **Pembahasan singkat:** Catatan peserta secara eksplisit mencantumkan biaya tender dan desain perencanaan kegiatan kontraktual sebagai kegiatan penunjang DAK Fisik. Kegiatan penunjang lain yang dicantumkan antara lain honor pejabat pengadaan/pengelola keuangan, jasa konsultan pengawas, perjalanan dinas terkait pengawasan, rapat koordinasi, dan pengadaan peralatan pendukung.
 
 ---
 
 ### Soal 2
 
-**Target penyerapan Triwulan I Belanja Modal adalah 10%. Jika pagu Rp60 miliar dan realisasi Rp5 miliar, status capaian adalah:**
+**Pada Triwulan I, empat jenis belanja masing-masing memiliki pagu Rp100 juta. Realisasinya: Belanja Pegawai Rp21 juta, Belanja Barang Rp16 juta, Belanja Modal Rp8 juta, dan Belanja Bansos Rp26 juta. Jenis belanja yang belum mencapai target penyerapan Triwulan I adalah:**
 
-- **A.** Mencapai target
-- **B.** Melampaui target
-- **C.** Belum mencapai target
-- **D.** Tidak dapat dinilai
+- **A.** Belanja Pegawai
+- **B.** Belanja Barang
+- **C.** Belanja Modal
+- **D.** Belanja Bansos
 
-> ✅ **Jawaban:** **C. Belum mencapai target**
-
+> ✅ **Jawaban:** **C. Belanja Modal**
 >
-> 💡 **Pembahasan singkat:** Realisasi Rp5 miliar dari pagu Rp60 miliar adalah sekitar 8,33%, masih di bawah target 10%.
+> 💡 **Pembahasan singkat:** Target TW I menurut PER-5/PB/2024 adalah Pegawai 20%, Barang 15%, Modal 10%, dan Bansos 25%. Belanja Modal baru terealisasi 8%, sehingga belum mencapai target 10%.
 
 ---
 
 ### Soal 3
 
-**Salah satu persyaratan administratif Satker untuk ditetapkan sebagai BLU adalah:**
+**Salah satu dokumen persyaratan administratif Satker untuk ditetapkan menerapkan PPK-BLU adalah:**
 
 - **A.** Pola Tata Kelola
 - **B.** Persetujuan DPR
-- **C.** Sertifikat ISO seluruh layanan
-- **D.** Peraturan Daerah
+- **C.** Laporan realisasi APBD
+- **D.** Surat penetapan sebagai BUMN
 
 > ✅ **Jawaban:** **A. Pola Tata Kelola**
-
 >
-> 💡 **Pembahasan singkat:** Pola Tata Kelola merupakan salah satu dokumen administratif BLU.
+> 💡 **Pembahasan singkat:** Persyaratan administratif BLU meliputi pernyataan kesanggupan meningkatkan kinerja, Pola Tata Kelola, RSB, laporan keuangan pokok, Standar Pelayanan Minimum, serta laporan audit terakhir atau pernyataan bersedia diaudit independen.
 
 ---
 
 ### Soal 4
 
-**Dokumen yang bukan persyaratan administratif BLU adalah:**
+**Manakah kondisi yang dapat menjadi dasar pencabutan penerapan PPK-BLU?**
 
-- **A.** Rencana Strategis Bisnis
-- **B.** Laporan Keuangan Pokok
-- **C.** Standar Pelayanan Minimum
-- **D.** Rencana penerbitan Surat Berharga Negara
+- **A.** BLU memperoleh surplus anggaran
+- **B.** BLU tidak lagi memenuhi persyaratan substantif, teknis, dan/atau administratif
+- **C.** BLU meningkatkan jumlah layanan
+- **D.** BLU memiliki saldo kas pada akhir tahun
 
-> ✅ **Jawaban:** **D. Rencana penerbitan Surat Berharga Negara**
-
+> ✅ **Jawaban:** **B. BLU tidak lagi memenuhi persyaratan substantif, teknis, dan/atau administratif**
 >
-> 💡 **Pembahasan singkat:** Persyaratan administratif BLU tidak mensyaratkan rencana penerbitan SBN.
+> 💡 **Pembahasan singkat:** Tidak lagi terpenuhinya persyaratan BLU merupakan salah satu dasar pencabutan. Dasar lain yang disebut dalam materi antara lain ketidakpatuhan terhadap ketentuan pengelolaan keuangan BLU dan hasil penilaian tata kelola/kinerja yang memenuhi kriteria buruk atau tidak mencapai ambang batas.
 
 ---
 
 ### Soal 5
 
-**Status PPK-BLU dapat dicabut apabila:**
+**Satker akan menerima hibah untuk pertama kalinya atau hibah yang sifatnya tidak berulang. Langkah yang tepat sebelum melanjutkan proses penerimaan hibah adalah:**
 
-- **A.** BLU memperoleh surplus
-- **B.** BLU tidak lagi memenuhi persyaratan substantif, teknis, dan/atau administratif
-- **C.** BLU menambah layanan
-- **D.** BLU memiliki saldo kas
+- **A.** Langsung menggunakan dana hibah
+- **B.** Melakukan konsultasi mengenai rencana penerimaan hibah sesuai kewenangan
+- **C.** Menunggu pemeriksaan BPK
+- **D.** Membuka rekening pribadi untuk menampung dana
 
-> ✅ **Jawaban:** **B. BLU tidak lagi memenuhi persyaratan substantif, teknis, dan/atau administratif**
-
+> ✅ **Jawaban:** **B. Melakukan konsultasi mengenai rencana penerimaan hibah sesuai kewenangan**
 >
-> 💡 **Pembahasan singkat:** Tidak terpenuhinya persyaratan BLU merupakan salah satu dasar pencabutan.
+> 💡 **Pembahasan singkat:** Clue peserta menekankan konsultasi sebelum menerima hibah pertama kali atau hibah tidak berulang. Dalam tata kelola hibah, konsultasi dilakukan sebelum proses penerimaan/penandatanganan dilanjutkan sesuai jenis dan sumber hibah.
 
 ---
 
 ### Soal 6
 
-**Sebelum menerima hibah pertama kali atau hibah yang tidak berulang, Satker sebaiknya:**
+**Urutan umum penatausahaan hibah langsung dalam bentuk uang yang perlu diingat adalah:**
 
-- **A.** Langsung membuka rekening
-- **B.** Melakukan konsultasi terkait hibah
-- **C.** Mencatat sebagai PNBP
-- **D.** Menunggu akhir tahun
+- **A.** Rekening → Register → Pengesahan → Revisi
+- **B.** Register → Rekening → Revisi → Pengesahan
+- **C.** Revisi → Register → Rekening → Pengesahan
+- **D.** Register → Revisi → Pengesahan → Rekening
 
-> ✅ **Jawaban:** **B. Melakukan konsultasi terkait hibah**
-
+> ✅ **Jawaban:** **B. Register → Rekening → Revisi → Pengesahan**
 >
-> 💡 **Pembahasan singkat:** Catatan peserta mengingatkan konsultasi hibah sebelum penerimaan pertama kali atau yang tidak berulang.
+> 💡 **Pembahasan singkat:** Mnemonik yang dicatat peserta adalah **Register – Rekening – Revisi – Pengesahan**. Setelah register, Satker mengelola rekening hibah sesuai persetujuan Kuasa BUN, menyesuaikan pagu belanja melalui revisi DIPA, kemudian melakukan pengesahan transaksi hibah.
 
 ---
 
 ### Soal 7
 
-**Urutan proses pengelolaan hibah langsung yang paling tepat adalah:**
+**Untuk memperbaiki kinerja Deviasi Halaman III DIPA, tindakan Satker yang paling tepat adalah:**
 
-- **A.** Rekening–Register–Pengesahan–Revisi
-- **B.** Register–Rekening–Revisi–Pengesahan
-- **C.** Register–Revisi–Rekening–Pengesahan
-- **D.** Revisi–Register–Pengesahan–Rekening
+- **A.** Menetapkan RPD bulanan sama besar sepanjang tahun tanpa melihat rencana kegiatan
+- **B.** Memutakhirkan RPD Halaman III DIPA berdasarkan rencana realisasi bulanan yang realistis
+- **C.** Menghapus seluruh RPD yang belum terealisasi
+- **D.** Menunda seluruh pembayaran sampai akhir tahun
 
-> ✅ **Jawaban:** **B. Register–Rekening–Revisi–Pengesahan**
-
+> ✅ **Jawaban:** **B. Memutakhirkan RPD Halaman III DIPA berdasarkan rencana realisasi bulanan yang realistis**
 >
-> 💡 **Pembahasan singkat:** Urutan ini menjadi pola hafalan utama dari clue peserta.
+> 💡 **Pembahasan singkat:** Indikator Deviasi Halaman III DIPA mengukur kesesuaian realisasi dengan RPD bulanan per jenis belanja. Karena itu, perbaikan utamanya adalah meningkatkan akurasi perencanaan dan melakukan pemutakhiran RPD pada periode yang ditentukan. Catatan peserta tentang tidak menyatukan revisi Halaman III dengan revisi lain tidak dinyatakan sebagai ketentuan formal dalam modul, sehingga tidak dijadikan kunci soal.
 
 ---
 
 ### Soal 8
 
-**Konsolidasi Spending Review Kanwil dan Spending Review Pelaksanaan Anggaran dilakukan oleh:**
+**Data RPD pada Halaman III DIPA yang digunakan sebagai dasar penghitungan deviasi dikunci berdasarkan:**
 
-- **A.** Direktorat PKN
-- **B.** Direktorat Pelaksanaan Anggaran
-- **C.** Direktorat APK
-- **D.** Sekretariat DJPb
+- **A.** Tanggal pengajuan SPM pertama setiap bulan
+- **B.** Tanggal posting DIPA hasil revisi pada sistem setiap awal triwulan
+- **C.** Tanggal akhir kontrak
+- **D.** Tanggal penyusunan laporan keuangan semesteran
 
-> ✅ **Jawaban:** **B. Direktorat Pelaksanaan Anggaran**
-
+> ✅ **Jawaban:** **B. Tanggal posting DIPA hasil revisi pada sistem setiap awal triwulan**
 >
-> 💡 **Pembahasan singkat:** Direktorat Pelaksanaan Anggaran menjadi unit yang mengonsolidasikan hasil Spending Review terkait pelaksanaan anggaran.
+> 💡 **Pembahasan singkat:** PER-5/PB/2024 yang dirangkum dalam modul menetapkan penguncian data RPD Halaman III DIPA dan proporsi pagu berdasarkan tanggal posting DIPA hasil revisi pada sistem setiap awal triwulan.
 
 ---
 
 ### Soal 9
 
-**Pejabat yang bertugas menguji SPP dan menerbitkan SPM adalah:**
+**Dalam Semester I, suatu Satker telah melakukan 2 kali revisi DIPA pagu tetap yang diperhitungkan dalam IKPA. Pada bulan Juni Satker melakukan revisi yang menambah pagu. Dengan asumsi tidak ada revisi lain yang diperhitungkan, bagaimana pengaruhnya terhadap indikator Revisi DIPA?**
 
-- **A.** PPK
-- **B.** PPSPM
-- **C.** Bendahara
-- **D.** KPA
+- **A.** Frekuensi menjadi 3 karena semua revisi dihitung
+- **B.** Frekuensi yang diperhitungkan tetap 2 karena indikator menghitung jenis revisi pagu tetap tertentu
+- **C.** Nilai otomatis menjadi 0 karena ada penambahan pagu
+- **D.** Seluruh revisi Semester I dihapus dari perhitungan
 
-> ✅ **Jawaban:** **B. PPSPM**
-
+> ✅ **Jawaban:** **B. Frekuensi yang diperhitungkan tetap 2 karena indikator menghitung jenis revisi pagu tetap tertentu**
 >
-> 💡 **Pembahasan singkat:** PPSPM berfungsi sebagai penguji dan pemberi perintah pembayaran melalui SPM.
+> 💡 **Pembahasan singkat:** Indikator Revisi DIPA menghitung jenis revisi **pagu tetap** tertentu yang disahkan Kementerian Keuangan. Dengan 2 revisi yang diperhitungkan dalam satu semester, nilai kinerja revisi adalah 100; revisi penambahan pagu tidak otomatis menambah frekuensi tersebut.
 
 ---
 
 ### Soal 10
 
-**Pejabat yang membuat komitmen dan menandatangani SPP adalah:**
+**Unit yang melakukan konsolidasi Spending Review tingkat Kanwil dan Spending Review tingkat Pengguna Anggaran adalah:**
 
-- **A.** PPK
-- **B.** PPSPM
-- **C.** Bendahara
-- **D.** Kuasa BUN
+- **A.** Direktorat Sistem Informasi dan Teknologi Perbendaharaan
+- **B.** Direktorat Pelaksanaan Anggaran
+- **C.** Direktorat Pengelolaan Kas Negara
+- **D.** Direktorat Sistem Manajemen Investasi
 
-> ✅ **Jawaban:** **A. PPK**
-
+> ✅ **Jawaban:** **B. Direktorat Pelaksanaan Anggaran**
 >
-> 💡 **Pembahasan singkat:** PPK bertanggung jawab atas tindakan yang menimbulkan pengeluaran serta membuat SPP.
+> 💡 **Pembahasan singkat:** Sesuai clue peserta dan materi Spending Review, konsolidasi hasil Spending Review Kanwil dan tingkat PA dilakukan pada Direktorat Pelaksanaan Anggaran.
 
 ---
 
 ### Soal 11
 
-**Bendahara Pengeluaran menerima tagihan UP yang tidak memenuhi persyaratan. Tindakan yang tepat adalah:**
+**Pejabat yang menguji SPP beserta dokumen pendukung dan menerbitkan SPM apabila persyaratan terpenuhi adalah:**
 
-- **A.** Tetap membayar
-- **B.** Menolak pembayaran
-- **C.** Mengubah menjadi LS
-- **D.** Mengirim ke KPPN
+- **A.** Bendahara Pengeluaran
+- **B.** Pejabat Pembuat Komitmen
+- **C.** Pejabat Penandatangan SPM
+- **D.** Penyedia barang/jasa
 
-> ✅ **Jawaban:** **B. Menolak pembayaran**
-
+> ✅ **Jawaban:** **C. Pejabat Penandatangan SPM**
 >
-> 💡 **Pembahasan singkat:** Bendahara wajib melakukan pengujian dan dapat menolak perintah pembayaran yang tidak memenuhi syarat.
+> 💡 **Pembahasan singkat:** PPSPM melakukan pengujian atas SPP dan dokumen pendukung, menolak/mengembalikan SPP yang tidak memenuhi persyaratan, membebankan tagihan pada mata anggaran yang tersedia, serta menerbitkan SPM.
 
 ---
 
 ### Soal 12
 
-**Langkah awal pembukaan rekening Bendahara adalah:**
+**Urutan awal pembukaan rekening Bendahara/Satker yang benar adalah:**
 
-- **A.** Bendahara langsung ke bank
-- **B.** KPA mengajukan permohonan kepada KPPN/Kuasa BUN
-- **C.** Bank meminta persetujuan DJA
-- **D.** KPPN membuka tanpa permohonan
+- **A.** Satker membuka rekening di bank → meminta persetujuan KPPN
+- **B.** KPA mengajukan permohonan → KPPN/Kuasa BUN memverifikasi → persetujuan diterbitkan → rekening dibuka → pembukaan dilaporkan
+- **C.** Bank membuka rekening → KPA mengajukan pengesahan kepada BPK
+- **D.** Bendahara membuka rekening pribadi → kemudian dilaporkan kepada KPPN
 
-> ✅ **Jawaban:** **B. KPA mengajukan permohonan kepada KPPN/Kuasa BUN**
-
+> ✅ **Jawaban:** **B. KPA mengajukan permohonan → KPPN/Kuasa BUN memverifikasi → persetujuan diterbitkan → rekening dibuka → pembukaan dilaporkan**
 >
-> 💡 **Pembahasan singkat:** Pembukaan rekening pemerintah memerlukan persetujuan Kuasa BUN lebih dahulu.
+> 💡 **Pembahasan singkat:** Pembukaan rekening pemerintah harus didahului persetujuan Kuasa BUN di Daerah. Setelah persetujuan diperoleh, Satker membuka rekening pada bank dan kemudian melaporkan pembukaannya kepada Kuasa BUN/KPPN.
 
 ---
 
 ### Soal 13
 
-**Fungsi utama Komite Investasi Pemerintah (KIP) adalah:**
+**Pasangan fungsi Komite Investasi Pemerintah (KIP) dan Operator Investasi Pemerintah (OIP) yang tepat adalah:**
 
-- **A.** Operasional investasi
-- **B.** Supervisi investasi pemerintah
-- **C.** Audit eksternal
-- **D.** Penerbitan SP2D
+- **A.** KIP operasional — OIP regulasi
+- **B.** KIP supervisi — OIP operasional
+- **C.** KIP audit eksternal — OIP legislasi
+- **D.** KIP pembayaran — OIP penganggaran K/L
 
-> ✅ **Jawaban:** **B. Supervisi investasi pemerintah**
-
+> ✅ **Jawaban:** **B. KIP supervisi — OIP operasional**
 >
-> 💡 **Pembahasan singkat:** Pembagian peran investasi pemerintah: Menteri Keuangan regulasi, KIP supervisi, OIP operasional.
+> 💡 **Pembahasan singkat:** KIP dibentuk untuk melaksanakan fungsi supervisi pengelolaan investasi pemerintah. OIP adalah BLU, BUMN, dan/atau BHL yang ditetapkan Menteri Keuangan selaku BUN untuk melaksanakan kewenangan operasional investasi pemerintah.
 
 ---
 
 ### Soal 14
 
-**Operator Investasi Pemerintah dapat berupa:**
+**Wetmatigheid dalam pengujian pengeluaran negara berkaitan dengan:**
 
-- **A.** Hanya BLU
-- **B.** BLU, BUMN, dan/atau BHL
-- **C.** Hanya BUMN
-- **D.** Hanya KPPN
+- **A.** Kesesuaian pengeluaran dengan peraturan perundang-undangan
+- **B.** Tingkat popularitas program
+- **C.** Keuntungan komersial penyedia
+- **D.** Besarnya saldo kas Satker
 
-> ✅ **Jawaban:** **B. BLU, BUMN, dan/atau BHL**
-
+> ✅ **Jawaban:** **A. Kesesuaian pengeluaran dengan peraturan perundang-undangan**
 >
-> 💡 **Pembahasan singkat:** Entitas tersebut dapat ditetapkan Menteri Keuangan sebagai OIP.
+> 💡 **Pembahasan singkat:** Wetmatigheid menguji aspek legalitas/ketaatan terhadap ketentuan. Pengujian PPSPM juga mencakup rechtmatigheid dan doelmatigheid.
 
 ---
 
 ### Soal 15
 
-**Wetmatigheid menitikberatkan pada:**
+**Pasangan pengertian yang tepat dalam pengujian pengeluaran negara adalah:**
 
-- **A.** Kesesuaian dengan peraturan
-- **B.** Kebenaran hak penerima
-- **C.** Kesesuaian tujuan
-- **D.** Ketersediaan kas
+- **A.** Rechtmatigheid = tujuan/manfaat; Doelmatigheid = legalitas
+- **B.** Rechtmatigheid = kebenaran hak/tagihan; Doelmatigheid = tujuan atau kemanfaatan pengeluaran
+- **C.** Rechtmatigheid = ketersediaan kas; Doelmatigheid = penyusunan DIPA
+- **D.** Rechtmatigheid = audit eksternal; Doelmatigheid = pengadaan
 
-> ✅ **Jawaban:** **A. Kesesuaian dengan peraturan**
-
+> ✅ **Jawaban:** **B. Rechtmatigheid = kebenaran hak/tagihan; Doelmatigheid = tujuan atau kemanfaatan pengeluaran**
 >
-> 💡 **Pembahasan singkat:** Wetmatigheid menguji dasar legal atau kepatuhan terhadap ketentuan.
+> 💡 **Pembahasan singkat:** Secara ringkas: **wetmatigheid = sesuai aturan**, **rechtmatigheid = benar hak/nominal/penerimanya**, dan **doelmatigheid = sesuai tujuan/manfaat pengeluaran**.
 
 ---
 
 ### Soal 16
 
-**Rechtmatigheid menitikberatkan pada:**
+**LKPP pada dasarnya merupakan laporan keuangan Pemerintah Pusat yang disusun melalui konsolidasi:**
 
-- **A.** Tujuan belanja
-- **B.** Kebenaran hak dan tagihan
-- **C.** Pagu tersedia
-- **D.** Waktu pembayaran
+- **A.** Laporan Kementerian/Lembaga dan laporan Bendahara Umum Negara
+- **B.** Seluruh APBD provinsi dan kabupaten/kota
+- **C.** Laporan BUMN saja
+- **D.** Laporan perbankan nasional
 
-> ✅ **Jawaban:** **B. Kebenaran hak dan tagihan**
-
+> ✅ **Jawaban:** **A. Laporan Kementerian/Lembaga dan laporan Bendahara Umum Negara**
 >
-> 💡 **Pembahasan singkat:** Rechtmatigheid menguji apakah pihak yang dibayar memang berhak dan nilai tagihannya sah.
+> 💡 **Pembahasan singkat:** Menteri Keuangan menggabungkan laporan keuangan Kementerian/Lembaga dan laporan dalam lingkup BUN untuk menyusun LKPP sesuai SAP dan kebijakan akuntansi pemerintah pusat.
 
 ---
 
 ### Soal 17
 
-**Doelmatigheid menitikberatkan pada:**
+**Pernyataan yang paling tepat mengenai perbedaan DAU dan DBH adalah:**
 
-- **A.** Tujuan dan manfaat pengeluaran
-- **B.** Nomor rekening
-- **C.** Nomor kontrak
-- **D.** Masa berlaku DIPA
+- **A.** DAU berbasis pemerataan/celah fiskal, sedangkan DBH berbasis penerimaan tertentu yang dibagihasilkan
+- **B.** DAU dan DBH sama-sama hanya untuk kegiatan fisik
+- **C.** DAU berasal dari PAD, sedangkan DBH berasal dari pinjaman daerah
+- **D.** DAU hanya untuk provinsi, sedangkan DBH hanya untuk desa
 
-> ✅ **Jawaban:** **A. Tujuan dan manfaat pengeluaran**
-
+> ✅ **Jawaban:** **A. DAU berbasis pemerataan/celah fiskal, sedangkan DBH berbasis penerimaan tertentu yang dibagihasilkan**
 >
-> 💡 **Pembahasan singkat:** Doelmatigheid menguji apakah pengeluaran sesuai tujuan yang hendak dicapai.
+> 💡 **Pembahasan singkat:** DAU ditujukan untuk pemerataan kemampuan keuangan antardaerah, sedangkan DBH merupakan bagian pendapatan APBN tertentu yang dialokasikan kepada daerah berdasarkan ketentuan pembagian hasil.
 
 ---
 
 ### Soal 18
 
-**Komponen laporan keuangan pemerintah yang lengkap adalah:**
+**Kabupaten A memiliki PAD dan kapasitas fiskal lebih tinggi daripada Kabupaten B. Kabupaten A memprotes karena memperoleh DAU lebih kecil. Penjelasan yang paling tepat adalah:**
 
-- **A.** LRA, LO, Neraca, LPE, LPSAL, LAK, CaLK
-- **B.** DIPA, SPM, SP2D, Neraca
-- **C.** LRA, RKA-K/L, SPM, CaLK
-- **D.** LO, DIPA, SPP, LAK
+- **A.** DAU harus selalu sama untuk semua kabupaten dalam satu provinsi
+- **B.** DAU mempertimbangkan celah fiskal sehingga daerah dengan kebutuhan lebih tinggi dan kapasitas lebih rendah dapat memperoleh alokasi lebih besar
+- **C.** DAU hanya ditentukan oleh jumlah penduduk
+- **D.** DAU ditentukan oleh besarnya DBH tahun sebelumnya
 
-> ✅ **Jawaban:** **A. LRA, LO, Neraca, LPE, LPSAL, LAK, CaLK**
-
+> ✅ **Jawaban:** **B. DAU mempertimbangkan celah fiskal sehingga daerah dengan kebutuhan lebih tinggi dan kapasitas lebih rendah dapat memperoleh alokasi lebih besar**
 >
-> 💡 **Pembahasan singkat:** Ketujuh komponen tersebut merupakan komponen laporan keuangan berbasis akrual.
+> 💡 **Pembahasan singkat:** Logika pemerataan DAU adalah menutup ketimpangan kemampuan keuangan. Karena itu, daerah dengan kapasitas fiskal lebih kuat tidak otomatis menerima DAU lebih besar.
 
 ---
 
 ### Soal 19
 
-**Perbedaan utama DAU dan DBH adalah:**
+**Suatu tagihan diajukan kepada PPSPM, tetapi BAST yang dipersyaratkan sebagai dokumen pendukung belum tersedia. Tindakan PPSPM yang tepat adalah:**
 
-- **A.** DAU berbasis penerimaan dibagihasilkan, DBH berbasis celah fiskal
-- **B.** DAU untuk pemerataan, DBH berbasis penerimaan tertentu yang dibagihasilkan
-- **C.** Keduanya sama
-- **D.** DAU hanya provinsi
+- **A.** Tetap menerbitkan SPM agar pembayaran tidak terlambat
+- **B.** Menolak/mengembalikan SPP sampai persyaratan pembayaran dilengkapi
+- **C.** Mengganti BAST dengan memo informal
+- **D.** Membayar dahulu melalui UP tanpa pengujian
 
-> ✅ **Jawaban:** **B. DAU untuk pemerataan, DBH berbasis penerimaan tertentu yang dibagihasilkan**
-
+> ✅ **Jawaban:** **B. Menolak/mengembalikan SPP sampai persyaratan pembayaran dilengkapi**
 >
-> 💡 **Pembahasan singkat:** DAU diarahkan mengurangi ketimpangan fiskal, sedangkan DBH terkait pembagian penerimaan tertentu.
+> 💡 **Pembahasan singkat:** PPSPM wajib menguji SPP dan dokumen pendukung. Jika dokumen yang dipersyaratkan belum lengkap, PPSPM tidak menerbitkan SPM dan mengembalikan SPP untuk dilengkapi.
 
 ---
 
 ### Soal 20
 
-**Kabupaten dengan kapasitas fiskal rendah dan kebutuhan fiskal tinggi dapat menerima DAU lebih besar karena:**
+**Pasangan ketentuan MP PNBP yang tepat adalah:**
 
-- **A.** DAU dibagi sama rata
-- **B.** DAU berbasis celah fiskal
-- **C.** DAU berbasis PAD tinggi
-- **D.** DAU berbasis DBH
+- **A.** Tahap I Klaster 1 maksimal 60%; Tahap III sebesar MP Riil
+- **B.** Tahap I Klaster 1 20%; Tahap III selalu 60%
+- **C.** Tahap I semua Satker 100%; Tahap III 20%
+- **D.** Tahap I Klaster 1 80%; Tahap III tidak menggunakan MP Riil
 
-> ✅ **Jawaban:** **B. DAU berbasis celah fiskal**
-
+> ✅ **Jawaban:** **A. Tahap I Klaster 1 maksimal 60%; Tahap III sebesar MP Riil**
 >
-> 💡 **Pembahasan singkat:** Celah fiskal adalah selisih kebutuhan fiskal dengan potensi pendapatan daerah.
+> 💡 **Pembahasan singkat:** Klaster 1 memperoleh MP PNBP Tahap I maksimal 60% jika MP Riil tiga tahun terakhir minimal 60% dan belanja Semester I TAYL minimal 30%. Formula Tahap III adalah sebesar MP Riil.
 
 ---
 
 ### Soal 21
 
-**PPSPM menerima tagihan pekerjaan kontraktual tetapi BAST belum ada. Tindakan yang tepat adalah:**
+**Dalam terminologi sistem perbendaharaan, “void” berarti:**
 
-- **A.** Tetap menerbitkan SPM
-- **B.** Mengembalikan SPP sampai dokumen lengkap
-- **C.** Bayar dengan UP
-- **D.** Kirim ke bank
+- **A.** Pembatalan transaksi/pencatatan
+- **B.** Penambahan pagu anggaran
+- **C.** Rekonsiliasi bank
+- **D.** Pemindahbukuan rekening Satker
 
-> ✅ **Jawaban:** **B. Mengembalikan SPP sampai dokumen lengkap**
-
+> ✅ **Jawaban:** **A. Pembatalan transaksi/pencatatan**
 >
-> 💡 **Pembahasan singkat:** BAST merupakan dokumen penting untuk membuktikan hak tagih bila dipersyaratkan.
+> 💡 **Pembahasan singkat:** Modul Sistem dan Teknologi Perbendaharaan mendefinisikan **Void** sebagai proses pembatalan transaksi/pencatatan. Clue peserta menyebut “SP2D yang bisa di-void”, tetapi modul yang tersedia tidak cukup untuk membuat generalisasi jenis SP2D tertentu; karena itu soal ini dibatasi pada definisi yang terverifikasi.
 
 ---
 
 ### Soal 22
 
-**MP PNBP Tahap I untuk Klaster 1 maksimal sebesar:**
+**Pernyataan yang tepat mengenai SRG dan S-SRG adalah:**
 
-- **A.** 20%
-- **B.** 40%
-- **C.** 60%
-- **D.** 100%
+- **A.** SRG merupakan sistem Resi Gudang; S-SRG merupakan pembiayaan dengan agunan Resi Gudang yang memperoleh subsidi bunga/margin pemerintah
+- **B.** SRG adalah sistem gaji dan S-SRG adalah sistem pajak
+- **C.** SRG hanya untuk deposito pemerintah
+- **D.** S-SRG tidak berkaitan dengan pembiayaan
 
-> ✅ **Jawaban:** **C. 60%**
-
+> ✅ **Jawaban:** **A. SRG merupakan sistem Resi Gudang; S-SRG merupakan pembiayaan dengan agunan Resi Gudang yang memperoleh subsidi bunga/margin pemerintah**
 >
-> 💡 **Pembahasan singkat:** Klaster 1 memperoleh alokasi awal MP PNBP Tahap I maksimal 60%.
+> 💡 **Pembahasan singkat:** Resi Gudang merupakan bukti kepemilikan barang yang disimpan di gudang dan dapat digunakan dalam skema pembiayaan. S-SRG merupakan skema subsidi untuk pembiayaan dengan agunan Resi Gudang.
 
 ---
 
 ### Soal 23
 
-**Satker baru pada formula MP PNBP Tahap I memperoleh alokasi awal:**
+**Satker akan mengajukan revolving UP, tetapi sebagian bukti transaksi belum lengkap. Tindakan yang paling tepat adalah:**
 
-- **A.** 10%
-- **B.** 20%
-- **C.** 40%
-- **D.** 60%
+- **A.** Memasukkan seluruh transaksi termasuk yang belum lengkap
+- **B.** Mengajukan GUP untuk transaksi yang bukti pertanggungjawabannya sudah lengkap, sedangkan transaksi lain diajukan setelah dokumennya lengkap
+- **C.** Menghapus transaksi yang belum lengkap tanpa pertanggungjawaban
+- **D.** Menunda seluruh pertanggungjawaban sampai akhir tahun
 
-> ✅ **Jawaban:** **B. 20%**
-
+> ✅ **Jawaban:** **B. Mengajukan GUP untuk transaksi yang bukti pertanggungjawabannya sudah lengkap, sedangkan transaksi lain diajukan setelah dokumennya lengkap**
 >
-> 💡 **Pembahasan singkat:** Satker baru masuk klaster khusus tanpa historis dan diberikan MP awal 20%.
+> 💡 **Pembahasan singkat:** GUP harus didukung bukti pengeluaran yang sah/terverifikasi. UP bersifat revolving dan dapat diganti setelah digunakan sesuai ketentuan, tetapi transaksi yang dipertanggungjawabkan harus memiliki dokumen yang lengkap.
 
 ---
 
 ### Soal 24
 
-**Dalam revolving UP, bila sebagian bukti transaksi belum lengkap, praktik yang tepat adalah:**
+**Berdasarkan urutan proses Satker baru dalam catatan peserta, setelah Satker dan DIPA terbentuk, langkah berikutnya adalah:**
 
-- **A.** Masukkan semua transaksi
-- **B.** GUP hanya transaksi yang bukti lengkap
-- **C.** Hapus transaksi
-- **D.** Ubah seluruhnya menjadi LS
+- **A.** Menerbitkan SP2D
+- **B.** Menetapkan pejabat perbendaharaan
+- **C.** Mengajukan laporan keuangan tahunan
+- **D.** Melakukan penghapusan supplier
 
-> ✅ **Jawaban:** **B. GUP hanya transaksi yang bukti lengkap**
-
+> ✅ **Jawaban:** **B. Menetapkan pejabat perbendaharaan**
 >
-> 💡 **Pembahasan singkat:** Transaksi yang belum lengkap dimasukkan pada GUP berikutnya setelah dokumennya memenuhi syarat.
+> 💡 **Pembahasan singkat:** Urutan awal yang dicatat adalah pembentukan Satker/DIPA → penetapan KPA, PPK, PPSPM, dan Bendahara → registrasi user SAKTI dan role → aktivasi TTE → penyampaian SK pejabat → pembukaan rekening bila diperlukan → supplier → POK/RPD → pelaksanaan kegiatan hingga pembayaran.
 
 ---
 
 ### Soal 25
 
-**SRG berkaitan dengan:**
+**Dalam skema Rekening Pengeluaran berbasis rekening virtual, rekening Satker baru seharusnya:**
 
-- **A.** Pengelolaan Resi Gudang
-- **B.** Pengelolaan rekening pemerintah
-- **C.** Penerbitan SP2D
-- **D.** Penyusunan APBD
+- **A.** Dibuka sendiri tanpa hubungan dengan Unit Eselon I
+- **B.** Menggunakan Rekening Pengeluaran Satker/VA yang terkonsolidasi dengan Rekening Induk Unit Eselon I sesuai prosedur
+- **C.** Menggunakan rekening pribadi Bendahara
+- **D.** Selalu menggunakan rekening deposito
 
-> ✅ **Jawaban:** **A. Pengelolaan Resi Gudang**
-
+> ✅ **Jawaban:** **B. Menggunakan Rekening Pengeluaran Satker/VA yang terkonsolidasi dengan Rekening Induk Unit Eselon I sesuai prosedur**
 >
-> 💡 **Pembahasan singkat:** SRG mencakup penerbitan, pengalihan, penjaminan, dan penyelesaian transaksi Resi Gudang.
+> 💡 **Pembahasan singkat:** Dalam pengelolaan rekening virtual, pimpinan Unit Eselon I berperan pada Rekening Induk dan koordinasi pembukaan rekening Satker, sedangkan KPA mengoperasikan rekening Satker. Rekening lama yang tidak lagi digunakan ditutup sesuai prosedur pengelolaan rekening pemerintah.
 
 ---
 
 ### Soal 26
 
-**Dalam individual lending UMi, agunan:**
+**Ketentuan agunan dalam Pembiayaan UMi yang tepat adalah:**
 
-- **A.** Selalu dilarang
-- **B.** Dapat dikenakan sesuai penilaian risiko
-- **C.** Wajib sertifikat tanah
-- **D.** Hanya resi gudang
+- **A.** Individual lending tidak boleh memakai agunan; group lending wajib memakai agunan tambahan
+- **B.** Individual lending dapat dikenakan agunan sesuai penilaian risiko, sedangkan group lending tidak boleh dikenakan agunan tambahan
+- **C.** Semua UMi wajib menggunakan sertifikat tanah
+- **D.** Semua UMi dilarang menggunakan bentuk pengamanan risiko apa pun
 
-> ✅ **Jawaban:** **B. Dapat dikenakan sesuai penilaian risiko**
-
+> ✅ **Jawaban:** **B. Individual lending dapat dikenakan agunan sesuai penilaian risiko, sedangkan group lending tidak boleh dikenakan agunan tambahan**
 >
-> 💡 **Pembahasan singkat:** Pada individual lending, penyalur dapat mengenakan agunan sesuai hasil penilaian risiko.
+> 💡 **Pembahasan singkat:** Pada individual lending, agunan dapat dikenakan berdasarkan penilaian risiko Penyalur/Lembaga Linkage. Pada group lending, debitur membentuk kelompok dan menerapkan tanggung renteng sehingga tidak boleh dikenakan agunan tambahan.
 
 ---
 
 ### Soal 27
 
-**Dalam group lending UMi, agunan tambahan:**
+**Selain tidak lagi memenuhi persyaratan BLU, kondisi lain yang dapat menjadi dasar pencabutan penerapan PPK-BLU adalah:**
 
-- **A.** Wajib
-- **B.** Tidak boleh dikenakan
-- **C.** Bebas tanpa batas
-- **D.** Harus kendaraan
+- **A.** BLU mematuhi seluruh ketentuan pengelolaan keuangan
+- **B.** BLU tidak mengikuti ketentuan peraturan perundang-undangan di bidang pengelolaan keuangan BLU
+- **C.** BLU meningkatkan kualitas pelayanan
+- **D.** BLU memiliki pendapatan PNBP
 
-> ✅ **Jawaban:** **B. Tidak boleh dikenakan**
-
+> ✅ **Jawaban:** **B. BLU tidak mengikuti ketentuan peraturan perundang-undangan di bidang pengelolaan keuangan BLU**
 >
-> 💡 **Pembahasan singkat:** Group lending menggunakan pendekatan kelompok/tanggung renteng sehingga tidak mengenakan agunan tambahan.
+> 💡 **Pembahasan singkat:** Materi pencabutan BLU menyebut ketidakpatuhan terhadap ketentuan pengelolaan keuangan BLU sebagai salah satu dasar pencabutan, selain tidak memenuhi persyaratan dan hasil penilaian tata kelola/kinerja yang buruk.
 
 ---
 
 ### Soal 28
 
-**Alur umum Satker baru setelah DIPA tersedia dimulai dengan:**
+**Dalam akuntansi pemerintah, bagian piutang jangka panjang yang akan jatuh tempo dalam 12 bulan setelah tanggal pelaporan harus:**
 
-- **A.** SPM lalu pejabat
-- **B.** Penetapan pejabat perbendaharaan lalu registrasi user SAKTI
-- **C.** SP2D lalu rekening
-- **D.** Bayar dulu lalu administrasi
+- **A.** Dihapuskan seluruhnya
+- **B.** Direklasifikasi menjadi Bagian Lancar Piutang Jangka Panjang
+- **C.** Dicatat sebagai belanja modal
+- **D.** Dipindahkan menjadi ekuitas tanpa jurnal
 
-> ✅ **Jawaban:** **B. Penetapan pejabat perbendaharaan lalu registrasi user SAKTI**
-
+> ✅ **Jawaban:** **B. Direklasifikasi menjadi Bagian Lancar Piutang Jangka Panjang**
 >
-> 💡 **Pembahasan singkat:** Kesiapan pejabat dan hak akses merupakan tahap awal sebelum pelaksanaan transaksi.
+> 💡 **Pembahasan singkat:** Modul Akuntansi menegaskan bahwa porsi piutang jangka panjang yang jatuh tempo dalam 12 bulan ke depan direklasifikasi menjadi Bagian Lancar Piutang Jangka Panjang. Clue peserta juga menyebut “uang muka pendapatan”, tetapi istilah tersebut tidak dijelaskan secara spesifik pada modul yang tersedia, sehingga soal difokuskan pada bagian piutang yang terverifikasi.
 
 ---
 
 ### Soal 29
 
-**Rekonsiliasi SAKTI–SPAN membandingkan data utama:**
+**Pernyataan yang tepat mengenai DAU, DAK Fisik, dan DBH adalah:**
 
-- **A.** Anggaran, realisasi, kas, hibah
-- **B.** Pegawai dan aset saja
-- **C.** DIPA saja
-- **D.** SP2D saja
+- **A.** DAU untuk pemerataan kemampuan keuangan; DAK Fisik mendukung kegiatan fisik/prioritas tertentu; DBH berasal dari penerimaan tertentu yang dibagihasilkan
+- **B.** Ketiganya selalu merupakan block grant tanpa tujuan khusus
+- **C.** Ketiganya bersumber dari PAD
+- **D.** DAK Fisik hanya digunakan untuk belanja pegawai
 
-> ✅ **Jawaban:** **A. Anggaran, realisasi, kas, hibah**
-
+> ✅ **Jawaban:** **A. DAU untuk pemerataan kemampuan keuangan; DAK Fisik mendukung kegiatan fisik/prioritas tertentu; DBH berasal dari penerimaan tertentu yang dibagihasilkan**
 >
-> 💡 **Pembahasan singkat:** Empat kelompok data utama ini menjadi objek rekonsiliasi eksternal SAKTI–SPAN.
+> 💡 **Pembahasan singkat:** Ketiga instrumen TKD memiliki karakter berbeda: DAU berorientasi pemerataan, DAK Fisik mendanai kebutuhan fisik tertentu yang selaras prioritas, sedangkan DBH membagikan penerimaan negara tertentu kepada daerah sesuai ketentuan.
 
 ---
 
 ### Soal 30
 
-**Istilah Void dalam sistem perbendaharaan berarti:**
+**Formula MP PNBP Tahap III adalah:**
 
-- **A.** Pembatalan transaksi/pencatatan
-- **B.** Penambahan pagu
-- **C.** Pemindahan rekening
-- **D.** Penerbitan SP2D
+- **A.** Selalu 20% dari pagu
+- **B.** Selalu 40% dari pagu
+- **C.** Selalu 60% dari pagu
+- **D.** Sebesar MP Riil
 
-> ✅ **Jawaban:** **A. Pembatalan transaksi/pencatatan**
-
+> ✅ **Jawaban:** **D. Sebesar MP Riil**
 >
-> 💡 **Pembahasan singkat:** Void adalah proses pembatalan transaksi atau pencatatan pada sistem sesuai kewenangan dan ketentuan.
+> 💡 **Pembahasan singkat:** Modul Pelaksanaan Anggaran secara eksplisit menyebut **Penetapan MP PNBP Tahap III diberikan sebesar MP Riil**. Ini merupakan formula yang perlu dicermati sebagaimana clue peserta.
 
 ---
 
-[↑ Kembali ke Daftar Isi](#daftar-isi)
+[⬆ Kembali ke Daftar Isi](#daftar-isi)
 
 ---
 
@@ -2433,17 +2405,17 @@
 
 ### Soal 28
 
-**MPN G3 diperkenalkan pada:**
+**Setelah perluasan biller yang disebut dalam Modul Sistem dan Teknologi Perbendaharaan, jumlah biller pada MPN G3 menjadi:**
 
-- **A.** 2014
-- **B.** 2016
-- **C.** 2019
-- **D.** 2022
+- **A.** 3 biller
+- **B.** 4 biller
+- **C.** 5 biller
+- **D.** 6 biller
 
-> ✅ **Jawaban:** **C. 2019**
+> ✅ **Jawaban:** **C. 5 biller**
 
 >
-> 💡 **Pembahasan singkat:** MPN G3 mulai diperkenalkan pada 2019.
+> 💡 **Pembahasan singkat:** Modul menyebut total lima biller, yaitu DJP, DJBC, DJA, DJPb, dan DJPPR. Soal tahun peluncuran MPN G3 pada versi sebelumnya dihapus karena dua modul yang diunggah menggunakan penanda waktu yang berbeda (evolusi sistem dan landasan kebijakan), sehingga tidak tepat dijadikan soal dengan satu kunci tahun.
 
 ---
 
