@@ -3,11 +3,11 @@ A. Ruang Lingkup & Metodologi Pengujian
 Ruang lingkup pengujian mencakup dua host pada jaringan internal klien: 10.0.7.11 (aplikasi web “Portrait CMS” pada port 8080) dan 10.0.7.12 (Apache Tomcat pada port 8081). Pengujian dilakukan dengan pendekatan black-box tanpa kredensial awal yang diberikan oleh klien, mengikuti metodologi standar yang merujuk pada OWASP Testing Guide, meliputi tahapan reconnaissance & enumeration (port/service scanning, content discovery), vulnerability identification, exploitation (manual, tervalidasi dengan proof-of-concept), serta dokumentasi bukti (evidence) untuk setiap temuan yang berhasil dikonfirmasi. Pengujian denial-of-service dan social engineering terhadap personel klien berada di luar ruang lingkup (out-of-scope).
 
 B. Tools yang Digunakan
-Nmap port dan service scanning.
-dirsearch content discovery / enumerasi direktori dan endpoint.
-Burp Suite Community Edition intercepting proxy untuk memeriksa dan memodifikasi request/response HTTP.
-msfvenom (Metasploit Framework) pembuatan payload reverse shell (PHP dan WAR/JSP).
-Netcat (nc) listener untuk menerima koneksi reverse shell.
+Nmap - port dan service scanning.
+dirsearch - content discovery / enumerasi direktori dan endpoint.
+Burp Suite Community Edition - intercepting proxy untuk memeriksa dan memodifikasi request/response HTTP.
+msfvenom (Metasploit Framework) - pembuatan payload reverse shell (PHP dan WAR/JSP).
+Netcat (nc) - listener untuk menerima koneksi reverse shell.
 C. Batasan Pengujian
 
 Pengujian difokuskan pada dua host yang secara eksplisit disediakan dalam ruang lingkup (10.0.7.11 dan 10.0.7.12); host atau segmen jaringan lain di luar kedua IP tersebut tidak diuji. Pengujian terhadap ketahanan (availability) melalui teknik denial-of-service tidak dilakukan karena berada di luar ruang lingkup yang disepakati. Karena keterbatasan waktu, pengujian post-exploitation lanjutan (privilege escalation menyeluruh dan pergerakan lateral) tidak dieksplorasi lebih jauh setelah akses awal (initial foothold) berhasil dikonfirmasi pada kedua host.

