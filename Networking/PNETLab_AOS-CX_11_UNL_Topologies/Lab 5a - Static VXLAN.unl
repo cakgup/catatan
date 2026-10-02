@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 5a - Static VXLAN" id="761e6acc-d9c9-4fa2-b293-bc09d55718a7" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="Leaf-spine underlay OSPF dengan Static VXLAN VNI 110 antara Leaf1 dan Leaf2." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="Spine1" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="64ff174d-6a4e-4ef8-86d0-0f3f468d98a3" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="250" top="100">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="1"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="2"/>
+      </node>
+      <node id="2" name="Spine2" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="9cdde44b-fe2a-4edf-b1bf-74ae0f145054" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="600" top="100">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="4"/>
+      </node>
+      <node id="3" name="Leaf1" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="395827ef-ccb0-43cc-a9f9-c765d200f57a" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="220" top="420">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="1"/>
+        <interface id="2" name="1/1/3" type="ethernet" network_id="3"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="5"/>
+      </node>
+      <node id="4" name="Leaf2" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="9f62760b-9962-45ec-8982-380d2c0c9447" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="630" top="420">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="2"/>
+        <interface id="2" name="1/1/3" type="ethernet" network_id="4"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="6"/>
+      </node>
+      <node id="5" name="Host1" type="vpcs" template="vpcs" image="" ethernet="1" uuid="0f65e07d-bbaf-46e7-b3c3-e32c0626edeb" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="220" top="680">
+        <interface id="0" name="eth0" type="ethernet" network_id="5"/>
+      </node>
+      <node id="6" name="Host2" type="vpcs" template="vpcs" image="" ethernet="1" uuid="30f90eb3-7df5-4669-b86c-5f52770c5cbc" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="630" top="680">
+        <interface id="0" name="eth0" type="ethernet" network_id="6"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="235" top="260" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="440" top="260" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="410" top="260" visibility="0" icon="lan.png"/>
+      <network id="4" type="bridge" name="Net4" left="615" top="260" visibility="0" icon="lan.png"/>
+      <network id="5" type="bridge" name="Net5" left="220" top="550" visibility="0" icon="lan.png"/>
+      <network id="6" type="bridge" name="Net6" left="630" top="550" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>

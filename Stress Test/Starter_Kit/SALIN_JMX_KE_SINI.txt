@@ -1,0 +1,2 @@
+Salin file JMX aktual ke folder ini lalu ubah namanya menjadi test-plan.jmx.
+Jika nama tidak diubah, edit variabel TEST_PLAN pada run-loadtest-windows.bat.

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 1c - Deploying OSPFv2 on Aruba CX" id="9105c729-e374-4eba-aca6-2b122f841aad" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="Empat switch OSPF Area 0 dengan dua host pada subnet yang berbeda." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="HostA" type="vpcs" template="vpcs" image="" ethernet="1" uuid="482b1e50-1885-492d-a669-9a8a4f082c1d" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="400" top="50">
+        <interface id="0" name="eth0" type="ethernet" network_id="1"/>
+      </node>
+      <node id="2" name="SwitchA" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="5235dd7f-8038-40e3-b4ad-7ad4bf21a8f1" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="400" top="190">
+        <interface id="2" name="1/1/3" type="ethernet" network_id="1"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="2"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+      </node>
+      <node id="3" name="SwitchB" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="83392edf-b674-4df4-abda-0b61824f5a76" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="180" top="390">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="2"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="4"/>
+      </node>
+      <node id="4" name="SwitchC" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="ab9d8f9b-21c9-4aad-814f-0f79f7f0c4ab" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="620" top="390">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="5"/>
+      </node>
+      <node id="5" name="SwitchD" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="e0c6f6d0-04a8-4824-9734-1d7f0b9bf599" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="400" top="590">
+        <interface id="1" name="1/1/2" type="ethernet" network_id="4"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="5"/>
+        <interface id="2" name="1/1/3" type="ethernet" network_id="6"/>
+      </node>
+      <node id="6" name="HostB" type="vpcs" template="vpcs" image="" ethernet="1" uuid="cf5aba31-5de7-4e55-a55c-2b603312cbac" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="400" top="750">
+        <interface id="0" name="eth0" type="ethernet" network_id="6"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="400" top="120" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="290" top="290" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="510" top="290" visibility="0" icon="lan.png"/>
+      <network id="4" type="bridge" name="Net4" left="290" top="490" visibility="0" icon="lan.png"/>
+      <network id="5" type="bridge" name="Net5" left="510" top="490" visibility="0" icon="lan.png"/>
+      <network id="6" type="bridge" name="Net6" left="400" top="670" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>

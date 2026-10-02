@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 1d - OSPF Areas Basics on Aruba CX" id="4f63a0b2-8090-4433-b39a-00c53afd816b" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="OSPF multi-area dengan ABR, ASBR, dua proses OSPF, redistribution, stub, dan NSSA." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="SwitchA" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="d20a21b9-0757-4e04-b42b-6af50e4ec2bc" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="100" top="340">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="1"/>
+      </node>
+      <node id="2" name="SwitchB" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="ae52f932-6090-499f-8fb0-86d535b4c291" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="310" top="340">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="1"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="2"/>
+      </node>
+      <node id="3" name="SwitchC" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="b6a2e2e7-f0e6-454e-a4f4-dfe245acdf98" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="520" top="340">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="2"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="3"/>
+        <interface id="2" name="1/1/3" type="ethernet" network_id="4"/>
+      </node>
+      <node id="4" name="SwitchD" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="26e15c53-e252-419a-b153-9c53d429155c" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="730" top="340">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="3"/>
+      </node>
+      <node id="5" name="SwitchE" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="94e160c4-cedf-4ab0-84b1-cddb11d794cc" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="520" top="620">
+        <interface id="0" name="1/1/1" type="ethernet" network_id="4"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="205" top="340" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="415" top="340" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="625" top="340" visibility="0" icon="lan.png"/>
+      <network id="4" type="bridge" name="Net4" left="520" top="480" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>

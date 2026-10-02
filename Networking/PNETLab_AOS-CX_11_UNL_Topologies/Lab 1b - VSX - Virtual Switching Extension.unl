@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lab name="Lab 1b - VSX - Virtual Switching Extension" id="e2a4f31f-4e9e-4a6d-a1c3-895bcf65c8eb" version="1" scripttimeout="300" lock="0" author="Ghufron Archive" description="VSX primary-secondary dengan dua link ISL, keepalive, dua MCLAG, dan dua host." body="" link="" bgcolor="#ffffff" countdown="0" timer="0" routing="0">
+  <topology>
+    <nodes>
+      <node id="1" name="SW1" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="4e0509d4-4a53-407d-9231-47428b24d656" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="220" top="100">
+        <interface id="6" name="1/1/7" type="ethernet" network_id="1"/>
+        <interface id="7" name="1/1/8" type="ethernet" network_id="2"/>
+        <interface id="8" name="1/1/9" type="ethernet" network_id="3"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="4"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="6"/>
+      </node>
+      <node id="2" name="SW2" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="bebebb68-5652-481a-8d23-2d9b3c58f8a4" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="620" top="100">
+        <interface id="6" name="1/1/7" type="ethernet" network_id="1"/>
+        <interface id="7" name="1/1/8" type="ethernet" network_id="2"/>
+        <interface id="8" name="1/1/9" type="ethernet" network_id="3"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="5"/>
+        <interface id="1" name="1/1/2" type="ethernet" network_id="7"/>
+      </node>
+      <node id="3" name="SW3" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="9d0b7946-27e7-4435-ac36-0167aae1c9d4" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="220" top="430">
+        <interface id="7" name="1/1/8" type="ethernet" network_id="4"/>
+        <interface id="8" name="1/1/9" type="ethernet" network_id="5"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="8"/>
+      </node>
+      <node id="4" name="SW4" type="qemu" template="arubacx" image="arubacx-10.07" ethernet="10" uuid="4a30df56-9bee-4003-afb5-42341efc82f2" cpu="2" ram="4096" console="telnet" delay="0" icon="Switch L3.png" config="0" left="620" top="430">
+        <interface id="7" name="1/1/8" type="ethernet" network_id="6"/>
+        <interface id="8" name="1/1/9" type="ethernet" network_id="7"/>
+        <interface id="0" name="1/1/1" type="ethernet" network_id="9"/>
+      </node>
+      <node id="5" name="HostA" type="vpcs" template="vpcs" image="" ethernet="1" uuid="a2ddae8b-659d-463d-9aa0-568ad348ffa8" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="220" top="650">
+        <interface id="0" name="eth0" type="ethernet" network_id="8"/>
+      </node>
+      <node id="6" name="HostB" type="vpcs" template="vpcs" image="" ethernet="1" uuid="0bd22079-4652-491b-b7f6-e3197844caed" cpu="1" ram="128" console="telnet" delay="0" icon="Desktop.png" config="0" left="620" top="650">
+        <interface id="0" name="eth0" type="ethernet" network_id="9"/>
+      </node>
+    </nodes>
+    <networks>
+      <network id="1" type="bridge" name="Net1" left="420" top="100" visibility="0" icon="lan.png"/>
+      <network id="2" type="bridge" name="Net2" left="420" top="100" visibility="0" icon="lan.png"/>
+      <network id="3" type="bridge" name="Net3" left="420" top="100" visibility="0" icon="lan.png"/>
+      <network id="4" type="bridge" name="Net4" left="220" top="265" visibility="0" icon="lan.png"/>
+      <network id="5" type="bridge" name="Net5" left="420" top="265" visibility="0" icon="lan.png"/>
+      <network id="6" type="bridge" name="Net6" left="420" top="265" visibility="0" icon="lan.png"/>
+      <network id="7" type="bridge" name="Net7" left="620" top="265" visibility="0" icon="lan.png"/>
+      <network id="8" type="bridge" name="Net8" left="220" top="540" visibility="0" icon="lan.png"/>
+      <network id="9" type="bridge" name="Net9" left="620" top="540" visibility="0" icon="lan.png"/>
+    </networks>
+  </topology>
+  <objects/>
+</lab>
