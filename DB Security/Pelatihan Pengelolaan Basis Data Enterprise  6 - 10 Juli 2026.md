@@ -695,9 +695,9 @@ menjadi satu unit kebijakan.
 Contoh:
 
 ```text
-SAKTI Security Policy
+SAKIT Security Policy
  |
- +-- SAKTI Realm
+ +-- SAKIT Realm
  +-- CONNECT Command Rule
  +-- ALTER SYSTEM Command Rule
 ```
@@ -783,7 +783,7 @@ CDB Root
  |
  +-- C##INFRA_DBA
  |
- +-- PDB SAKTI
+ +-- PDB SAKIT
        |
        +-- APP_SCHEMA
        +-- sensitive data
